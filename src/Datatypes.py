@@ -80,21 +80,20 @@ def create_rulegroups(groups: bs4.element.Tag) -> List[Rulegroup]:
     return [Rulegroup(text, number) for text, number in zip(texts, numbers)]
 
 
-def create_mchoice(mchoice):
-    if not mchoice:
-        # empty -> no mchoice question
-        return []
-    mchoice_cleaned = mchoice.strip().split("\n")
-    if len(mchoice_cleaned) == 1 and len(mchoice_cleaned[0]) <= 1:
-        # bullshit input..
-        return []
-
-    assert len(mchoice_cleaned) == 3, f"More than three possible answers?! Wtf.. '{mchoice}' v. '{mchoice_cleaned}'"
-    # removes the a/b/c () in front :)
-    return [re.sub(r"^[abc] *\(.*\) *", "", i) for i in mchoice_cleaned]
-
-
 def create_rules(rules_xml):
+    def create_mchoice(mchoice_):
+        if not mchoice_:
+            # empty -> no mchoice question
+            return []
+        mchoice_cleaned = mchoice_.strip().split("\n")
+        if len(mchoice_cleaned) == 1 and len(mchoice_cleaned[0]) <= 1:
+            # bullshit input..
+            return []
+
+        assert len(mchoice_cleaned) == 3, f"More than three possible answers?! Wtf.. '{mchoice_}' v. '{mchoice_cleaned}'"
+        # removes the a/b/c () in front :)
+        return [re.sub(r"^[abc] *\(.*\) *", "", i) for i in mchoice_cleaned]
+
     rules = []
     for rule in rules_xml:
         lnr = rule.find("lnr").contents[0].strip()
