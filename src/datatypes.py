@@ -1,15 +1,13 @@
 import logging
 import re
 from datetime import datetime
-from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List
 
+import bs4
 from sqlalchemy import Column, Integer, String, ForeignKey, Date
 from sqlalchemy.orm import relationship
 
 from .database import Base
-
-import bs4
 
 default_date = datetime(1970, 1, 1)
 

@@ -1,14 +1,10 @@
-import os.path
-import sqlite3
 import sys
-from typing import List
+import sys
 
 from bs4 import BeautifulSoup
-from appdirs import AppDirs
-from sqlalchemy import create_engine
 
 from src.database import db
-from src.datatypes import create_rulegroups, create_questions_and_mchoice, Rulegroup, Question
+from src.datatypes import create_rulegroups, create_questions_and_mchoice
 
 
 def read_in(file_name):
