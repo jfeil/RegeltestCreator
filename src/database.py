@@ -1,14 +1,11 @@
-from __future__ import annotations
-
 import os
 from typing import List, Union
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, Session
+from sqlalchemy import create_engine, inspect
+from sqlalchemy.orm import Session
 from appdirs import AppDirs
-from .basic_config import app_name, app_author, app_version, database_name
-
-Base = declarative_base()
+from .basic_config import app_name, app_author, app_version, database_name, Base
+from .datatypes import Rulegroup, Question, MultipleChoice
 
 
 class DatabaseConnector:
@@ -24,8 +21,11 @@ class DatabaseConnector:
             self.initialized = False
         elif not os.path.isfile(database_path):
             self.initialized = False
-
-        self.engine = create_engine(f"sqlite+pysqlite:///{database_path}", echo=True, future=True)
+        self.engine = create_engine(f"sqlite+pysqlite:///{database_path}", future=True)
+        if not inspect(self.engine).has_table(Rulegroup.__tablename__) or \
+                not inspect(self.engine).has_table(Question.__tablename__) or \
+                not inspect(self.engine).has_table(MultipleChoice.__tablename__):
+            self.reset_database()
 
     def _init_database(self):
         # Create database based on basis - need to read docu first lol

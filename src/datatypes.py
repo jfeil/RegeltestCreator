@@ -7,7 +7,7 @@ import bs4
 from sqlalchemy import Column, Integer, String, ForeignKey, Date
 from sqlalchemy.orm import relationship
 
-from .database import Base
+from .basic_config import Base
 
 default_date = datetime(1970, 1, 1)
 
