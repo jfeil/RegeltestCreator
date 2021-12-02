@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy.orm import declarative_base
 
-log_level = logging.DEBUG
+log_level = logging.WARN
 
 app_name = "OmicronEditor"
 app_author = "jfeil"
