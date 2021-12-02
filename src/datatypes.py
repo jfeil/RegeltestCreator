@@ -1,5 +1,6 @@
 import logging
 import re
+import uuid
 from datetime import datetime
 from typing import List
 
@@ -83,14 +84,14 @@ class Question(Base):
     rulegroup = relationship("Rulegroup", back_populates="children")
     multiple_choice = relationship("MultipleChoice", back_populates="rule")
 
-    group_id = Column(Integer, ForeignKey('rulegroup.id'), primary_key=True)
-    rule_id = Column(Integer, primary_key=True)
+    group_id = Column(Integer, ForeignKey('rulegroup.id'))
+    rule_id = Column(Integer, autoincrement=True)
     question = Column(String)
     answer_index = Column(Integer)  # for no multiple choice
     answer_text = Column(String)
     created = Column(Date)
     last_edited = Column(Date)
-    signature = Column(String, primary_key=True)
+    signature = Column(String, default=uuid.uuid4().hex, primary_key=True)
 
     def __repr__(self):
         return f"Question(text={self.question!r}, answer={self.answer_index!r}:{self.answer_text!r}" \
@@ -153,7 +154,7 @@ def create_questions_and_mchoice(rules_xml):
             elif re.match(r" *\(*c\)* *", answer):
                 mchoice_index = 2
             else:
-                logging.warning(f"{question} is multiple choice, but has no answer candidate.. choice is ignored")
+                logging.info(f"{question} is multiple choice, but has no answer candidate.. choice is ignored")
                 mchoice_index = -1
                 mchoice = []
         multiple_choice += mchoice
