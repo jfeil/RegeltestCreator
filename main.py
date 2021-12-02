@@ -24,6 +24,8 @@ def read_in(file_name):
 if __name__ == '__main__':
     args = sys.argv
     if not db:
+        if len(args) < 2:
+            raise Exception("Error! Database is not correct initialized, but input file is also not passed...")
         datasets = read_in(args[1])
         for dataset in datasets:
             db.fill_database(dataset)
