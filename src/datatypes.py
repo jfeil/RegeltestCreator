@@ -119,7 +119,7 @@ def create_questions_and_mchoice(rules_xml):
 
         assert len(mchoice_cleaned) == 3, f"More than three possible answers?! Wtf.. '{mchoice_}' v. '{mchoice_cleaned}'"
         # removes the a/b/c () in front :)
-        return [re.sub(r"^[abc] *\(.*\) *", "", i) for i in mchoice_cleaned]
+        return [re.sub(r"^[abc] *\( *\) *", "", i) for i in mchoice_cleaned]
 
     rules_index = []
     signatures = []
