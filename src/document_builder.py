@@ -1,6 +1,7 @@
 from typing import List
 import random
 
+from PIL.Image import Image
 from reportlab.lib.units import inch, mm
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.styles import ParagraphStyle
@@ -10,7 +11,7 @@ from reportlab.rl_config import defaultPageSize
 
 from src.datatypes import Question, MultipleChoice
 
-PAGE_HEIGHT = defaultPageSize[1];
+PAGE_HEIGHT = defaultPageSize[1]
 PAGE_WIDTH = defaultPageSize[0]
 linespacing = 14
 min_lines = 3
@@ -18,6 +19,7 @@ space_between = 0.2 * linespacing
 space_bottom = 0.4 * linespacing
 radio_size = 20
 ratio_answer = 9 / 10
+base_image_size = 70
 
 points_height = 3 * linespacing
 
@@ -82,14 +84,12 @@ class QuestionFlowable(Flowable):
                 max(len(simpleSplit(a, fontName, fontSize, ratio_answer * self.width)) * linespacing, 1.1 * radio_size)
                 for a in self.mchoice]
 
-        logging.debug(question_index, lines_question, self.lines_answer)
-
         self.height_question = lines_question * linespacing
         self.height = sum(self.height_answer) + space_between + self.height_question + space_bottom
 
     def draw(self):
         question = Paragraph(self.question_text, self.paragraph_style)
-        question.wrapOn(self.canv, self.width, self.height)
+        question.wrapOn(self.canv, self.width-10, self.height)
         question.drawOn(self.canv, self.x, space_between + sum(self.height_answer) + space_bottom)
 
         if self.solution:
@@ -112,16 +112,6 @@ class QuestionFlowable(Flowable):
                     height_sum -= height
                     create_radio(index, choice, self.x, height_sum, height)
 
-            #             radio_2 = self.canv.acroForm.radio("radio2", relative=True, size=radio_size, name=radio_group, x=self.x, y=self.y + space_bottom + max(min_lines - self.lines_answer, 0) * linespacing + radio_size)
-            #             solution = Paragraph("Radio button 2", self.paragraph_style)
-            #             solution.wrapOn(self.canv, ratio_answer*self.width, self.height)
-            #             solution.drawOn(self.canv, self.x+4*mm, self.y + radio_size + space_bottom + max(min_lines - self.lines_answer, 0) * linespacing)
-
-            #             radio_3 = self.canv.acroForm.radio("radio3", relative=True, size=radio_size, name=radio_group, x=self.x, y=self.y + space_bottom + max(min_lines - self.lines_answer, 0) * linespacing)
-            #             solution = Paragraph("Radio button 1", self.paragraph_style)
-            #             solution.wrapOn(self.canv, ratio_answer*self.width, self.height)
-            #             solution.drawOn(self.canv, self.x+4*mm, self.y + space_bottom + max(min_lines - self.lines_answer, 0) * linespacing)
-
             else:
                 # FieldFlags are:
                 # 1 << 1: required
@@ -135,6 +125,48 @@ class QuestionFlowable(Flowable):
                                                  width=points_height, value="/2",
                                                  fontName=self.paragraph_style.fontName,
                                                  fontSize=self.paragraph_style.fontSize, maxlen=3)
+
+
+class TitleFlowable(Flowable):
+    canv: Canvas
+
+    def __init__(self, title_line, title_icon, username="", fontName='Helvetica', image_scalefactor=1, titleSize=14,
+                 nameSize=10, x=0, y=0, width=4 / 5 * PAGE_WIDTH, max_points=30):
+        super().__init__()
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = 100
+        self.paragraph_style = ParagraphStyle('DefaultStyle', fontName=fontName, fontSize=nameSize, alignment=0)
+        self.title_style = ParagraphStyle('DefaultStyle', fontName=fontName, fontSize=titleSize, alignment=1)
+        self.title_icon = title_icon
+        self.title_line = title_line
+        self.max_points = max_points
+        self.username = username
+        self.image_size = Image.open(title_icon).size
+        image_size = Image.open(title_icon).size
+        ratio = image_size[0] / image_size[1]
+        self.image_size = (image_scalefactor * base_image_size * ratio, image_scalefactor * base_image_size / ratio)
+
+    def draw(self):
+        self.canv.drawImage(self.title_icon, self.x, 30, width=self.image_size[0], height=self.image_size[1],
+                            mask=[0, 1, 0, 1, 0, 1])
+        question = Paragraph(self.title_line, self.title_style)
+        question.wrapOn(self.canv, 2 / 3 * self.width, self.height)
+        question.drawOn(self.canv, self.x + 1 / 6 * self.width, 60)
+
+        question = Paragraph("Name", self.paragraph_style)
+        question.wrapOn(self.canv, 2 / 10 * self.width, self.height)
+        question.drawOn(self.canv, 6 / 10 * self.width, 20)
+
+        self.canv.acroForm.textfieldRelative(x=6 / 10 * self.width + 30, y=20, height=linespacing,
+                                             width=2 / 10 * self.width, value=self.username,
+                                             fontName=self.paragraph_style.fontName,
+                                             fontSize=self.paragraph_style.fontSize)
+        self.canv.acroForm.textfieldRelative(x=6 / 10 * self.width + 40 + 2 / 10 * self.width, y=20, height=linespacing,
+                                             width=1 / 15 * self.width, value=f"/{self.max_points}",
+                                             fontName=self.paragraph_style.fontName,
+                                             fontSize=self.paragraph_style.fontSize)
 
 
 def go():
