@@ -1,4 +1,5 @@
-from typing import List
+import os.path
+from typing import List, Tuple
 import random
 
 from PIL import Image
@@ -178,6 +179,34 @@ class TitleFlowable(Flowable):
                                              fontSize=self.paragraph_style.fontSize)
 
 
-def go():
-    doc = SimpleDocTemplate("phello.pdf")
-    Story = [Spacer(1, 2 * inch)]
+def create_document(question_set: List[Tuple[Question, List[MultipleChoice]]], filename, title, icon_path=None,
+                    solution_suffix='_LOESUNG', shuffle_mchoice=True, font_name='Helvetica', font_size=9):
+    def page_setup(canvas, doc):
+        canvas.saveState()
+        canvas.setFont(font_name, font_size)
+        canvas.restoreState()
+
+    doc_question = SimpleDocTemplate(filename)
+
+    solution_path = os.path.splitext(filename)
+    solution_path = solution_path[0] + solution_suffix + solution_path[1]
+
+    doc_solution = SimpleDocTemplate(solution_path)
+
+    story_solution = [TitleFlowable(title, icon_path, username="Muster Lösung", max_points=len(question_set)*2)]
+    story_question = [TitleFlowable(title, icon_path, max_points=len(question_set)*2)]
+
+    for i, (question, mchoice) in enumerate(question_set):
+        random_state = random.getstate()
+        question_flow = QuestionFlowable(i + 1, question, mchoice, font_name, font_size, solution=False,
+                                         shuffle_mchoice=shuffle_mchoice, width=doc_question.width)
+        story_question.append(question_flow)
+        story_question.append(Spacer(1, 0.1 * inch))
+        random.setstate(random_state)
+        question_flow = QuestionFlowable(i + 1, question, mchoice, font_name, font_size, solution=True,
+                                         shuffle_mchoice=shuffle_mchoice, width=doc_solution.width)
+        story_solution.append(question_flow)
+        story_solution.append(Spacer(1, 0.1 * inch))
+
+    doc_question.build(story_question, onFirstPage=page_setup, onLaterPages=page_setup)
+    doc_solution.build(story_solution, onFirstPage=page_setup, onLaterPages=page_setup)
