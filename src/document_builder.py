@@ -1,7 +1,7 @@
 from typing import List
 import random
 
-from PIL.Image import Image
+from PIL import Image
 from reportlab.lib.units import inch, mm
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.styles import ParagraphStyle
@@ -32,7 +32,7 @@ class QuestionFlowable(Flowable):
                  width=4 / 5 * PAGE_WIDTH):
         super().__init__()
 
-        def shuffle_mchoice(mchoice, answer_index):
+        def shuffle_mchoice_fun(mchoice, answer_index):
             old_indices = [choice.index for choice in mchoice]
             new_indices = list(range(len(old_indices)))
             random.shuffle(new_indices)
@@ -55,7 +55,7 @@ class QuestionFlowable(Flowable):
         self.answer_index = self.question.answer_index
 
         if shuffle_mchoice and self.answer_index != -1:
-            mchoice, self.answer_index = shuffle_mchoice(mchoice, self.answer_index)
+            mchoice, self.answer_index = shuffle_mchoice_fun(mchoice, self.answer_index)
 
         self.mchoice = [f"{answer_letter(m.index)}) {m.text}" for m in mchoice]
         self.solution = solution
@@ -155,14 +155,23 @@ class TitleFlowable(Flowable):
         question.wrapOn(self.canv, 2 / 3 * self.width, self.height)
         question.drawOn(self.canv, self.x + 1 / 6 * self.width, 60)
 
-        question = Paragraph("Name", self.paragraph_style)
+        question = Paragraph("Name:", self.paragraph_style)
         question.wrapOn(self.canv, 2 / 10 * self.width, self.height)
-        question.drawOn(self.canv, 6 / 10 * self.width, 20)
+        question.drawOn(self.canv, 6 / 10 * self.width - 10, 20)
 
-        self.canv.acroForm.textfieldRelative(x=6 / 10 * self.width + 30, y=20, height=linespacing,
-                                             width=2 / 10 * self.width, value=self.username,
-                                             fontName=self.paragraph_style.fontName,
-                                             fontSize=self.paragraph_style.fontSize)
+        x_username = 6 / 10 * self.width + 30
+        y_username = 20
+        height_username = linespacing
+        width_username = 2 / 10 * self.width
+        if self.username != "":
+            question = Paragraph(self.username, self.paragraph_style)
+            question.wrapOn(self.canv, width_username, height_username)
+            question.drawOn(self.canv, x_username, y_username)
+        else:
+            self.canv.acroForm.textfieldRelative(x=x_username, y=y_username, height=height_username,
+                                                 width=width_username, value=self.username,
+                                                 fontName=self.paragraph_style.fontName,
+                                                 fontSize=self.paragraph_style.fontSize)
         self.canv.acroForm.textfieldRelative(x=6 / 10 * self.width + 40 + 2 / 10 * self.width, y=20, height=linespacing,
                                              width=1 / 15 * self.width, value=f"/{self.max_points}",
                                              fontName=self.paragraph_style.fontName,
