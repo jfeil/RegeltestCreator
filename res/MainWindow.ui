@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>895</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="Test">
+       <attribute name="title">
+        <string>01 Das Spielfeld</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QTreeWidget" name="treeWidget">
+          <column>
+           <property name="text">
+            <string>Regelnummer</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Frage</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Multiple choice?</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Antwort</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Änderungsdatum</string>
+           </property>
+          </column>
+          <item>
+           <property name="text">
+            <string>01</string>
+           </property>
+           <property name="text">
+            <string>Die Hilfsflaggen werden vom Platzwart auf die Seitenlinie gesteckt. Hat der SR Grund zur Beanstandung?</string>
+           </property>
+           <property name="toolTip">
+            <string>Die Hilfsflaggen werden vom Platzwart auf die Seitenlinie gesteckt. Hat der SR Grund zur Beanstandung?</string>
+           </property>
+           <property name="text">
+            <string>Ja</string>
+           </property>
+           <property name="text">
+            <string>Ja. Alle Hilfsflaggen müssen 1m außerhalb der Seitenlinie stehen.</string>
+           </property>
+           <property name="text">
+            <string>2020-06-22</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>02 Der Ball</string>
+       </attribute>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>895</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuDatei">
+    <property name="title">
+     <string>Datei</string>
+    </property>
+    <addaction name="actionRegeldatensatz_einladen"/>
+    <addaction name="actionRegeldatensatz_exportieren"/>
+   </widget>
+   <widget class="QMenu" name="menuAnsicht">
+    <property name="title">
+     <string>Ansicht</string>
+    </property>
+    <addaction name="actionAnsicht_zur_cksetzen"/>
+   </widget>
+   <widget class="QMenu" name="menuBearbeiten">
+    <property name="title">
+     <string>Bearbeiten</string>
+    </property>
+    <addaction name="actionNeue_Kategorie_erstellen"/>
+    <addaction name="actionRegeltest_einrichten"/>
+    <addaction name="actionRegeltest_l_schen"/>
+   </widget>
+   <addaction name="menuDatei"/>
+   <addaction name="menuBearbeiten"/>
+   <addaction name="menuAnsicht"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="windowTitle">
+    <string>Regeltest-Creator</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <item>
+      <widget class="QListWidget" name="listWidget">
+       <item>
+        <property name="text">
+         <string>Die Hilfsflaggen werden vom Platzwart auf die Seitenlinie gesteckt. Hat der SR Grund zur Beanstandung?</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>0 Fragen ausgewählt (0 Punkte)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton">
+       <property name="text">
+        <string>Regeltest erstellen</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="actionNeue_Kategorie_erstellen">
+   <property name="text">
+    <string>Neue Kategorie erstellen</string>
+   </property>
+  </action>
+  <action name="actionAnsicht_zur_cksetzen">
+   <property name="text">
+    <string>Ansicht zurücksetzen</string>
+   </property>
+  </action>
+  <action name="actionRegeltest_l_schen">
+   <property name="text">
+    <string>Regeltest löschen</string>
+   </property>
+  </action>
+  <action name="actionRegeldatensatz_einladen">
+   <property name="text">
+    <string>Regeldatensatz einladen</string>
+   </property>
+  </action>
+  <action name="actionRegeldatensatz_exportieren">
+   <property name="text">
+    <string>Regeldatensatz exportieren</string>
+   </property>
+  </action>
+  <action name="actionRegeltest_einrichten">
+   <property name="text">
+    <string>Regeltest einrichten</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

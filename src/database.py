@@ -39,6 +39,16 @@ class DatabaseConnector:
         Base.metadata.drop_all(self.engine)
         self.initialized = False
 
+    def get_rulegroups(self):
+        with Session(self.engine) as session:
+            rulegroups = session.query(Rulegroup)
+        return rulegroups
+
+    def get_questions(self, rulegroup: Rulegroup):
+        with Session(self.engine) as session:
+            questions = session.query(Question).where(Question.rulegroup == rulegroup)
+        return questions
+
     def fill_database(self, dataset: List[Union[Rulegroup, Question, MultipleChoice]]):
         # insert processed values into db
         if not self.initialized:
