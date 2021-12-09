@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import List, Union
 
@@ -14,7 +15,7 @@ class DatabaseConnector:
     def __init__(self):
         dirs = AppDirs(appname=app_name, appauthor=app_author, version=app_version)
         database_path = os.path.join(dirs.user_data_dir, database_name)
-        print(dirs.user_data_dir)
+        logging.debug(dirs.user_data_dir)
         self.initialized = True
         if not os.path.isdir(dirs.user_data_dir):
             os.makedirs(dirs.user_data_dir, )
