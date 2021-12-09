@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-from PyQt6.QtCore import QCoreApplication
+from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import QMainWindow, QTabWidget, QWidget, QTreeWidget, QTreeWidgetItem, QVBoxLayout
 
 from .ui_mainwindow import Ui_MainWindow
