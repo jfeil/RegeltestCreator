@@ -7,7 +7,7 @@ log_level = logging.WARN
 display_name = "Regeltest-Creator"
 app_name = "OmicronEditor"
 app_author = "jfeil"
-app_version = "0.0.1"
+app_version = "0.0.2"
 
 database_name = "database.db"
 Base = declarative_base()
