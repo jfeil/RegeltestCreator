@@ -82,7 +82,7 @@ class Question(Base):
     __tablename__ = 'question'
 
     rulegroup = relationship("Rulegroup", back_populates="children")
-    multiple_choice = relationship("MultipleChoice", back_populates="rule")
+    multiple_choice = relationship("MultipleChoice", back_populates="rule", cascade="all, delete-orphan")
 
     group_id = Column(Integer, ForeignKey('rulegroup.id'))
     rule_id = Column(Integer, autoincrement=True)
