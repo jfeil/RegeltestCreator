@@ -25,6 +25,7 @@ class QuestionEditor(QDialog, Ui_QuestionDialog):
         super(QuestionEditor, self).__init__()
         self.ui = Ui_QuestionDialog()
         self.ui.setupUi(self)
+        self.setWindowTitle("Frage bearbeiten")
         self.question = question
         if question.answer_index == -1:
             mchoice = False

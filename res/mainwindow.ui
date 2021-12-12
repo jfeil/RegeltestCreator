@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>895</width>
-    <height>600</height>
+    <width>881</width>
+    <height>634</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -90,7 +90,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>895</width>
+     <width>881</width>
      <height>22</height>
     </rect>
    </property>
@@ -120,7 +120,7 @@
    <addaction name="menuAnsicht"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QDockWidget" name="dockWidget">
+  <widget class="QDockWidget" name="regeltest_creator">
    <property name="windowTitle">
     <string>Regeltest-Creator</string>
    </property>
@@ -130,7 +130,7 @@
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <widget class="QListWidget" name="listWidget">
+      <widget class="RegeltestCreator" name="regeltest_list">
        <item>
         <property name="text">
          <string>Die Hilfsflaggen werden vom Platzwart auf die Seitenlinie gesteckt. Hat der SR Grund zur Beanstandung?</string>
@@ -139,14 +139,14 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="regeltest_stats">
        <property name="text">
         <string>0 Fragen ausgewählt (0 Punkte)</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="create_regeltest">
        <property name="text">
         <string>Regeltest erstellen</string>
        </property>
@@ -186,6 +186,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>RegeltestCreator</class>
+   <extends>QListWidget</extends>
+   <header>.regeltestcreator.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -17,16 +17,17 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QDockWidget, QHeaderView, QLabel,
-    QListWidget, QListWidgetItem, QMainWindow, QMenu,
-    QMenuBar, QPushButton, QSizePolicy, QStatusBar,
-    QTabWidget, QTreeWidget, QTreeWidgetItem, QVBoxLayout,
-    QWidget)
+    QListWidgetItem, QMainWindow, QMenu, QMenuBar,
+    QPushButton, QSizePolicy, QStatusBar, QTabWidget,
+    QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
+
+from .regeltestcreator import RegeltestCreator
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(895, 600)
+        MainWindow.resize(881, 634)
         self.actionNeue_Kategorie_erstellen = QAction(MainWindow)
         self.actionNeue_Kategorie_erstellen.setObjectName(u"actionNeue_Kategorie_erstellen")
         self.actionAnsicht_zur_cksetzen = QAction(MainWindow)
@@ -65,7 +66,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 895, 22))
+        self.menubar.setGeometry(QRect(0, 0, 881, 22))
         self.menuDatei = QMenu(self.menubar)
         self.menuDatei.setObjectName(u"menuDatei")
         self.menuAnsicht = QMenu(self.menubar)
@@ -76,30 +77,30 @@ class Ui_MainWindow(object):
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        self.dockWidget = QDockWidget(MainWindow)
-        self.dockWidget.setObjectName(u"dockWidget")
+        self.regeltest_creator = QDockWidget(MainWindow)
+        self.regeltest_creator.setObjectName(u"regeltest_creator")
         self.dockWidgetContents = QWidget()
         self.dockWidgetContents.setObjectName(u"dockWidgetContents")
         self.verticalLayout_3 = QVBoxLayout(self.dockWidgetContents)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.listWidget = QListWidget(self.dockWidgetContents)
-        QListWidgetItem(self.listWidget)
-        self.listWidget.setObjectName(u"listWidget")
+        self.regeltest_list = RegeltestCreator(self.dockWidgetContents)
+        QListWidgetItem(self.regeltest_list)
+        self.regeltest_list.setObjectName(u"regeltest_list")
 
-        self.verticalLayout_3.addWidget(self.listWidget)
+        self.verticalLayout_3.addWidget(self.regeltest_list)
 
-        self.label = QLabel(self.dockWidgetContents)
-        self.label.setObjectName(u"label")
+        self.regeltest_stats = QLabel(self.dockWidgetContents)
+        self.regeltest_stats.setObjectName(u"regeltest_stats")
 
-        self.verticalLayout_3.addWidget(self.label)
+        self.verticalLayout_3.addWidget(self.regeltest_stats)
 
-        self.pushButton = QPushButton(self.dockWidgetContents)
-        self.pushButton.setObjectName(u"pushButton")
+        self.create_regeltest = QPushButton(self.dockWidgetContents)
+        self.create_regeltest.setObjectName(u"create_regeltest")
 
-        self.verticalLayout_3.addWidget(self.pushButton)
+        self.verticalLayout_3.addWidget(self.create_regeltest)
 
-        self.dockWidget.setWidget(self.dockWidgetContents)
-        MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.dockWidget)
+        self.regeltest_creator.setWidget(self.dockWidgetContents)
+        MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.regeltest_creator)
 
         self.menubar.addAction(self.menuDatei.menuAction())
         self.menubar.addAction(self.menuBearbeiten.menuAction())
@@ -152,15 +153,15 @@ class Ui_MainWindow(object):
         self.menuDatei.setTitle(QCoreApplication.translate("MainWindow", u"Datei", None))
         self.menuAnsicht.setTitle(QCoreApplication.translate("MainWindow", u"Ansicht", None))
         self.menuBearbeiten.setTitle(QCoreApplication.translate("MainWindow", u"Bearbeiten", None))
-        self.dockWidget.setWindowTitle(QCoreApplication.translate("MainWindow", u"Regeltest-Creator", None))
+        self.regeltest_creator.setWindowTitle(QCoreApplication.translate("MainWindow", u"Regeltest-Creator", None))
 
-        __sortingEnabled1 = self.listWidget.isSortingEnabled()
-        self.listWidget.setSortingEnabled(False)
-        ___qlistwidgetitem = self.listWidget.item(0)
+        __sortingEnabled1 = self.regeltest_list.isSortingEnabled()
+        self.regeltest_list.setSortingEnabled(False)
+        ___qlistwidgetitem = self.regeltest_list.item(0)
         ___qlistwidgetitem.setText(QCoreApplication.translate("MainWindow", u"Die Hilfsflaggen werden vom Platzwart auf die Seitenlinie gesteckt. Hat der SR Grund zur Beanstandung?", None));
-        self.listWidget.setSortingEnabled(__sortingEnabled1)
+        self.regeltest_list.setSortingEnabled(__sortingEnabled1)
 
-        self.label.setText(QCoreApplication.translate("MainWindow", u"0 Fragen ausgew\u00e4hlt (0 Punkte)", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Regeltest erstellen", None))
+        self.regeltest_stats.setText(QCoreApplication.translate("MainWindow", u"0 Fragen ausgew\u00e4hlt (0 Punkte)", None))
+        self.create_regeltest.setText(QCoreApplication.translate("MainWindow", u"Regeltest erstellen", None))
     # retranslateUi
 
