@@ -144,14 +144,16 @@ class TitleFlowable(Flowable):
         self.title_line = title_line
         self.max_points = max_points
         self.username = username
-        self.image_size = Image.open(title_icon).size
-        image_size = Image.open(title_icon).size
-        ratio = image_size[0] / image_size[1]
-        self.image_size = (image_scalefactor * base_image_size * ratio, image_scalefactor * base_image_size / ratio)
+        if title_icon:
+            self.image_size = Image.open(title_icon).size
+            image_size = Image.open(title_icon).size
+            ratio = image_size[0] / image_size[1]
+            self.image_size = (image_scalefactor * base_image_size * ratio, image_scalefactor * base_image_size / ratio)
 
     def draw(self):
-        self.canv.drawImage(self.title_icon, self.x, 30, width=self.image_size[0], height=self.image_size[1],
-                            mask=[0, 1, 0, 1, 0, 1])
+        if self.title_icon:
+            self.canv.drawImage(self.title_icon, self.x, 30, width=self.image_size[0], height=self.image_size[1],
+                                mask=[0, 1, 0, 1, 0, 1])
         question = Paragraph(self.title_line, self.title_style)
         question.wrapOn(self.canv, 2 / 3 * self.width, self.height)
         question.drawOn(self.canv, self.x + 1 / 6 * self.width, 60)
