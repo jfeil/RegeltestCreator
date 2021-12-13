@@ -130,13 +130,7 @@
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <widget class="RegeltestCreator" name="regeltest_list">
-       <item>
-        <property name="text">
-         <string>Die Hilfsflaggen werden vom Platzwart auf die Seitenlinie gesteckt. Hat der SR Grund zur Beanstandung?</string>
-        </property>
-       </item>
-      </widget>
+      <widget class="RegeltestCreator" name="regeltest_list"/>
      </item>
      <item>
       <widget class="QLabel" name="regeltest_stats">

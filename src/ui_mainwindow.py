@@ -84,7 +84,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_3 = QVBoxLayout(self.dockWidgetContents)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.regeltest_list = RegeltestCreator(self.dockWidgetContents)
-        QListWidgetItem(self.regeltest_list)
         self.regeltest_list.setObjectName(u"regeltest_list")
 
         self.verticalLayout_3.addWidget(self.regeltest_list)
@@ -154,13 +153,6 @@ class Ui_MainWindow(object):
         self.menuAnsicht.setTitle(QCoreApplication.translate("MainWindow", u"Ansicht", None))
         self.menuBearbeiten.setTitle(QCoreApplication.translate("MainWindow", u"Bearbeiten", None))
         self.regeltest_creator.setWindowTitle(QCoreApplication.translate("MainWindow", u"Regeltest-Creator", None))
-
-        __sortingEnabled1 = self.regeltest_list.isSortingEnabled()
-        self.regeltest_list.setSortingEnabled(False)
-        ___qlistwidgetitem = self.regeltest_list.item(0)
-        ___qlistwidgetitem.setText(QCoreApplication.translate("MainWindow", u"Die Hilfsflaggen werden vom Platzwart auf die Seitenlinie gesteckt. Hat der SR Grund zur Beanstandung?", None));
-        self.regeltest_list.setSortingEnabled(__sortingEnabled1)
-
         self.regeltest_stats.setText(QCoreApplication.translate("MainWindow", u"0 Fragen ausgew\u00e4hlt (0 Punkte)", None))
         self.create_regeltest.setText(QCoreApplication.translate("MainWindow", u"Regeltest erstellen", None))
     # retranslateUi

@@ -1,16 +1,29 @@
+from typing import Dict
+
 from PySide6.QtCore import Qt, QModelIndex, QMimeData, QCoreApplication, QRect
 from PySide6.QtGui import QStandardItemModel, QDrag
-from PySide6.QtWidgets import QListWidget, QTreeWidgetItem, QTreeWidget, QVBoxLayout
+from PySide6.QtWidgets import QListWidget, QTreeWidgetItem, QTreeWidget, QVBoxLayout, QDialog, QFileDialog
+from PySide6.QtWidgets import QListWidgetItem
 
 from src import controller
 from src.datatypes import Question
 from src.question_editor import QuestionEditor
+from src.ui_regeltest_save import Ui_RegeltestSave
 
 
 class RegeltestCreator(QListWidget):
     def __init__(self, *args):
         super(RegeltestCreator, self).__init__(*args)
         self.setAcceptDrops(True)
+        self.questions = []  # type: List[str]
+
+    def add_question(self, question: Question):
+        if question.signature in self.questions:
+            return
+        item = QListWidgetItem(self)
+        item.setData(Qt.UserRole, question.signature)
+        item.setText(question.question)
+        self.questions.append(question.signature)
 
     def dropEvent(self, event):
         event.accept()
@@ -19,7 +32,8 @@ class RegeltestCreator(QListWidget):
             signatures = data.data().decode()
             n = 32
             signatures = [signatures[i:i + n] for i in range(0, len(signatures), n)]
-            print(signatures)
+            for signature in signatures:
+                self.add_question(controller.get_question(signature))
 
 
 class QuestionTree(QTreeWidget):
@@ -83,4 +97,27 @@ class QuestionTree(QTreeWidget):
         drag = QDrag(self)
         drag.setMimeData(mimeData)
 
-        drag.exec_(supportedActions, Qt.CopyAction)
+        result = drag.exec_(supportedActions, Qt.CopyAction)
+        if result == Qt.CopyAction:
+            self.clearSelection()
+
+
+class RegeltestSaveDialog(QDialog, Ui_RegeltestSave):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.ui = Ui_RegeltestSave()
+        self.ui.setupUi(self)
+        self.ui.icon_edit_button.clicked.connect(self.open_icon)
+        self.ui.output_edit_button.clicked.connect(self.create_save)
+
+    def open_icon(self):
+        file_name = QFileDialog.getOpenFileName(self, caption="Open icon", filter="Icon file (*.jpg;*.png)")
+        if len(file_name) == 0 or file_name[0] == "":
+            return
+        self.ui.icon_path_edit.setText(file_name[0])
+
+    def create_save(self):
+        file_name = QFileDialog.getSaveFileName(self, caption="Save Regeltest", filter="Regeltest (*.pdf)")
+        if len(file_name) == 0 or file_name[0] == "":
+            return
+        self.ui.output_edit.setText(file_name[0])

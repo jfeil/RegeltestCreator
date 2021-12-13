@@ -5,10 +5,10 @@ from PySide6.QtWidgets import QMainWindow, QTabWidget, QWidget, QTreeWidget, QTr
     QApplication, QListWidget
 from bs4 import BeautifulSoup
 
-from . import controller
+from . import controller, document_builder
 from .basic_config import display_name, app_version, app_author
 from .question_editor import QuestionEditor
-from .regeltestcreator import QuestionTree
+from .regeltestcreator import QuestionTree, RegeltestSaveDialog
 from .ui_mainwindow import Ui_MainWindow
 from .datatypes import Rulegroup, Question, create_rulegroups, create_questions_and_mchoice
 
@@ -46,6 +46,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.tabWidget.clear()
         self.ui.regeltest_list.setAcceptDrops(True)
         self.ui.actionAnsicht_zur_cksetzen.triggered.connect(lambda: self.ui.regeltest_creator.show())
+
+        self.ui.regeltest_list.model().rowsInserted.connect(lambda: self.ui.regeltest_stats.setText(
+            f"{self.ui.regeltest_list.count()} Fragen selektiert ({self.ui.regeltest_list.count()*2} Punkte)"))
+        self.ui.create_regeltest.clicked.connect(self.create_regeltest)
+
         self.ruletabs = {}  # type: Dict[int, QuestionTree]
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
 
@@ -67,3 +72,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ruletabs[rulegroup.id] = QuestionTree(tab)
             self.ui.tabWidget.addTab(tab, "")
             self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id} {rulegroup.name}")
+
+    def create_regeltest(self):
+        question_set = []
+        for signature in self.ui.regeltest_list.questions:
+            question_set += [(controller.get_question(signature), controller.get_multiplechoice_by_foreignkey(signature))]
+        settings = RegeltestSaveDialog(self)
+        result = settings.exec()
+        if result:
+            QApplication.setOverrideCursor(Qt.WaitCursor)
+            document_builder.create_document(question_set, settings.ui.output_edit.text(), settings.ui.title_edit.text()
+                                             , icon_path=settings.ui.icon_path_edit.text())
+            QApplication.restoreOverrideCursor()
