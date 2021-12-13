@@ -1,5 +1,5 @@
-from PySide6.QtCore import Qt, QModelIndex, QMimeData, QCoreApplication
-from PySide6.QtGui import QStandardItemModel
+from PySide6.QtCore import Qt, QModelIndex, QMimeData, QCoreApplication, QRect
+from PySide6.QtGui import QStandardItemModel, QDrag
 from PySide6.QtWidgets import QListWidget, QTreeWidgetItem, QTreeWidget, QVBoxLayout
 
 from src import controller
@@ -10,20 +10,25 @@ from src.question_editor import QuestionEditor
 class RegeltestCreator(QListWidget):
     def __init__(self, *args):
         super(RegeltestCreator, self).__init__(*args)
+        self.setAcceptDrops(True)
 
     def dropEvent(self, event):
-        if event.mimeData().hasFormat('application/x-qabstractitemmodeldatalist'):
-            data = event.mimeData()
-            source_item = QStandardItemModel()
-            source_item.dropMimeData(data, Qt.CopyAction, 0, 0, QModelIndex())
-            print(source_item.item(0, 0).text())
+        event.accept()
+        if event.mimeData().hasFormat('application/questionitems'):
+            data = event.mimeData().data('application/questionitems')
+            signatures = data.data().decode()
+            n = 32
+            signatures = [signatures[i:i + n] for i in range(0, len(signatures), n)]
+            print(signatures)
 
 
 class QuestionTree(QTreeWidget):
     def __init__(self, parent):
         super(QuestionTree, self).__init__(parent)
-        self.questions = {}
+        self.questions = {}  # type: Dict[QTreeWidgetItem, str]
         self.setDragEnabled(True)
+        self.setSelectionMode(QTreeWidget.MultiSelection)
+        self.setDefaultDropAction(Qt.CopyAction)
         self.itemDoubleClicked.connect(self._handle_double_click)
         self.setObjectName("tree_widget")
         vertical_layout = QVBoxLayout(parent)
@@ -65,19 +70,17 @@ class QuestionTree(QTreeWidget):
         item.setToolTip(3, question.answer_text)
 
     def startDrag(self, supportedActions:Qt.DropActions) -> None:
-        item = self.currentItem()
-        mimeData = QMimeData()
-        """
-        QByteArray ba;
-        ba = item->text().toLatin1().data();
-        mimeData.setData("application/x-item", ba);
-        QDrag * drag = new
-        QDrag(this);
-        drag->setMimeData(mimeData);
-        if (drag->exec(Qt::MoveAction) == Qt: :
-            MoveAction) {
-            delete
-        takeItem(row(item));
-        emit
-        itemDroped();
-        }"""
+        super(QuestionTree, self).startDrag(supportedActions)
+        indexes = self.selectionModel().selectedRows()
+        signatures = [list(self.questions.values())[index.row()] for index in indexes]
+        signatures = "".join(signatures).encode()
+        if not indexes:
+            return
+        mimeData = self.model().mimeData(indexes)
+        if not mimeData:
+            return
+        mimeData.setData('application/questionitems', bytearray(signatures))
+        drag = QDrag(self)
+        drag.setMimeData(mimeData)
+
+        drag.exec_(supportedActions, Qt.CopyAction)
