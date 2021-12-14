@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from . import controller, document_builder
 from .basic_config import app_version, app_author
 from .datatypes import Rulegroup, create_rulegroups, create_questions_and_mchoice
-from .regeltestcreator import QuestionTree, RegeltestSaveDialog
+from .regeltestcreator import QuestionTree, RegeltestSaveDialog, RegeltestSetup
 from .ui_mainwindow import Ui_MainWindow
 
 
@@ -50,10 +50,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.regeltest_list.model().rowsInserted.connect(self.rows_changed)
         self.ui.regeltest_list.model().rowsRemoved.connect(self.rows_changed)
 
+        self.ui.add_questionlist.clicked.connect(self.setup_regeltest)
+        self.ui.clear_questionlist.clicked.connect(self.clear_questionlist)
+
         self.ui.create_regeltest.clicked.connect(self.create_regeltest)
 
         self.ruletabs = {}  # type: Dict[int, QuestionTree]
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
+
+    def clear_questionlist(self):
+        self.ui.regeltest_list.clear()
+        self.ui.regeltest_list.questions.clear()
+        self.rows_changed()
 
     def rows_changed(self):
         self.ui.regeltest_stats.setText(
@@ -78,12 +86,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ui.tabWidget.addTab(tab, "")
             self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id} {rulegroup.name}")
 
+    def setup_regeltest(self):
+        regeltest_setup = RegeltestSetup(self)
+        if regeltest_setup.exec():
+            pass
+
     def create_regeltest(self):
         question_set = []
         for signature in self.ui.regeltest_list.questions:
             question_set += [
                 (controller.get_question(signature), controller.get_multiplechoice_by_foreignkey(signature))]
         settings = RegeltestSaveDialog(self)
+        settings.ui.title_edit.setFocus()
         result = settings.exec()
         output_path = settings.ui.output_edit.text()
         if result:
@@ -91,4 +105,4 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             document_builder.create_document(question_set, output_path, settings.ui.title_edit.text()
                                              , icon_path=settings.ui.icon_path_edit.text())
             QApplication.restoreOverrideCursor()
-        webbrowser.open_new(output_path)
+            webbrowser.open_new(output_path)

@@ -9,6 +9,7 @@ from src import controller
 from src.datatypes import Question
 from src.question_editor import QuestionEditor
 from src.ui_regeltest_save import Ui_RegeltestSave
+from src.ui_regeltest_setup import Ui_RegeltestSetup
 
 
 class RegeltestCreator(QListWidget):
@@ -134,3 +135,10 @@ class RegeltestSaveDialog(QDialog, Ui_RegeltestSave):
         if len(file_name) == 0 or file_name[0] == "":
             return
         self.ui.output_edit.setText(file_name[0])
+
+
+class RegeltestSetup(QDialog, Ui_RegeltestSetup):
+    def __init__(self, parent):
+        super(RegeltestSetup, self).__init__(parent)
+        self.ui = Ui_RegeltestSetup()
+        self.ui.setupUi(self)

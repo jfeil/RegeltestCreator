@@ -8,16 +8,21 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect,
-                            Qt)
-from PySide6.QtGui import (QAction)
-from PySide6.QtWidgets import (QDockWidget, QLabel,
-                               QMenu, QMenuBar,
-                               QPushButton, QStatusBar, QTabWidget,
-                               QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
+    QCursor, QFont, QFontDatabase, QGradient,
+    QIcon, QImage, QKeySequence, QLinearGradient,
+    QPainter, QPalette, QPixmap, QRadialGradient,
+    QTransform)
+from PySide6.QtWidgets import (QApplication, QDockWidget, QFrame, QGridLayout,
+    QHeaderView, QLabel, QListWidgetItem, QMainWindow,
+    QMenu, QMenuBar, QPushButton, QSizePolicy,
+    QStatusBar, QTabWidget, QTreeWidget, QTreeWidgetItem,
+    QVBoxLayout, QWidget)
 
 from .regeltestcreator import RegeltestCreator
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -84,6 +89,30 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_3.addWidget(self.regeltest_list)
 
+        self.widget = QWidget(self.dockWidgetContents)
+        self.widget.setObjectName(u"widget")
+        self.gridLayout = QGridLayout(self.widget)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.add_questionlist = QPushButton(self.widget)
+        self.add_questionlist.setObjectName(u"add_questionlist")
+
+        self.gridLayout.addWidget(self.add_questionlist, 0, 0, 1, 1)
+
+        self.clear_questionlist = QPushButton(self.widget)
+        self.clear_questionlist.setObjectName(u"clear_questionlist")
+
+        self.gridLayout.addWidget(self.clear_questionlist, 0, 1, 1, 1)
+
+
+        self.verticalLayout_3.addWidget(self.widget)
+
+        self.line = QFrame(self.dockWidgetContents)
+        self.line.setObjectName(u"line")
+        self.line.setFrameShape(QFrame.HLine)
+        self.line.setFrameShadow(QFrame.Sunken)
+
+        self.verticalLayout_3.addWidget(self.line)
+
         self.regeltest_stats = QLabel(self.dockWidgetContents)
         self.regeltest_stats.setObjectName(u"regeltest_stats")
 
@@ -111,21 +140,17 @@ class Ui_MainWindow(object):
 
         self.tabWidget.setCurrentIndex(0)
 
-        QMetaObject.connectSlotsByName(MainWindow)
 
+        QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        self.actionNeue_Kategorie_erstellen.setText(
-            QCoreApplication.translate("MainWindow", u"Neue Kategorie erstellen", None))
-        self.actionAnsicht_zur_cksetzen.setText(
-            QCoreApplication.translate("MainWindow", u"Ansicht zur\u00fccksetzen", None))
+        self.actionNeue_Kategorie_erstellen.setText(QCoreApplication.translate("MainWindow", u"Neue Kategorie erstellen", None))
+        self.actionAnsicht_zur_cksetzen.setText(QCoreApplication.translate("MainWindow", u"Ansicht zur\u00fccksetzen", None))
         self.actionRegeltest_l_schen.setText(QCoreApplication.translate("MainWindow", u"Regeltest l\u00f6schen", None))
-        self.actionRegeldatensatz_einladen.setText(
-            QCoreApplication.translate("MainWindow", u"Regeldatensatz einladen", None))
-        self.actionRegeldatensatz_exportieren.setText(
-            QCoreApplication.translate("MainWindow", u"Regeldatensatz exportieren", None))
+        self.actionRegeldatensatz_einladen.setText(QCoreApplication.translate("MainWindow", u"Regeldatensatz einladen", None))
+        self.actionRegeldatensatz_exportieren.setText(QCoreApplication.translate("MainWindow", u"Regeldatensatz exportieren", None))
         self.actionRegeltest_einrichten.setText(QCoreApplication.translate("MainWindow", u"Regeltest einrichten", None))
         ___qtreewidgetitem = self.treeWidget.headerItem()
         ___qtreewidgetitem.setText(4, QCoreApplication.translate("MainWindow", u"\u00c4nderungsdatum", None));
@@ -138,30 +163,24 @@ class Ui_MainWindow(object):
         self.treeWidget.setSortingEnabled(False)
         ___qtreewidgetitem1 = self.treeWidget.topLevelItem(0)
         ___qtreewidgetitem1.setText(4, QCoreApplication.translate("MainWindow", u"2020-06-22", None));
-        ___qtreewidgetitem1.setText(3, QCoreApplication.translate("MainWindow",
-                                                                  u"Ja. Alle Hilfsflaggen m\u00fcssen 1m au\u00dferhalb der Seitenlinie stehen.",
-                                                                  None));
+        ___qtreewidgetitem1.setText(3, QCoreApplication.translate("MainWindow", u"Ja. Alle Hilfsflaggen m\u00fcssen 1m au\u00dferhalb der Seitenlinie stehen.", None));
         ___qtreewidgetitem1.setText(2, QCoreApplication.translate("MainWindow", u"Ja", None));
-        ___qtreewidgetitem1.setText(1, QCoreApplication.translate("MainWindow",
-                                                                  u"Die Hilfsflaggen werden vom Platzwart auf die Seitenlinie gesteckt. Hat der SR Grund zur Beanstandung?",
-                                                                  None));
+        ___qtreewidgetitem1.setText(1, QCoreApplication.translate("MainWindow", u"Die Hilfsflaggen werden vom Platzwart auf die Seitenlinie gesteckt. Hat der SR Grund zur Beanstandung?", None));
         ___qtreewidgetitem1.setText(0, QCoreApplication.translate("MainWindow", u"01", None));
-        # if QT_CONFIG(tooltip)
-        ___qtreewidgetitem1.setToolTip(1, QCoreApplication.translate("MainWindow",
-                                                                     u"Die Hilfsflaggen werden vom Platzwart auf die Seitenlinie gesteckt. Hat der SR Grund zur Beanstandung?",
-                                                                     None));
-        # endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        ___qtreewidgetitem1.setToolTip(1, QCoreApplication.translate("MainWindow", u"Die Hilfsflaggen werden vom Platzwart auf die Seitenlinie gesteckt. Hat der SR Grund zur Beanstandung?", None));
+#endif // QT_CONFIG(tooltip)
         self.treeWidget.setSortingEnabled(__sortingEnabled)
 
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Test),
-                                  QCoreApplication.translate("MainWindow", u"01 Das Spielfeld", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2),
-                                  QCoreApplication.translate("MainWindow", u"02 Der Ball", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Test), QCoreApplication.translate("MainWindow", u"01 Das Spielfeld", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"02 Der Ball", None))
         self.menuDatei.setTitle(QCoreApplication.translate("MainWindow", u"Datei", None))
         self.menuAnsicht.setTitle(QCoreApplication.translate("MainWindow", u"Ansicht", None))
         self.menuBearbeiten.setTitle(QCoreApplication.translate("MainWindow", u"Bearbeiten", None))
         self.regeltest_creator.setWindowTitle(QCoreApplication.translate("MainWindow", u"Regeltest-Creator", None))
-        self.regeltest_stats.setText(
-            QCoreApplication.translate("MainWindow", u"0 Fragen ausgew\u00e4hlt (0 Punkte)", None))
+        self.add_questionlist.setText(QCoreApplication.translate("MainWindow", u"Einrichten", None))
+        self.clear_questionlist.setText(QCoreApplication.translate("MainWindow", u"Zur\u00fccksetzen", None))
+        self.regeltest_stats.setText(QCoreApplication.translate("MainWindow", u"0 Fragen ausgew\u00e4hlt (0 Punkte)", None))
         self.create_regeltest.setText(QCoreApplication.translate("MainWindow", u"Regeltest erstellen", None))
     # retranslateUi
+
