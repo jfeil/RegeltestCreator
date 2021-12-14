@@ -1,7 +1,7 @@
 from typing import Dict
 
-from PySide6.QtCore import Qt, QModelIndex, QMimeData, QCoreApplication, QRect
-from PySide6.QtGui import QStandardItemModel, QDrag, QShortcut, QKeySequence
+from PySide6.QtCore import Qt, QCoreApplication
+from PySide6.QtGui import QDrag, QShortcut, QKeySequence
 from PySide6.QtWidgets import QListWidget, QTreeWidgetItem, QTreeWidget, QVBoxLayout, QDialog, QFileDialog
 from PySide6.QtWidgets import QListWidgetItem
 
@@ -96,7 +96,7 @@ class QuestionTree(QTreeWidget):
         item.setToolTip(1, question.question)
         item.setToolTip(3, question.answer_text)
 
-    def startDrag(self, supportedActions:Qt.DropActions) -> None:
+    def startDrag(self, supportedActions: Qt.DropActions) -> None:
         super(QuestionTree, self).startDrag(supportedActions)
         indexes = self.selectionModel().selectedRows()
         signatures = [list(self.questions.values())[index.row()] for index in indexes]

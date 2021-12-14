@@ -1,7 +1,7 @@
 from typing import List
 
 from .database import db
-from .datatypes import Question, Rulegroup, MultipleChoice
+from .datatypes import Question, MultipleChoice
 from .main_application import MainWindow
 
 

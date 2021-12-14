@@ -8,17 +8,12 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-    QFont, QFontDatabase, QGradient, QIcon,
-    QImage, QKeySequence, QLinearGradient, QPainter,
-    QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QComboBox,
-    QDialog, QDialogButtonBox, QGridLayout, QHBoxLayout,
-    QLabel, QLineEdit, QSizePolicy, QTextEdit,
-    QWidget)
+from PySide6.QtCore import (QCoreApplication, QMetaObject, Qt)
+from PySide6.QtWidgets import (QCheckBox, QComboBox,
+                               QDialogButtonBox, QGridLayout, QHBoxLayout,
+                               QLabel, QLineEdit, QTextEdit,
+                               QWidget)
+
 
 class Ui_QuestionDialog(object):
     def setupUi(self, QuestionDialog):
@@ -118,7 +113,7 @@ class Ui_QuestionDialog(object):
         self.buttonBox = QDialogButtonBox(QuestionDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
         self.buttonBox.setCenterButtons(False)
 
         self.gridLayout.addWidget(self.buttonBox, 9, 0, 1, 2)
@@ -141,17 +136,15 @@ class Ui_QuestionDialog(object):
 
         self.horizontalLayout.addWidget(self.answer_edit)
 
-
         self.gridLayout.addWidget(self.widget, 5, 1, 1, 1)
-
 
         self.retranslateUi(QuestionDialog)
         self.buttonBox.rejected.connect(QuestionDialog.reject)
 
         self.mchoice_combo.setCurrentIndex(0)
 
-
         QMetaObject.connectSlotsByName(QuestionDialog)
+
     # setupUi
 
     def retranslateUi(self, QuestionDialog):
@@ -175,4 +168,3 @@ class Ui_QuestionDialog(object):
         self.mchoice_combo.setItemText(3, QCoreApplication.translate("QuestionDialog", u"C", None))
 
     # retranslateUi
-

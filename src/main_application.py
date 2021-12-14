@@ -81,7 +81,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def create_regeltest(self):
         question_set = []
         for signature in self.ui.regeltest_list.questions:
-            question_set += [(controller.get_question(signature), controller.get_multiplechoice_by_foreignkey(signature))]
+            question_set += [
+                (controller.get_question(signature), controller.get_multiplechoice_by_foreignkey(signature))]
         settings = RegeltestSaveDialog(self)
         result = settings.exec()
         output_path = settings.ui.output_edit.text()

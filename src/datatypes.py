@@ -37,6 +37,7 @@ class MultipleChoice(Base):
     def __repr__(self):
         return f"MultipleChoice(rule_signature={self.rule_signature!r}, index={self.index!r}, text={self.text!r})"
 
+
 """
 <LNR>
 10010
@@ -117,7 +118,8 @@ def create_questions_and_mchoice(rules_xml):
             # bullshit input..
             return []
 
-        assert len(mchoice_cleaned) == 3, f"More than three possible answers?! Wtf.. '{mchoice_}' v. '{mchoice_cleaned}'"
+        assert len(
+            mchoice_cleaned) == 3, f"More than three possible answers?! Wtf.. '{mchoice_}' v. '{mchoice_cleaned}'"
         # removes the a/b/c () in front :)
         return [re.sub(r"^[abc] *\( *\) *", "", i) for i in mchoice_cleaned]
 

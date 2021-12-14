@@ -1,13 +1,13 @@
 import os.path
-from typing import List, Tuple
 import random
+from typing import List, Tuple
 
 from PIL import Image
-from reportlab.lib.units import inch, mm
-from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.platypus import Flowable, SimpleDocTemplate, Spacer, Frame, Paragraph
+from reportlab.lib.units import inch, mm
 from reportlab.lib.utils import simpleSplit
+from reportlab.pdfgen.canvas import Canvas
+from reportlab.platypus import Flowable, SimpleDocTemplate, Spacer, Paragraph
 from reportlab.rl_config import defaultPageSize
 
 from src.datatypes import Question, MultipleChoice
@@ -90,7 +90,7 @@ class QuestionFlowable(Flowable):
 
     def draw(self):
         question = Paragraph(self.question_text, self.paragraph_style)
-        question.wrapOn(self.canv, self.width-10, self.height)
+        question.wrapOn(self.canv, self.width - 10, self.height)
         question.drawOn(self.canv, self.x, space_between + sum(self.height_answer) + space_bottom)
 
         if self.solution:
@@ -195,8 +195,8 @@ def create_document(question_set: List[Tuple[Question, List[MultipleChoice]]], f
 
     doc_solution = SimpleDocTemplate(solution_path)
 
-    story_solution = [TitleFlowable(title, icon_path, username="Muster Lösung", max_points=len(question_set)*2)]
-    story_question = [TitleFlowable(title, icon_path, max_points=len(question_set)*2)]
+    story_solution = [TitleFlowable(title, icon_path, username="Muster Lösung", max_points=len(question_set) * 2)]
+    story_question = [TitleFlowable(title, icon_path, max_points=len(question_set) * 2)]
 
     for i, (question, mchoice) in enumerate(question_set):
         random_state = random.getstate()

@@ -8,16 +8,11 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-    QFont, QFontDatabase, QGradient, QIcon,
-    QImage, QKeySequence, QLinearGradient, QPainter,
-    QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
-    QGridLayout, QHBoxLayout, QLabel, QLineEdit,
-    QPushButton, QSizePolicy, QSpacerItem, QWidget)
+from PySide6.QtCore import (QCoreApplication, QMetaObject, Qt)
+from PySide6.QtWidgets import (QDialogButtonBox,
+                               QGridLayout, QHBoxLayout, QLabel, QLineEdit,
+                               QPushButton, QSizePolicy, QSpacerItem, QWidget)
+
 
 class Ui_RegeltestSave(object):
     def setupUi(self, RegeltestSave):
@@ -55,13 +50,12 @@ class Ui_RegeltestSave(object):
 
         self.horizontalLayout.addWidget(self.icon_edit_button)
 
-
         self.gridLayout.addWidget(self.widget, 1, 1, 1, 1)
 
         self.buttonBox = QDialogButtonBox(RegeltestSave)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
 
         self.gridLayout.addWidget(self.buttonBox, 5, 0, 1, 2)
 
@@ -79,7 +73,6 @@ class Ui_RegeltestSave(object):
 
         self.horizontalLayout_2.addWidget(self.output_edit_button)
 
-
         self.gridLayout.addWidget(self.widget_2, 3, 1, 1, 1)
 
         self.title_edit = QLineEdit(RegeltestSave)
@@ -91,12 +84,12 @@ class Ui_RegeltestSave(object):
 
         self.gridLayout.addItem(self.verticalSpacer, 4, 0, 1, 1)
 
-
         self.retranslateUi(RegeltestSave)
         self.buttonBox.accepted.connect(RegeltestSave.accept)
         self.buttonBox.rejected.connect(RegeltestSave.reject)
 
         QMetaObject.connectSlotsByName(RegeltestSave)
+
     # setupUi
 
     def retranslateUi(self, RegeltestSave):
@@ -107,4 +100,3 @@ class Ui_RegeltestSave(object):
         self.icon_edit_button.setText(QCoreApplication.translate("RegeltestSave", u"FileDialog", None))
         self.output_edit_button.setText(QCoreApplication.translate("RegeltestSave", u"FileDialog", None))
     # retranslateUi
-

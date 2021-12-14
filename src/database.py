@@ -2,10 +2,11 @@ import logging
 import os
 from typing import List, Union
 
+from appdirs import AppDirs
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import Session
-from appdirs import AppDirs
-from .basic_config import app_name, app_author, app_version, database_name, Base
+
+from .basic_config import app_name, app_author, database_name, Base
 from .datatypes import Rulegroup, Question, MultipleChoice
 
 
