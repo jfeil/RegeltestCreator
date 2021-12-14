@@ -1,7 +1,7 @@
 from typing import Dict
 
 from PySide6.QtCore import Qt, QModelIndex, QMimeData, QCoreApplication, QRect
-from PySide6.QtGui import QStandardItemModel, QDrag
+from PySide6.QtGui import QStandardItemModel, QDrag, QShortcut, QKeySequence
 from PySide6.QtWidgets import QListWidget, QTreeWidgetItem, QTreeWidget, QVBoxLayout, QDialog, QFileDialog
 from PySide6.QtWidgets import QListWidgetItem
 
@@ -15,7 +15,11 @@ class RegeltestCreator(QListWidget):
     def __init__(self, *args):
         super(RegeltestCreator, self).__init__(*args)
         self.setAcceptDrops(True)
+        self.setSelectionMode(QListWidget.MultiSelection)
         self.questions = []  # type: List[str]
+        delete_shortcut = QShortcut(QKeySequence(Qt.Key_Delete), self)
+        delete_shortcut.activated.connect(self.remove_selected_items)
+        self
 
     def add_question(self, question: Question):
         if question.signature in self.questions:
@@ -24,6 +28,15 @@ class RegeltestCreator(QListWidget):
         item.setData(Qt.UserRole, question.signature)
         item.setText(question.question)
         self.questions.append(question.signature)
+
+    def remove_selected_items(self):
+        rows = [index.row() for index in self.selectedIndexes()[::-1]]
+        if not rows:
+            return
+        for index in rows:
+            self.questions.pop(index)
+            item = self.takeItem(index)
+            del item
 
     def dropEvent(self, event):
         event.accept()
