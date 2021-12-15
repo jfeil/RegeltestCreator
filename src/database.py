@@ -68,9 +68,14 @@ class DatabaseConnector:
             session.close()
         return rulegroup
 
-    def get_questions_by_foreignkey(self, rulegroup_id: int):
+    def get_questions_by_foreignkey(self, rulegroup_id: int, mchoice=None):
         with Session(self.engine, expire_on_commit=False) as session:
             questions = session.query(Question).where(Question.group_id == rulegroup_id)
+            if mchoice is not None:
+                if mchoice:
+                    questions = questions.where(Question.answer_index != -1)
+                else:
+                    questions = questions.where(Question.answer_index == -1)
             session.close()
         return questions
 

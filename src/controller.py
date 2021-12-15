@@ -1,7 +1,7 @@
-from typing import List
+from typing import List, Tuple
 
 from .database import db
-from .datatypes import Question, MultipleChoice
+from .datatypes import Question, MultipleChoice, Rulegroup
 from .main_application import MainWindow
 
 
@@ -35,6 +35,13 @@ def get_questions_by_foreignkey(rulegroup_index: int):
 
 def get_multiplechoice_by_foreignkey(question_signature: str):
     return db.get_multiplechoice_by_foreignkey(question_signature)
+
+
+def get_rulegroup_config() -> List[Tuple[Rulegroup, int, int]]:
+    rulegroups = db.get_rulegroups()
+    return [(rulegroup,
+             db.get_questions_by_foreignkey(rulegroup_id=rulegroup.id, mchoice=False).count(),
+             db.get_questions_by_foreignkey(rulegroup_id=rulegroup.id, mchoice=True).count()) for rulegroup in rulegroups]
 
 
 def fill_database(dataset):

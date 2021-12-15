@@ -1,15 +1,17 @@
-from typing import Dict
+from typing import Dict, List, Tuple
 
-from PySide6.QtCore import Qt, QCoreApplication
+from PySide6.QtCore import Qt, QCoreApplication, Signal
 from PySide6.QtGui import QDrag, QShortcut, QKeySequence
-from PySide6.QtWidgets import QListWidget, QTreeWidgetItem, QTreeWidget, QVBoxLayout, QDialog, QFileDialog
+from PySide6.QtWidgets import QListWidget, QTreeWidgetItem, QTreeWidget, QVBoxLayout, QDialog, QFileDialog, QWidget, \
+    QSpacerItem, QSizePolicy
 from PySide6.QtWidgets import QListWidgetItem
 
 from src import controller
-from src.datatypes import Question
+from src.datatypes import Question, Rulegroup
 from src.question_editor import QuestionEditor
 from src.ui_regeltest_save import Ui_RegeltestSave
 from src.ui_regeltest_setup import Ui_RegeltestSetup
+from src.ui_regeltest_setup_widget import Ui_RegeltestSetup_Rulegroup
 
 
 class RegeltestCreator(QListWidget):
@@ -137,8 +139,74 @@ class RegeltestSaveDialog(QDialog, Ui_RegeltestSave):
         self.ui.output_edit.setText(file_name[0])
 
 
+class RegeltestSetupRulegroup(QWidget, Ui_RegeltestSetup_Rulegroup):
+    changed = Signal()
+
+    def __init__(self, parent, rulegroup_parameters: Tuple[Rulegroup, int, int]):
+        super(RegeltestSetupRulegroup, self).__init__(parent)
+        self.ui = Ui_RegeltestSetup_Rulegroup()
+        self.ui.setupUi(self)
+
+        suffix = " out of %d"
+        self.rulegroup = rulegroup_parameters[0]
+        self.ui.label_rulegroup.setText(f"{rulegroup_parameters[0].id:02d} - {rulegroup_parameters[0].name}")
+        if rulegroup_parameters[1] == 0:
+            # No Textquestion
+            self.ui.spinBox_textquestion.setHidden(True)
+            self.ui.label_2.setHidden(True)
+            self.ui.horizontalLayout.removeItem(self.ui.right_spacer)
+        self.ui.spinBox_textquestion.setRange(0, rulegroup_parameters[1])
+        self.ui.spinBox_textquestion.setSuffix(suffix % rulegroup_parameters[1])
+        if rulegroup_parameters[2] == 0:
+            # No mchoice question
+            self.ui.spinBox_mchoice.setHidden(True)
+            self.ui.label_3.setHidden(True)
+            self.ui.horizontalLayout.removeItem(self.ui.left_spacer)
+        self.ui.spinBox_mchoice.setRange(0, rulegroup_parameters[2])
+        self.ui.spinBox_mchoice.setSuffix(suffix % rulegroup_parameters[2])
+
+        self.ui.spinBox_textquestion.valueChanged.connect(self.changed)
+        self.ui.spinBox_mchoice.valueChanged.connect(self.changed)
+
+    def get_parameters(self) -> Tuple[Rulegroup, int, int]:
+        return self.rulegroup, self.ui.spinBox_textquestion.value(), self.ui.spinBox_mchoice.value()
+
+
 class RegeltestSetup(QDialog, Ui_RegeltestSetup):
     def __init__(self, parent):
         super(RegeltestSetup, self).__init__(parent)
         self.ui = Ui_RegeltestSetup()
         self.ui.setupUi(self)
+        self.ui.tabWidget.clear()
+
+        self.rulegroup_widgets = []  # type: List[RegeltestSetupRulegroup]
+
+        parameters = controller.get_rulegroup_config()
+        divisor = 6
+        for i in range(len(parameters) // divisor):
+            self.create_tab(f"{i*divisor + 1:02d} - {(i+1)*divisor:02d}", parameters[i*divisor:(i+1)*divisor])
+        if len(parameters) // divisor != len(parameters) / divisor:
+            len_rest = len(parameters) % divisor
+            if len_rest == 1:
+                text = f"{len(parameters):02d}"
+            else:
+                text = f"{len(parameters) - len_rest:02d} - {len(parameters):02d}"
+            self.create_tab(text, parameters[len(parameters) - len_rest:])
+
+    def updated(self):
+        question_count = 0
+        for rulegroup_widget in self.rulegroup_widgets:
+            _, text, mchoice = rulegroup_widget.get_parameters()
+            question_count += text + mchoice
+        print(question_count)
+
+    def create_tab(self, title: str, parameters: List[Tuple[Rulegroup, int, int]]):
+        tab_widget = QWidget()
+        self.ui.tabWidget.addTab(tab_widget, title)
+        layout = QVBoxLayout(tab_widget)
+        for parameter in parameters:
+            rulegroup = RegeltestSetupRulegroup(tab_widget, parameter)
+            rulegroup.changed.connect(self.updated)
+            layout.addWidget(rulegroup)
+            self.rulegroup_widgets += [rulegroup]
+        layout.addItem(QSpacerItem(20, 257, QSizePolicy.Minimum, QSizePolicy.Expanding))
