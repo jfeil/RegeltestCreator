@@ -1,5 +1,7 @@
 from typing import List, Tuple
 
+from sqlalchemy import func
+
 from .database import db
 from .datatypes import Question, MultipleChoice, Rulegroup
 from .main_application import MainWindow
@@ -29,8 +31,9 @@ def get_rulegroup(rulegroup_index: int):
     return db.get_rulegroup_by_primarykey(rulegroup_index)
 
 
-def get_questions_by_foreignkey(rulegroup_index: int):
-    return db.get_questions_by_foreignkey(rulegroup_index)
+def get_questions_by_foreignkey(rulegroup_index: int, mchoice: bool = None, randomize: bool = False):
+    question_query = db.get_questions_by_foreignkey(rulegroup_index, mchoice, randomize)
+    return question_query
 
 
 def get_multiplechoice_by_foreignkey(question_signature: str):

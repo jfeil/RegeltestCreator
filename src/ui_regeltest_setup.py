@@ -16,9 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog,
-    QDialogButtonBox, QFrame, QHBoxLayout, QLabel,
-    QSizePolicy, QSpacerItem, QSpinBox, QTabWidget,
-    QVBoxLayout, QWidget)
+    QDialogButtonBox, QLabel, QSizePolicy, QSpacerItem,
+    QTabWidget, QVBoxLayout, QWidget)
 
 class Ui_RegeltestSetup(object):
     def setupUi(self, RegeltestSetup):
@@ -33,52 +32,6 @@ class Ui_RegeltestSetup(object):
         self.tab_2.setObjectName(u"tab_2")
         self.verticalLayout_4 = QVBoxLayout(self.tab_2)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.widget = QWidget(self.tab_2)
-        self.widget.setObjectName(u"widget")
-        self.verticalLayout_2 = QVBoxLayout(self.widget)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.label = QLabel(self.widget)
-        self.label.setObjectName(u"label")
-
-        self.verticalLayout_2.addWidget(self.label)
-
-        self.widget_2 = QWidget(self.widget)
-        self.widget_2.setObjectName(u"widget_2")
-        self.horizontalLayout = QHBoxLayout(self.widget_2)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.label_2 = QLabel(self.widget_2)
-        self.label_2.setObjectName(u"label_2")
-
-        self.horizontalLayout.addWidget(self.label_2)
-
-        self.spinBox = QSpinBox(self.widget_2)
-        self.spinBox.setObjectName(u"spinBox")
-
-        self.horizontalLayout.addWidget(self.spinBox)
-
-        self.label_3 = QLabel(self.widget_2)
-        self.label_3.setObjectName(u"label_3")
-
-        self.horizontalLayout.addWidget(self.label_3)
-
-        self.spinBox_2 = QSpinBox(self.widget_2)
-        self.spinBox_2.setObjectName(u"spinBox_2")
-
-        self.horizontalLayout.addWidget(self.spinBox_2)
-
-
-        self.verticalLayout_2.addWidget(self.widget_2)
-
-        self.line = QFrame(self.widget)
-        self.line.setObjectName(u"line")
-        self.line.setFrameShape(QFrame.HLine)
-        self.line.setFrameShadow(QFrame.Sunken)
-
-        self.verticalLayout_2.addWidget(self.line)
-
-
-        self.verticalLayout_4.addWidget(self.widget)
-
         self.verticalSpacer = QSpacerItem(20, 257, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_4.addItem(self.verticalSpacer)
@@ -87,15 +40,20 @@ class Ui_RegeltestSetup(object):
 
         self.verticalLayout.addWidget(self.tabWidget)
 
-        self.checkBox = QCheckBox(RegeltestSetup)
-        self.checkBox.setObjectName(u"checkBox")
+        self.statistics = QLabel(RegeltestSetup)
+        self.statistics.setObjectName(u"statistics")
 
-        self.verticalLayout.addWidget(self.checkBox)
+        self.verticalLayout.addWidget(self.statistics)
 
-        self.checkBox_2 = QCheckBox(RegeltestSetup)
-        self.checkBox_2.setObjectName(u"checkBox_2")
+        self.checkbox_rulegroups = QCheckBox(RegeltestSetup)
+        self.checkbox_rulegroups.setObjectName(u"checkbox_rulegroups")
 
-        self.verticalLayout.addWidget(self.checkBox_2)
+        self.verticalLayout.addWidget(self.checkbox_rulegroups)
+
+        self.checkbox_textmchoice = QCheckBox(RegeltestSetup)
+        self.checkbox_textmchoice.setObjectName(u"checkbox_textmchoice")
+
+        self.verticalLayout.addWidget(self.checkbox_textmchoice)
 
         self.widget_3 = QWidget(RegeltestSetup)
         self.widget_3.setObjectName(u"widget_3")
@@ -121,11 +79,9 @@ class Ui_RegeltestSetup(object):
 
     def retranslateUi(self, RegeltestSetup):
         RegeltestSetup.setWindowTitle(QCoreApplication.translate("RegeltestSetup", u"Setup Regeltest", None))
-        self.label.setText(QCoreApplication.translate("RegeltestSetup", u"01 - Das Spielfeld", None))
-        self.label_2.setText(QCoreApplication.translate("RegeltestSetup", u"Textquestion", None))
-        self.label_3.setText(QCoreApplication.translate("RegeltestSetup", u"Multiple choice", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("RegeltestSetup", u"Tab 2", None))
-        self.checkBox.setText(QCoreApplication.translate("RegeltestSetup", u"Separate rulegroups", None))
-        self.checkBox_2.setText(QCoreApplication.translate("RegeltestSetup", u"Separate textquestions and multiple choice questions", None))
+        self.statistics.setText("")
+        self.checkbox_rulegroups.setText(QCoreApplication.translate("RegeltestSetup", u"Shuffle rulegroups", None))
+        self.checkbox_textmchoice.setText(QCoreApplication.translate("RegeltestSetup", u"Mix multiple choice and text questions within rulegroup", None))
     # retranslateUi
 

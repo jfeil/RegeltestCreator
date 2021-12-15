@@ -89,7 +89,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def setup_regeltest(self):
         regeltest_setup = RegeltestSetup(self)
         if regeltest_setup.exec():
-            pass
+            for question in regeltest_setup.collect_questions():
+                self.ui.regeltest_list.add_question(question)
 
     def create_regeltest(self):
         question_set = []

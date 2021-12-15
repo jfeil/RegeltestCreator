@@ -1,3 +1,4 @@
+import random
 from typing import Dict, List, Tuple
 
 from PySide6.QtCore import Qt, QCoreApplication, Signal
@@ -182,7 +183,7 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
         self.rulegroup_widgets = []  # type: List[RegeltestSetupRulegroup]
 
         parameters = controller.get_rulegroup_config()
-        divisor = 6
+        divisor = 5
         for i in range(len(parameters) // divisor):
             self.create_tab(f"{i*divisor + 1:02d} - {(i+1)*divisor:02d}", parameters[i*divisor:(i+1)*divisor])
         if len(parameters) // divisor != len(parameters) / divisor:
@@ -192,13 +193,14 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
             else:
                 text = f"{len(parameters) - len_rest:02d} - {len(parameters):02d}"
             self.create_tab(text, parameters[len(parameters) - len_rest:])
+        self.updated()
 
     def updated(self):
         question_count = 0
         for rulegroup_widget in self.rulegroup_widgets:
             _, text, mchoice = rulegroup_widget.get_parameters()
             question_count += text + mchoice
-        print(question_count)
+        self.ui.statistics.setText(f"{question_count} questions currently selected ({question_count*2} points)")
 
     def create_tab(self, title: str, parameters: List[Tuple[Rulegroup, int, int]]):
         tab_widget = QWidget()
@@ -210,3 +212,21 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
             layout.addWidget(rulegroup)
             self.rulegroup_widgets += [rulegroup]
         layout.addItem(QSpacerItem(20, 257, QSizePolicy.Minimum, QSizePolicy.Expanding))
+
+    def collect_questions(self):
+        questions = []
+        for rulegroup_widget in self.rulegroup_widgets:
+            rulegroup, text, mchoice = rulegroup_widget.get_parameters()
+            text_questions = []
+            mchoice_questions = []
+            if text:
+                text_questions = controller.get_questions_by_foreignkey(rulegroup.id, mchoice=False, randomize=True)[0:text]
+            if mchoice:
+                mchoice_questions = controller.get_questions_by_foreignkey(rulegroup.id, mchoice=True, randomize=True)[0:mchoice]
+            text_questions += mchoice_questions
+            if self.ui.checkbox_textmchoice.isChecked():
+                random.shuffle(text_questions)
+            questions += text_questions
+        if self.ui.checkbox_rulegroups.isChecked():
+            random.shuffle(questions)
+        return questions

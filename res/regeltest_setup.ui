@@ -39,16 +39,23 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="checkBox">
+    <widget class="QLabel" name="statistics">
      <property name="text">
-      <string>Separate rulegroups</string>
+      <string/>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="checkBox_2">
+    <widget class="QCheckBox" name="checkbox_rulegroups">
      <property name="text">
-      <string>Separate textquestions and multiple choice questions</string>
+      <string>Shuffle rulegroups</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkbox_textmchoice">
+     <property name="text">
+      <string>Mix multiple choice and text questions within rulegroup</string>
      </property>
     </widget>
    </item>

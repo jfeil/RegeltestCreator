@@ -3,7 +3,7 @@ import os
 from typing import List, Union
 
 from appdirs import AppDirs
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, inspect, func
 from sqlalchemy.orm import Session
 
 from .basic_config import app_name, app_author, database_name, Base
@@ -68,7 +68,7 @@ class DatabaseConnector:
             session.close()
         return rulegroup
 
-    def get_questions_by_foreignkey(self, rulegroup_id: int, mchoice=None):
+    def get_questions_by_foreignkey(self, rulegroup_id: int, mchoice=None, randomize: bool = False):
         with Session(self.engine, expire_on_commit=False) as session:
             questions = session.query(Question).where(Question.group_id == rulegroup_id)
             if mchoice is not None:
@@ -76,6 +76,8 @@ class DatabaseConnector:
                     questions = questions.where(Question.answer_index != -1)
                 else:
                     questions = questions.where(Question.answer_index == -1)
+            if randomize:
+                questions = questions.order_by(func.random())
             session.close()
         return questions
 
