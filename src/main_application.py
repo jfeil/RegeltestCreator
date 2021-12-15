@@ -84,7 +84,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             tab = QWidget()
             self.ruletabs[rulegroup.id] = QuestionTree(tab)
             self.ui.tabWidget.addTab(tab, "")
-            self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id} {rulegroup.name}")
+            self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id:02d} {rulegroup.name}")
 
     def setup_regeltest(self):
         regeltest_setup = RegeltestSetup(self)
