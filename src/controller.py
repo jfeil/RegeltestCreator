@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from sqlalchemy import func
 
@@ -17,6 +17,10 @@ def get_all_rulegroups():
 
 def get_all_questions():
     return db.get_question_multiplechoice()
+
+
+def delete(item: Union[Rulegroup, Question]):
+    db.delete(item)
 
 
 def populate_tabwidget(mainwindow: MainWindow):

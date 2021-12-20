@@ -57,8 +57,6 @@ class DatabaseConnector:
     def update_question_set(self, question: Question, mchoice: List[MultipleChoice]):
         with Session(self.engine) as session:
             session.add(question)
-            # for element in mchoice:
-            #     element.rule_signature = question.signature
             question.multiple_choice = mchoice
             session.commit()
             session.close()
@@ -101,8 +99,14 @@ class DatabaseConnector:
 
         with Session(self.engine) as session:
             session.add_all(dataset)
-            session.flush()
             session.commit()
+            session.close()
+
+    def delete(self, item: Union[Rulegroup, Question]):
+        with Session(self.engine) as session:
+            session.delete(item)
+            session.commit()
+            session.close()
 
 
 db = DatabaseConnector()

@@ -2,8 +2,7 @@ import webbrowser
 from typing import List, Dict
 
 from PySide6.QtCore import QCoreApplication, Qt
-from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog, \
-    QApplication
+from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog, QApplication, QMessageBox
 from bs4 import BeautifulSoup
 
 from . import controller, document_builder
@@ -66,6 +65,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                        , None))
         self.ui.actionRegeldatensatz_einladen.triggered.connect(self.load_dataset)
         self.ui.tabWidget.clear()
+        self.ui.tabWidget.setTabsClosable(True)
+        self.ui.tabWidget.tabCloseRequested.connect(self.delete_rulegroup)
+
         self.ui.regeltest_list.setAcceptDrops(True)
         self.ui.actionAnsicht_zur_cksetzen.triggered.connect(lambda: self.ui.regeltest_creator.show())
         self.ui.actionRegeldatensatz_exportieren.triggered.connect(lambda: save_dataset(self))
@@ -85,6 +87,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.regeltest_list.clear()
         self.ui.regeltest_list.questions.clear()
         self.rows_changed()
+
+    def delete_rulegroup(self, index_tabwidget: int):
+        msgBox = QMessageBox()
+        msgBox.setText("Delete Rulegroup.")
+        msgBox.setInformativeText("Do you really want to delete this rulegroup? There is no way back!")
+        msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+        msgBox.setDefaultButton(QMessageBox.Cancel)
+        ret = msgBox.exec()
+        if ret:
+            index_rulegroup = list(self.ruletabs.keys())[index_tabwidget]
+            self.ruletabs.pop(index_rulegroup)
+            controller.delete(controller.get_rulegroup(index_rulegroup))
+            self.ui.tabWidget.removeTab(index_tabwidget)
 
     def rows_changed(self):
         self.ui.regeltest_stats.setText(

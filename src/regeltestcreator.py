@@ -185,13 +185,13 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
         parameters = controller.get_rulegroup_config()
         divisor = 5
         for i in range(len(parameters) // divisor):
-            self.create_tab(f"{i*divisor + 1:02d} - {(i+1)*divisor:02d}", parameters[i*divisor:(i+1)*divisor])
+            self.create_tab(f"{parameters[i*divisor + 1][0].id:02d} - {parameters[(i+1)*divisor-1][0].id:02d}", parameters[i*divisor:(i+1)*divisor])
         if len(parameters) // divisor != len(parameters) / divisor:
             len_rest = len(parameters) % divisor
             if len_rest == 1:
-                text = f"{len(parameters):02d}"
+                text = f"{parameters[-1][0].id:02d}"
             else:
-                text = f"{len(parameters) - len_rest:02d} - {len(parameters):02d}"
+                text = f"{parameters[len(parameters)-len_rest][0].id:02d} - {parameters[-1][0].id:02d}"
             self.create_tab(text, parameters[len(parameters) - len_rest:])
         self.updated()
 

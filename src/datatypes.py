@@ -19,7 +19,7 @@ class Rulegroup(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
 
-    children = relationship("Question", back_populates="rulegroup")
+    children = relationship("Question", back_populates="rulegroup", cascade="all, delete-orphan")
 
     def export(self):
         return f"<GRUPPENNR>\n{self.id:02d}\n</GRUPPENNR>\n<GRUPPENTEXT>\n{self.name}\n</GRUPPENTEXT>\n"
