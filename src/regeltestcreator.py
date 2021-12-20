@@ -1,10 +1,11 @@
 import random
 from typing import Dict, List, Tuple
 
-from PySide6.QtCore import Qt, QCoreApplication, Signal
-from PySide6.QtGui import QDrag, QShortcut, QKeySequence
+from IPython.core.inputtransformer import tr
+from PySide6.QtCore import Qt, QCoreApplication, Signal, QSize, QPoint
+from PySide6.QtGui import QDrag, QShortcut, QKeySequence, QAction, QIcon
 from PySide6.QtWidgets import QListWidget, QTreeWidgetItem, QTreeWidget, QVBoxLayout, QDialog, QFileDialog, QWidget, \
-    QSpacerItem, QSizePolicy
+    QSpacerItem, QSizePolicy, QMenu, QMessageBox
 from PySide6.QtWidgets import QListWidgetItem
 
 from src import controller
@@ -61,6 +62,8 @@ class QuestionTree(QTreeWidget):
         self.setSelectionMode(QTreeWidget.MultiSelection)
         self.setDefaultDropAction(Qt.CopyAction)
         self.itemDoubleClicked.connect(self._handle_double_click)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.prepare_menu)
         self.setObjectName("tree_widget")
         vertical_layout = QVBoxLayout(parent)
         ___qtreewidgetitem = self.headerItem()
@@ -84,6 +87,48 @@ class QuestionTree(QTreeWidget):
     def add_question(self, question: Question):
         item = QTreeWidgetItem(self)
         self._set_question(item, question)
+
+    def prepare_menu(self, pos: QPoint):
+        def delete_selection(selected_items):
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle("Delete Questions.")
+            msgBox.setText("Delete Questions.")
+            if len(selected_items) == 1:
+                text = f"Do you really want to delete this question? There is no way back!"
+            else:
+                text = f"Do you really want to delete these {len(selected_items)} questions? There is no way back!"
+            msgBox.setInformativeText(text)
+            msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+            msgBox.setDefaultButton(QMessageBox.Cancel)
+            ret = msgBox.exec()
+            if ret == QMessageBox.Yes:
+                for item in selected_items:
+                    controller.delete(controller.get_question(self.questions[item]))
+                    self.questions.pop(item)
+                    self.takeTopLevelItem(self.indexOfTopLevelItem(item))
+
+        items = self.selectedItems()
+        actions = []
+        if not items:
+            items = [self.itemAt(pos)]
+            text = "Delete this question"
+            if not items:
+                return
+        else:
+            clearSelAct = QAction(self)
+            clearSelAct.setText("Clear selection")
+            clearSelAct.triggered.connect(lambda: self.clearSelection())
+            actions += [clearSelAct]
+            text = "Delete current selection"
+
+        deleteAct = QAction(self)
+        deleteAct.setText(text)
+        deleteAct.triggered.connect(lambda: delete_selection(items))
+        actions += [deleteAct]
+
+        menu = QMenu(self)
+        menu.addActions(actions)
+        menu.exec(self.mapToGlobal(pos))
 
     def _set_question(self, item: QTreeWidgetItem, question: Question):
         def bool_to_char(value: bool):

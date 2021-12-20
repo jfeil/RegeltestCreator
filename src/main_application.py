@@ -90,12 +90,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def delete_rulegroup(self, index_tabwidget: int):
         msgBox = QMessageBox()
+        msgBox.setWindowTitle("Delete Rulegroup.")
         msgBox.setText("Delete Rulegroup.")
         msgBox.setInformativeText("Do you really want to delete this rulegroup? There is no way back!")
         msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         msgBox.setDefaultButton(QMessageBox.Cancel)
         ret = msgBox.exec()
-        if ret:
+        if ret == QMessageBox.Yes:
             index_rulegroup = list(self.ruletabs.keys())[index_tabwidget]
             self.ruletabs.pop(index_rulegroup)
             controller.delete(controller.get_rulegroup(index_rulegroup))
