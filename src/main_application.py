@@ -34,6 +34,28 @@ def load_dataset(parent: QWidget, reset_cursor=True) -> bool:
     return True
 
 
+def save_dataset(parent: QWidget):
+    file_name = QFileDialog.getSaveFileName(parent, caption="Save Questionfile", filter="DFB Regeldaten (*.xml)")
+    if len(file_name) == 0 or file_name[0] == "":
+        return
+    QApplication.setOverrideCursor(Qt.WaitCursor)
+    dataset = "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?>\n\
+<REGELTEST>\n"
+    for rulegroup in controller.get_all_rulegroups():
+        dataset += rulegroup.export()
+    for question in controller.get_all_questions():
+        question_set = question[0].export()
+        dataset += question_set[0]
+        if question[1]:
+            for mchoice in question[1]:
+                dataset += mchoice.export()
+        dataset += question_set[1]
+    dataset += "</REGELTEST>"
+    with open(file_name[0], "w+") as file:
+        file.writelines(dataset)
+    QApplication.restoreOverrideCursor()
+
+
 class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, parent=None):
@@ -46,6 +68,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.tabWidget.clear()
         self.ui.regeltest_list.setAcceptDrops(True)
         self.ui.actionAnsicht_zur_cksetzen.triggered.connect(lambda: self.ui.regeltest_creator.show())
+        self.ui.actionRegeldatensatz_exportieren.triggered.connect(lambda: save_dataset(self))
 
         self.ui.regeltest_list.model().rowsInserted.connect(self.rows_changed)
         self.ui.regeltest_list.model().rowsRemoved.connect(self.rows_changed)

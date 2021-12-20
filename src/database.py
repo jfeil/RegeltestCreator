@@ -47,6 +47,13 @@ class DatabaseConnector:
             session.close()
         return rulegroups
 
+    def get_question_multiplechoice(self):
+        return_dict = []
+        with Session(self.engine, expire_on_commit=False) as session:
+            for question in session.query(Question):
+                return_dict += [(question, session.query(MultipleChoice).where(MultipleChoice.rule == question).all())]
+        return return_dict
+
     def update_question_set(self, question: Question, mchoice: List[MultipleChoice]):
         with Session(self.engine) as session:
             session.add(question)

@@ -11,6 +11,14 @@ def clear_database():
     db.clear_database()
 
 
+def get_all_rulegroups():
+    return db.get_rulegroups()
+
+
+def get_all_questions():
+    return db.get_question_multiplechoice()
+
+
 def populate_tabwidget(mainwindow: MainWindow):
     mainwindow.create_ruletabs(db.get_rulegroups())
 

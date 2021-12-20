@@ -2,7 +2,7 @@ import logging
 import re
 import uuid
 from datetime import datetime
-from typing import List
+from typing import List, Tuple
 
 import bs4
 from sqlalchemy import Column, Integer, String, ForeignKey, Date
@@ -21,6 +21,9 @@ class Rulegroup(Base):
 
     children = relationship("Question", back_populates="rulegroup")
 
+    def export(self):
+        return f"<GRUPPENNR>\n{self.id:02d}\n</GRUPPENNR>\n<GRUPPENTEXT>\n{self.name}\n</GRUPPENTEXT>\n"
+
     def __repr__(self):
         return f"Rulegroup(id={self.id!r}, name={self.name!r})"
 
@@ -34,11 +37,15 @@ class MultipleChoice(Base):
 
     rule = relationship("Question", back_populates="multiple_choice")
 
+    def export(self):
+        return f"{'abc'[self.index]} ( ) {self.text}\n"
+
     def __repr__(self):
         return f"MultipleChoice(rule_signature={self.rule_signature!r}, index={self.index!r}, text={self.text!r})"
 
 
 """
+<REGELSATZ>
 <LNR>
 10010
 </LNR>
@@ -93,6 +100,16 @@ class Question(Base):
     created = Column(Date)
     last_edited = Column(Date)
     signature = Column(String, default=uuid.uuid4().hex, primary_key=True)
+
+    def export(self) -> Tuple[str, str]:
+        if self.answer_index != -1:
+            answer_text = f"({'abc'[self.answer_index]})  {self.answer_text}"
+        else:
+            answer_text = self.answer_text
+        return (f"<REGELSATZ>\n<LNR>\n{self.group_id:02d}{self.rule_id:03d}\n</LNR>\n<FRAGE>\n{self.question}\n"
+                f"</FRAGE>\n<MCHOICE>\n",
+                f"</MCHOICE>\n<ANTWORT>\n{answer_text}\n</ANTWORT>\n<ERST>\n{self.created}\n</ERST>\n<AEND>\n"
+                f"{self.last_edited}\n</AEND>\n<SIGNATUR>\n{self.signature}\n</SIGNATUR>\n</REGELSATZ>\n")
 
     def __repr__(self):
         return f"Question(text={self.question!r}, answer={self.answer_index!r}:{self.answer_text!r}" \
