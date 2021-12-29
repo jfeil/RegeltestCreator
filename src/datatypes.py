@@ -1,14 +1,14 @@
 import logging
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, date
 from typing import List, Tuple
 
 import bs4
 from sqlalchemy import Column, Integer, String, ForeignKey, Date
 from sqlalchemy.orm import relationship
 
-from .basic_config import Base
+from .basic_config import Base, EagerDefault
 
 default_date = datetime(1970, 1, 1)
 
@@ -16,7 +16,7 @@ default_date = datetime(1970, 1, 1)
 class Rulegroup(Base):
     __tablename__ = 'rulegroup'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String)
 
     children = relationship("Question", back_populates="rulegroup", cascade="all, delete-orphan")
@@ -93,12 +93,12 @@ class Question(Base):
     multiple_choice = relationship("MultipleChoice", back_populates="rule", cascade="all, delete-orphan")
 
     group_id = Column(Integer, ForeignKey('rulegroup.id'))
-    rule_id = Column(Integer, autoincrement=True)
+    rule_id = Column(Integer, server_default='SELECT MAX(1, MAX(rule_id)+1) FROM question')
     question = Column(String)
-    answer_index = Column(Integer)  # for no multiple choice
+    answer_index = Column(Integer, default=EagerDefault(-1))  # for no multiple choice
     answer_text = Column(String)
-    created = Column(Date)
-    last_edited = Column(Date)
+    created = Column(Date, default=date.today())
+    last_edited = Column(Date, default=date.today())
     signature = Column(String, default=uuid.uuid4().hex, primary_key=True)
 
     def export(self) -> Tuple[str, str]:

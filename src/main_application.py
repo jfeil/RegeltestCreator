@@ -121,7 +121,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def create_ruletabs(self, rulegroups: List[Rulegroup]):
         for rulegroup in rulegroups:
             tab = QWidget()
-            self.ruletabs[rulegroup.id] = QuestionTree(tab)
+            self.ruletabs[rulegroup.id] = QuestionTree(tab, rulegroup_id=rulegroup.id)
             self.ui.tabWidget.addTab(tab, "")
             self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id:02d} {rulegroup.name}")
 

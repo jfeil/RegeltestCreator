@@ -1,9 +1,8 @@
 import random
 from typing import Dict, List, Tuple
 
-from IPython.core.inputtransformer import tr
-from PySide6.QtCore import Qt, QCoreApplication, Signal, QSize, QPoint
-from PySide6.QtGui import QDrag, QShortcut, QKeySequence, QAction, QIcon
+from PySide6.QtCore import Qt, QCoreApplication, Signal, QPoint
+from PySide6.QtGui import QDrag, QShortcut, QKeySequence, QAction
 from PySide6.QtWidgets import QListWidget, QTreeWidgetItem, QTreeWidget, QVBoxLayout, QDialog, QFileDialog, QWidget, \
     QSpacerItem, QSizePolicy, QMenu, QMessageBox
 from PySide6.QtWidgets import QListWidgetItem
@@ -55,8 +54,9 @@ class RegeltestCreator(QListWidget):
 
 
 class QuestionTree(QTreeWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, rulegroup_id):
         super(QuestionTree, self).__init__(parent)
+        self.rulegroup_id = rulegroup_id
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
         self.setDragEnabled(True)
         self.setSelectionMode(QTreeWidget.MultiSelection)
@@ -76,9 +76,19 @@ class QuestionTree(QTreeWidget):
 
     def _handle_double_click(self, item):
         editor = QuestionEditor(controller.get_question(self.questions[item]))
-        if editor.exec() == 1:
+        if editor.exec() == QDialog.Accepted:
             # was updated
-            self._set_question(item, controller.get_question(self.questions[item]))
+            signature = controller.update_question_set(editor.question, editor.mchoice)
+            self._set_question(item, controller.get_question(signature))
+
+    def add_new_question(self):
+        new_question = Question()
+        new_question.rulegroup = controller.get_rulegroup(self.rulegroup_id)
+        new_question.rule_id = controller.get_question_id(self.rulegroup_id)
+        editor = QuestionEditor(new_question)
+        if editor.exec() == QDialog.Accepted:
+            signature = controller.update_question_set(editor.question, editor.mchoice)
+            self.add_question(controller.get_question(signature))
 
     def refresh_questions(self):
         for item, question_signature in self.questions.items():
@@ -107,13 +117,14 @@ class QuestionTree(QTreeWidget):
                     self.questions.pop(item)
                     self.takeTopLevelItem(self.indexOfTopLevelItem(item))
 
+        delete_bool = True
         items = self.selectedItems()
         actions = []
         if not items:
             items = [self.itemAt(pos)]
             text = "Delete this question"
-            if not items:
-                return
+            if items[0] is None:
+                delete_bool = False
         else:
             clearSelAct = QAction(self)
             clearSelAct.setText("Clear selection")
@@ -121,10 +132,16 @@ class QuestionTree(QTreeWidget):
             actions += [clearSelAct]
             text = "Delete current selection"
 
-        deleteAct = QAction(self)
-        deleteAct.setText(text)
-        deleteAct.triggered.connect(lambda: delete_selection(items))
-        actions += [deleteAct]
+        if delete_bool:
+            deleteAct = QAction(self)
+            deleteAct.setText(text)
+            deleteAct.triggered.connect(lambda: delete_selection(items))
+            actions += [deleteAct]
+
+        create_action = QAction(self)
+        create_action.setText("Add new question")
+        create_action.triggered.connect(self.add_new_question)
+        actions += [create_action]
 
         menu = QMenu(self)
         menu.addActions(actions)

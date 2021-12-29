@@ -27,6 +27,7 @@ class QuestionEditor(QDialog, Ui_QuestionDialog):
         self.ui.setupUi(self)
         self.setWindowTitle("Frage bearbeiten")
         self.question = question
+        self.mchoice = []
         if question.answer_index == -1:
             mchoice = False
             index = 0
@@ -67,13 +68,12 @@ class QuestionEditor(QDialog, Ui_QuestionDialog):
     def save_changes(self):
         self.question.question = self.ui.question_edit.toPlainText()
         self.question.answer_text = self.ui.answer_edit.toPlainText()
-        mchoice = []
         if checkstate_2_bool(self.ui.checkBox.checkState()):
             # activated
             self.question.answer_index = self.ui.mchoice_combo.currentIndex() - 1
-            mchoice += [MultipleChoice(index=0, text=self.ui.option_1_edit.text())]
-            mchoice += [MultipleChoice(index=1, text=self.ui.option_2_edit.text())]
-            mchoice += [MultipleChoice(index=2, text=self.ui.option_3_edit.text())]
+            self.mchoice += [MultipleChoice(index=0, text=self.ui.option_1_edit.text())]
+            self.mchoice += [MultipleChoice(index=1, text=self.ui.option_2_edit.text())]
+            self.mchoice += [MultipleChoice(index=2, text=self.ui.option_3_edit.text())]
         else:
             self.question.answer_index = -1
         self.question.last_edited = datetime.date.today()
@@ -81,5 +81,4 @@ class QuestionEditor(QDialog, Ui_QuestionDialog):
             # wrong! Don't close!
             pass
         else:
-            controller.update_question_set(self.question, mchoice)
             self.accept()

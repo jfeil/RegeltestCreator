@@ -3,7 +3,7 @@ import os
 from typing import List, Union
 
 from appdirs import AppDirs
-from sqlalchemy import create_engine, inspect, func
+from sqlalchemy import create_engine, inspect, func, select
 from sqlalchemy.orm import Session
 
 from .basic_config import app_name, app_author, database_name, Base
@@ -23,7 +23,7 @@ class DatabaseConnector:
             self.initialized = False
         elif not os.path.isfile(database_path):
             self.initialized = False
-        self.engine = create_engine(f"sqlite+pysqlite:///{database_path}", future=True)
+        self.engine = create_engine(f"sqlite+pysqlite:///{database_path}?check_same_thread=False", future=True)
         if not inspect(self.engine).has_table(Rulegroup.__tablename__) or \
                 not inspect(self.engine).has_table(Question.__tablename__) or \
                 not inspect(self.engine).has_table(MultipleChoice.__tablename__):
@@ -59,7 +59,9 @@ class DatabaseConnector:
             session.add(question)
             question.multiple_choice = mchoice
             session.commit()
+            signature = question.signature
             session.close()
+        return signature
 
     def get_question_by_primarykey(self, signature: str):
         with Session(self.engine, expire_on_commit=False) as session:
@@ -107,6 +109,13 @@ class DatabaseConnector:
             session.delete(item)
             session.commit()
             session.close()
+
+    def get_question_id(self, rulegroup_index: int):
+        with Session(self.engine) as session:
+            stmt = select(Question.rule_id).where(Question.group_id.like(rulegroup_index))
+            return_val = max(session.execute(stmt))[0] + 1
+            session.close()
+        return return_val
 
 
 db = DatabaseConnector()
