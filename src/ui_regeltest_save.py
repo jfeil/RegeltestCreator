@@ -8,22 +8,17 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-    QFont, QFontDatabase, QGradient, QIcon,
-    QImage, QKeySequence, QLinearGradient, QPainter,
-    QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
-    QGridLayout, QHBoxLayout, QLabel, QLineEdit,
-    QPushButton, QSizePolicy, QSpacerItem, QWidget)
+from PySide6.QtCore import (QCoreApplication, QMetaObject, Qt)
+from PySide6.QtWidgets import (QDialogButtonBox,
+                               QGridLayout, QHBoxLayout, QLabel, QLineEdit,
+                               QPushButton, QSizePolicy, QSpacerItem, QWidget)
+
 
 class Ui_RegeltestSave(object):
     def setupUi(self, RegeltestSave):
         if not RegeltestSave.objectName():
             RegeltestSave.setObjectName(u"RegeltestSave")
-        RegeltestSave.resize(470, 171)
+        RegeltestSave.resize(470, 189)
         RegeltestSave.setFocusPolicy(Qt.NoFocus)
         self.gridLayout = QGridLayout(RegeltestSave)
         self.gridLayout.setObjectName(u"gridLayout")
@@ -117,9 +112,9 @@ class Ui_RegeltestSave(object):
     def retranslateUi(self, RegeltestSave):
         RegeltestSave.setWindowTitle(QCoreApplication.translate("RegeltestSave", u"Save Regeltest", None))
         self.label.setText(QCoreApplication.translate("RegeltestSave", u"Titel", None))
-        self.label_3.setText(QCoreApplication.translate("RegeltestSave", u"Output", None))
-        self.icon_edit_button.setText(QCoreApplication.translate("RegeltestSave", u"Select icon", None))
-        self.label_2.setText(QCoreApplication.translate("RegeltestSave", u"Icon pfad", None))
-        self.output_edit_button.setText(QCoreApplication.translate("RegeltestSave", u"Save as", None))
+        self.label_3.setText(QCoreApplication.translate("RegeltestSave", u"Speicherort", None))
+        self.icon_edit_button.setText(QCoreApplication.translate("RegeltestSave", u"Ausw\u00e4hlen", None))
+        self.label_2.setText(QCoreApplication.translate("RegeltestSave", u"Iconpfad", None))
+        self.output_edit_button.setText(QCoreApplication.translate("RegeltestSave", u"Ausw\u00e4hlen", None))
     # retranslateUi
 

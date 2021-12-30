@@ -43,8 +43,8 @@ def get_rulegroup(rulegroup_index: int):
     return db.get_rulegroup_by_primarykey(rulegroup_index)
 
 
-def get_question_id(rulegroup_index: int):
-    return db.get_question_id(rulegroup_index)
+def get_new_question_id(rulegroup_index: int):
+    return db.get_new_question_id(rulegroup_index)
 
 
 def get_questions_by_foreignkey(rulegroup_index: int, mchoice: bool = None, randomize: bool = False):

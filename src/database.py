@@ -110,7 +110,7 @@ class DatabaseConnector:
             session.commit()
             session.close()
 
-    def get_question_id(self, rulegroup_index: int):
+    def get_new_question_id(self, rulegroup_index: int):
         with Session(self.engine) as session:
             stmt = select(Question.rule_id).where(Question.group_id.like(rulegroup_index))
             return_val = max(session.execute(stmt))[0] + 1

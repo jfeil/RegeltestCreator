@@ -84,7 +84,7 @@ class QuestionTree(QTreeWidget):
     def add_new_question(self):
         new_question = Question()
         new_question.rulegroup = controller.get_rulegroup(self.rulegroup_id)
-        new_question.rule_id = controller.get_question_id(self.rulegroup_id)
+        new_question.rule_id = controller.get_new_question_id(self.rulegroup_id)
         editor = QuestionEditor(new_question)
         if editor.exec() == QDialog.Accepted:
             signature = controller.update_question_set(editor.question, editor.mchoice)
@@ -101,12 +101,12 @@ class QuestionTree(QTreeWidget):
     def prepare_menu(self, pos: QPoint):
         def delete_selection(selected_items):
             msgBox = QMessageBox()
-            msgBox.setWindowTitle("Delete Questions.")
-            msgBox.setText("Delete Questions.")
+            msgBox.setWindowTitle("Fragen löschen.")
+            msgBox.setText("Fragen löschen.")
             if len(selected_items) == 1:
-                text = f"Do you really want to delete this question? There is no way back!"
+                text = f"Möchtest du wirklich diese Frage löschen? Dies lässt sich nicht umkehren!"
             else:
-                text = f"Do you really want to delete these {len(selected_items)} questions? There is no way back!"
+                text = f"Möchtest du wirklich diese {len(selected_items)} Fragen löschen? Dies lässt sich nicht umkehren!"
             msgBox.setInformativeText(text)
             msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
             msgBox.setDefaultButton(QMessageBox.Cancel)
@@ -122,15 +122,15 @@ class QuestionTree(QTreeWidget):
         actions = []
         if not items:
             items = [self.itemAt(pos)]
-            text = "Delete this question"
+            text = "Diese Frage löschen"
             if items[0] is None:
                 delete_bool = False
         else:
             clearSelAct = QAction(self)
-            clearSelAct.setText("Clear selection")
+            clearSelAct.setText("Auswahl zurücksetzen")
             clearSelAct.triggered.connect(lambda: self.clearSelection())
             actions += [clearSelAct]
-            text = "Delete current selection"
+            text = "Aktuelle Auswahl löschen"
 
         if delete_bool:
             deleteAct = QAction(self)
@@ -139,7 +139,7 @@ class QuestionTree(QTreeWidget):
             actions += [deleteAct]
 
         create_action = QAction(self)
-        create_action.setText("Add new question")
+        create_action.setText("Neue Frage erstellen")
         create_action.triggered.connect(self.add_new_question)
         actions += [create_action]
 
@@ -190,13 +190,13 @@ class RegeltestSaveDialog(QDialog, Ui_RegeltestSave):
         self.ui.output_edit_button.clicked.connect(self.create_save)
 
     def open_icon(self):
-        file_name = QFileDialog.getOpenFileName(self, caption="Open icon", filter="Icon file (*.jpg;*.png)")
+        file_name = QFileDialog.getOpenFileName(self, caption="Icon auswählen", filter="Icon file (*.jpg;*.png)")
         if len(file_name) == 0 or file_name[0] == "":
             return
         self.ui.icon_path_edit.setText(file_name[0])
 
     def create_save(self):
-        file_name = QFileDialog.getSaveFileName(self, caption="Save Regeltest", filter="Regeltest (*.pdf)")
+        file_name = QFileDialog.getSaveFileName(self, caption="Regeltest speichern", filter="Regeltest (*.pdf)")
         if len(file_name) == 0 or file_name[0] == "":
             return
         self.ui.output_edit.setText(file_name[0])
@@ -210,7 +210,7 @@ class RegeltestSetupRulegroup(QWidget, Ui_RegeltestSetup_Rulegroup):
         self.ui = Ui_RegeltestSetup_Rulegroup()
         self.ui.setupUi(self)
 
-        suffix = " out of %d"
+        suffix = " von %d"
         self.rulegroup = rulegroup_parameters[0]
         self.ui.label_rulegroup.setText(f"{rulegroup_parameters[0].id:02d} - {rulegroup_parameters[0].name}")
         if rulegroup_parameters[1] == 0:
@@ -262,7 +262,7 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
         for rulegroup_widget in self.rulegroup_widgets:
             _, text, mchoice = rulegroup_widget.get_parameters()
             question_count += text + mchoice
-        self.ui.statistics.setText(f"{question_count} questions currently selected ({question_count*2} points)")
+        self.ui.statistics.setText(f"{question_count} Fragen aktuell ausgewählt ({question_count * 2} Punkte)")
 
     def create_tab(self, title: str, parameters: List[Tuple[Rulegroup, int, int]]):
         tab_widget = QWidget()
