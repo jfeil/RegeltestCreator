@@ -1,23 +1,44 @@
+import json
 import logging
 import sys
-from typing import Any
+from typing import Any, Tuple, Union
 
+import requests
+from packaging import version
 from sqlalchemy import inspect
 from sqlalchemy.orm import declarative_base
 
 log_level = logging.WARN
+
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    is_bundled = True
+else:
+    is_bundled = False
 
 display_name = "RegeltestCreator"
 app_name = "RegeltestCreator"
 app_author = "jfeil"
 app_version = "0.1.1"
 
+api_url = "https://api.github.com/repos/jfeil/RegeltestCreator/releases"
+
+if not is_bundled:
+    app_version = f"{app_version}dev"
+app_version = version.parse(app_version)
+
 database_name = "database.db"
 
-if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-    is_bundled = True
-else:
-    is_bundled = False
+
+def check_for_update() -> Union[None, Tuple[str, str, str, str]]:  # new_version, description, url, download_url
+    latest_release = json.loads(requests.get(api_url).text)[0]
+    if version.parse(latest_release['tag_name']) > app_version:
+        if app_version.is_devrelease:
+            download_url = latest_release['zipball_url']
+        else:
+            download_url = latest_release['assets'][0]['browser_download_url']
+        return latest_release['tag_name'], latest_release['body'], latest_release['html_url'], download_url
+    else:
+        return None
 
 
 # Source: https://variable-scope.com/posts/setting-eager-defaults-for-sqlalchemy-orm-models

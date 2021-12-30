@@ -23,7 +23,6 @@ class RegeltestCreator(QListWidget):
         self.questions = []  # type: List[str]
         delete_shortcut = QShortcut(QKeySequence(Qt.Key_Delete), self)
         delete_shortcut.activated.connect(self.remove_selected_items)
-        self
 
     def add_question(self, question: Question):
         if question.signature in self.questions:
