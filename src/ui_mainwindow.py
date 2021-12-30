@@ -8,21 +8,16 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
-    QCursor, QFont, QFontDatabase, QGradient,
-    QIcon, QImage, QKeySequence, QLinearGradient,
-    QPainter, QPalette, QPixmap, QRadialGradient,
-    QTransform)
-from PySide6.QtWidgets import (QApplication, QDockWidget, QFrame, QGridLayout,
-    QHeaderView, QLabel, QListWidgetItem, QMainWindow,
-    QMenu, QMenuBar, QPushButton, QSizePolicy,
-    QStatusBar, QTabWidget, QTreeWidget, QTreeWidgetItem,
-    QVBoxLayout, QWidget)
+from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect,
+                            Qt)
+from PySide6.QtGui import (QAction)
+from PySide6.QtWidgets import (QDockWidget, QFrame, QGridLayout,
+                               QLabel, QMenu, QMenuBar, QPushButton, QStatusBar, QTabWidget, QTreeWidget,
+                               QTreeWidgetItem,
+                               QVBoxLayout, QWidget)
 
 from .regeltestcreator import RegeltestCreator
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -41,6 +36,10 @@ class Ui_MainWindow(object):
         self.actionRegeldatensatz_exportieren.setObjectName(u"actionRegeldatensatz_exportieren")
         self.actionRegeltest_einrichten = QAction(MainWindow)
         self.actionRegeltest_einrichten.setObjectName(u"actionRegeltest_einrichten")
+        self.actionAuf_Updates_pr_fen = QAction(MainWindow)
+        self.actionAuf_Updates_pr_fen.setObjectName(u"actionAuf_Updates_pr_fen")
+        self.action_ber = QAction(MainWindow)
+        self.action_ber.setObjectName(u"action_ber")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -74,6 +73,8 @@ class Ui_MainWindow(object):
         self.menuAnsicht.setObjectName(u"menuAnsicht")
         self.menuBearbeiten = QMenu(self.menubar)
         self.menuBearbeiten.setObjectName(u"menuBearbeiten")
+        self.menu_ber = QMenu(self.menubar)
+        self.menu_ber.setObjectName(u"menu_ber")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -129,29 +130,38 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuDatei.menuAction())
         self.menubar.addAction(self.menuBearbeiten.menuAction())
         self.menubar.addAction(self.menuAnsicht.menuAction())
+        self.menubar.addAction(self.menu_ber.menuAction())
         self.menuDatei.addAction(self.actionRegeldatensatz_einladen)
         self.menuDatei.addAction(self.actionRegeldatensatz_exportieren)
         self.menuAnsicht.addAction(self.actionAnsicht_zur_cksetzen)
         self.menuBearbeiten.addAction(self.actionNeue_Kategorie_erstellen)
         self.menuBearbeiten.addAction(self.actionRegeltest_einrichten)
         self.menuBearbeiten.addAction(self.actionRegeltest_l_schen)
+        self.menu_ber.addAction(self.actionAuf_Updates_pr_fen)
+        self.menu_ber.addAction(self.action_ber)
 
         self.retranslateUi(MainWindow)
 
         self.tabWidget.setCurrentIndex(0)
-
 
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        self.actionNeue_Kategorie_erstellen.setText(QCoreApplication.translate("MainWindow", u"Neue Kategorie erstellen", None))
-        self.actionAnsicht_zur_cksetzen.setText(QCoreApplication.translate("MainWindow", u"Ansicht zur\u00fccksetzen", None))
+        self.actionNeue_Kategorie_erstellen.setText(
+            QCoreApplication.translate("MainWindow", u"Neue Kategorie erstellen", None))
+        self.actionAnsicht_zur_cksetzen.setText(
+            QCoreApplication.translate("MainWindow", u"Ansicht zur\u00fccksetzen", None))
         self.actionRegeltest_l_schen.setText(QCoreApplication.translate("MainWindow", u"Regeltest l\u00f6schen", None))
-        self.actionRegeldatensatz_einladen.setText(QCoreApplication.translate("MainWindow", u"Regeldatensatz einladen", None))
-        self.actionRegeldatensatz_exportieren.setText(QCoreApplication.translate("MainWindow", u"Regeldatensatz exportieren", None))
+        self.actionRegeldatensatz_einladen.setText(
+            QCoreApplication.translate("MainWindow", u"Regeldatensatz einladen", None))
+        self.actionRegeldatensatz_exportieren.setText(
+            QCoreApplication.translate("MainWindow", u"Regeldatensatz exportieren", None))
         self.actionRegeltest_einrichten.setText(QCoreApplication.translate("MainWindow", u"Regeltest einrichten", None))
+        self.actionAuf_Updates_pr_fen.setText(
+            QCoreApplication.translate("MainWindow", u"Auf Updates pr\u00fcfen", None))
+        self.action_ber.setText(QCoreApplication.translate("MainWindow", u"\u00dcber", None))
         ___qtreewidgetitem = self.treeWidget.headerItem()
         ___qtreewidgetitem.setText(4, QCoreApplication.translate("MainWindow", u"\u00c4nderungsdatum", None));
         ___qtreewidgetitem.setText(3, QCoreApplication.translate("MainWindow", u"Antwort", None));
@@ -177,6 +187,7 @@ class Ui_MainWindow(object):
         self.menuDatei.setTitle(QCoreApplication.translate("MainWindow", u"Datei", None))
         self.menuAnsicht.setTitle(QCoreApplication.translate("MainWindow", u"Ansicht", None))
         self.menuBearbeiten.setTitle(QCoreApplication.translate("MainWindow", u"Bearbeiten", None))
+        self.menu_ber.setTitle(QCoreApplication.translate("MainWindow", u"Hilfe", None))
         self.regeltest_creator.setWindowTitle(QCoreApplication.translate("MainWindow", u"Regeltest-Creator", None))
         self.add_questionlist.setText(QCoreApplication.translate("MainWindow", u"Einrichten", None))
         self.clear_questionlist.setText(QCoreApplication.translate("MainWindow", u"Zur\u00fccksetzen", None))

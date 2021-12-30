@@ -105,19 +105,27 @@
     <property name="title">
      <string>Ansicht</string>
     </property>
-    <addaction name="actionAnsicht_zur_cksetzen"/>
+       <addaction name="actionAnsicht_zur_cksetzen"/>
    </widget>
-   <widget class="QMenu" name="menuBearbeiten">
-    <property name="title">
-     <string>Bearbeiten</string>
-    </property>
-    <addaction name="actionNeue_Kategorie_erstellen"/>
-    <addaction name="actionRegeltest_einrichten"/>
-    <addaction name="actionRegeltest_l_schen"/>
-   </widget>
-   <addaction name="menuDatei"/>
-   <addaction name="menuBearbeiten"/>
-   <addaction name="menuAnsicht"/>
+      <widget class="QMenu" name="menuBearbeiten">
+          <property name="title">
+              <string>Bearbeiten</string>
+          </property>
+          <addaction name="actionNeue_Kategorie_erstellen"/>
+          <addaction name="actionRegeltest_einrichten"/>
+          <addaction name="actionRegeltest_l_schen"/>
+      </widget>
+      <widget class="QMenu" name="menu_ber">
+          <property name="title">
+              <string>Hilfe</string>
+          </property>
+          <addaction name="actionAuf_Updates_pr_fen"/>
+          <addaction name="action_ber"/>
+      </widget>
+      <addaction name="menuDatei"/>
+      <addaction name="menuBearbeiten"/>
+      <addaction name="menuAnsicht"/>
+      <addaction name="menu_ber"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="regeltest_creator">
@@ -196,16 +204,26 @@
     <string>Regeldatensatz einladen</string>
    </property>
   </action>
-  <action name="actionRegeldatensatz_exportieren">
-   <property name="text">
-    <string>Regeldatensatz exportieren</string>
-   </property>
-  </action>
-  <action name="actionRegeltest_einrichten">
-   <property name="text">
-    <string>Regeltest einrichten</string>
-   </property>
-  </action>
+     <action name="actionRegeldatensatz_exportieren">
+         <property name="text">
+             <string>Regeldatensatz exportieren</string>
+         </property>
+     </action>
+     <action name="actionRegeltest_einrichten">
+         <property name="text">
+             <string>Regeltest einrichten</string>
+         </property>
+     </action>
+     <action name="actionAuf_Updates_pr_fen">
+         <property name="text">
+             <string>Auf Updates prüfen</string>
+         </property>
+     </action>
+     <action name="action_ber">
+         <property name="text">
+             <string>Über</string>
+         </property>
+     </action>
  </widget>
  <customwidgets>
   <customwidget>

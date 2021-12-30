@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog
 from bs4 import BeautifulSoup
 
 from . import controller, document_builder
-from .basic_config import app_version, app_author
+from .basic_config import app_version, check_for_update, display_name
 from .datatypes import Rulegroup, create_rulegroups, create_questions_and_mchoice
 from .regeltestcreator import QuestionTree, RegeltestSaveDialog, RegeltestSetup
 from .ui_mainwindow import Ui_MainWindow
@@ -55,15 +55,50 @@ def save_dataset(parent: QWidget):
     QApplication.restoreOverrideCursor()
 
 
+def update_check():
+    # new_version, description, url, download_url
+    result = check_for_update()
+    msg_box = QMessageBox()
+    msg_box.setWindowTitle("Update-Check")
+    if not result:
+        msg_box.setText("Kein Update verfügbar!<br><br>Die aktuellste Version ist bereits installiert.")
+        msg_box.setStandardButtons(QMessageBox.Ok)
+    else:
+        msg_box.setText(f'Update <a href="{result[2]}">{result[0]}</a> verfügbar!<br><br>\
+        Änderungen:<br>{result[1]}<br><br><a href="{result[3]}">Download der aktuellen Version</a>')
+        msg_box.setInformativeText(f'')
+        msg_box.setTextFormat(Qt.RichText)
+        msg_box.setTextInteractionFlags(Qt.TextBrowserInteraction)
+    msg_box.exec()
+
+
+def about_dialog():
+    msg_box = QMessageBox()
+    msg_box.setWindowTitle(f"Über {display_name}")
+    msg_box.setText(f"<center><b>Regeltest-Creator</b></center>"
+                    f"<center>v{app_version}</center><br>"
+                    "<center>entwickelt von Jan Feil</center><br>"
+                    "<a href=https://github.com/jfeil/RegeltestCreator>Weitere Informationen und Programmcode</a>")
+    msg_box.exec()
+
+
 class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.setWindowTitle(QCoreApplication.translate("MainWindow", f"Regeltest Creator - {app_version} ({app_author})"
+        self.setWindowTitle(QCoreApplication.translate("MainWindow", f"{display_name} - {app_version}"
                                                        , None))
         self.ui.actionRegeldatensatz_einladen.triggered.connect(self.load_dataset)
+        self.ui.actionAuf_Updates_pr_fen.triggered.connect(update_check)
+        self.ui.action_ber.triggered.connect(about_dialog)
+
+        self.ui.menuBearbeiten.setEnabled(False)
+        self.ui.actionRegeltest_einrichten.setEnabled(False)
+        self.ui.actionNeue_Kategorie_erstellen.setEnabled(False)
+        self.ui.actionRegeltest_l_schen.setEnabled(False)
+
         self.ui.tabWidget.clear()
         self.ui.tabWidget.setTabsClosable(True)
         self.ui.tabWidget.tabCloseRequested.connect(self.delete_rulegroup)
