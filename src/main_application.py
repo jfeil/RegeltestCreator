@@ -20,7 +20,7 @@ def load_dataset(parent: QWidget, reset_cursor=True) -> bool:
         questions, mchoice = create_questions_and_mchoice(soup("regelsatz"))
         return rulegroups, questions, mchoice
 
-    file_name = QFileDialog.getOpenFileName(parent, caption="Open Questionfile", filter="DFB Regeldaten (*.xml)")
+    file_name = QFileDialog.getOpenFileName(parent, caption="Fragendatei öffnen", filter="DFB Regeldaten (*.xml)")
     if len(file_name) == 0 or file_name[0] == "":
         return False
     QApplication.setOverrideCursor(Qt.WaitCursor)
@@ -34,7 +34,7 @@ def load_dataset(parent: QWidget, reset_cursor=True) -> bool:
 
 
 def save_dataset(parent: QWidget):
-    file_name = QFileDialog.getSaveFileName(parent, caption="Save Questionfile", filter="DFB Regeldaten (*.xml)")
+    file_name = QFileDialog.getSaveFileName(parent, caption="Fragendatei speichern", filter="DFB Regeldaten (*.xml)")
     if len(file_name) == 0 or file_name[0] == "":
         return
     QApplication.setOverrideCursor(Qt.WaitCursor)
@@ -125,9 +125,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def delete_rulegroup(self, index_tabwidget: int):
         msgBox = QMessageBox()
-        msgBox.setWindowTitle("Delete Rulegroup.")
-        msgBox.setText("Delete Rulegroup.")
-        msgBox.setInformativeText("Do you really want to delete this rulegroup? There is no way back!")
+        msgBox.setWindowTitle("Regelgruppe löschen.")
+        msgBox.setText("Regelgruppe löschen.<br>"
+                       "Möchtest du wirklich diese Fragengruppe löschen? Dies lässt sich nicht umkehren!")
         msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         msgBox.setDefaultButton(QMessageBox.Cancel)
         ret = msgBox.exec()
