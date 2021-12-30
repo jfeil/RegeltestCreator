@@ -1,0 +1,1 @@
+pyinstaller RegeltestCreator.pyw -F
