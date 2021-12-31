@@ -66,7 +66,7 @@ def display_update_dialog():
         msg_box.setStandardButtons(QMessageBox.Ok)
     else:
         msg_box.setText(f'<h1>Update <a href="{result[2]}">{result[0]}</a> verfügbar!</h1>'
-                        f'{markdown2.markdown("#" + result[1])}<a href="{result[3]}">Neueste Version jetzt herunterladen</a>')
+                        f'{markdown2.markdown(result[1]).replace("h3>", "h4>").replace("h2>", "h3>").replace("h1>", "h2>")}<a href="{result[3]}">Neueste Version jetzt herunterladen</a>')
         msg_box.setInformativeText(f'')
         msg_box.setTextFormat(Qt.RichText)
         msg_box.setTextInteractionFlags(Qt.TextBrowserInteraction)
