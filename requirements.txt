@@ -8,3 +8,4 @@ packaging~=21.3
 ipython~=7.30.0
 traitlets~=5.1.1
 requests~=2.26.0
+markdown2~=2.4.2

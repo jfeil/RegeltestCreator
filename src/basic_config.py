@@ -18,7 +18,7 @@ else:
 display_name = "RegeltestCreator"
 app_name = "RegeltestCreator"
 app_author = "jfeil"
-app_version = "0.2.0"
+app_version = "0.2.1"
 
 api_url = "https://api.github.com/repos/jfeil/RegeltestCreator/releases"
 

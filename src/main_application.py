@@ -1,6 +1,7 @@
 import webbrowser
 from typing import List, Dict
 
+import markdown2
 from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog, QApplication, QMessageBox
 from bs4 import BeautifulSoup
@@ -55,7 +56,7 @@ def save_dataset(parent: QWidget):
     QApplication.restoreOverrideCursor()
 
 
-def update_check():
+def display_update_dialog():
     # new_version, description, url, download_url
     result = check_for_update()
     msg_box = QMessageBox()
@@ -64,8 +65,8 @@ def update_check():
         msg_box.setText("Kein Update verfügbar!<br><br>Die aktuellste Version ist bereits installiert.")
         msg_box.setStandardButtons(QMessageBox.Ok)
     else:
-        msg_box.setText(f'Update <a href="{result[2]}">{result[0]}</a> verfügbar!<br><br>\
-        Änderungen:<br>{result[1]}<br><br><a href="{result[3]}">Download der aktuellen Version</a>')
+        msg_box.setText(f'<h1>Update <a href="{result[2]}">{result[0]}</a> verfügbar!</h1>'
+                        f'{markdown2.markdown("#" + result[1])}<a href="{result[3]}">Neueste Version jetzt herunterladen</a>')
         msg_box.setInformativeText(f'')
         msg_box.setTextFormat(Qt.RichText)
         msg_box.setTextInteractionFlags(Qt.TextBrowserInteraction)
@@ -91,7 +92,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowTitle(QCoreApplication.translate("MainWindow", f"{display_name} - {app_version}"
                                                        , None))
         self.ui.actionRegeldatensatz_einladen.triggered.connect(self.load_dataset)
-        self.ui.actionAuf_Updates_pr_fen.triggered.connect(update_check)
+        self.ui.actionAuf_Updates_pr_fen.triggered.connect(display_update_dialog)
         self.ui.action_ber.triggered.connect(about_dialog)
 
         self.ui.menuBearbeiten.setEnabled(False)
@@ -117,6 +118,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.ruletabs = {}  # type: Dict[int, QuestionTree]
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
+
+    def show(self) -> None:
+        super(MainWindow, self).show()
+        if check_for_update():
+            display_update_dialog()
 
     def clear_questionlist(self):
         self.ui.regeltest_list.clear()
