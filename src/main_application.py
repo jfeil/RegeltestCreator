@@ -67,7 +67,7 @@ def display_update_dialog():
         msg_box.setStandardButtons(QMessageBox.Ok)
     else:
         if result[3]:
-            download_link = '<a href="{result[3]}">Neueste Version jetzt herunterladen</a>'
+            download_link = f'<a href="{result[3]}">Neueste Version jetzt herunterladen</a>'
         else:
             download_link = 'Noch kein Download für die aktuelle Plattform verfügbar.<br>' \
                             'Bitte versuche es später erneut.'
