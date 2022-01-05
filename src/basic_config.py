@@ -1,5 +1,7 @@
 import json
 import logging
+import os.path
+import platform
 import sys
 from typing import Any, Tuple, Union
 
@@ -18,7 +20,7 @@ else:
 display_name = "RegeltestCreator"
 app_name = "RegeltestCreator"
 app_author = "jfeil"
-app_version = "0.2.1"
+app_version = "0.2.2"
 
 api_url = "https://api.github.com/repos/jfeil/RegeltestCreator/releases"
 
@@ -32,10 +34,17 @@ database_name = "database.db"
 def check_for_update() -> Union[None, Tuple[str, str, str, str]]:  # new_version, description, url, download_url
     latest_release = json.loads(requests.get(api_url).text)[0]
     if version.parse(latest_release['tag_name']) > app_version:
-        if app_version.is_devrelease:
-            download_url = latest_release['zipball_url']
+        download_url = None
+        if not app_version.is_devrelease:
+            current_platform = platform.system()
+            fileending = {'Darwin': '.app',
+                          'Windows': '.exe',
+                          'Linux': ''}[current_platform]
+            for asset in latest_release['assets']:
+                if fileending == os.path.splitext(asset['browser_download_url'])[1]:
+                    download_url = asset['browser_download_url']
         else:
-            download_url = latest_release['assets'][0]['browser_download_url']
+            download_url = latest_release['zipball_url']
         return latest_release['tag_name'], latest_release['body'], latest_release['html_url'], download_url
     else:
         return None

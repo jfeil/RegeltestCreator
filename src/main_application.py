@@ -15,7 +15,7 @@ from .ui_mainwindow import Ui_MainWindow
 
 def load_dataset(parent: QWidget, reset_cursor=True) -> bool:
     def read_in(file_path: str):
-        with open(file_path, 'r+') as file:
+        with open(file_path, 'r+', encoding='iso-8859-1') as file:
             soup = BeautifulSoup(file, "lxml")
         rulegroups = create_rulegroups(soup.find("gruppen"))
         questions, mchoice = create_questions_and_mchoice(soup("regelsatz"))
@@ -65,8 +65,13 @@ def display_update_dialog():
         msg_box.setText("Kein Update verfügbar!<br><br>Die aktuellste Version ist bereits installiert.")
         msg_box.setStandardButtons(QMessageBox.Ok)
     else:
+        if result[3]:
+            download_link = '<a href="{result[3]}">Neueste Version jetzt herunterladen</a>'
+        else:
+            download_link = 'Noch kein Download für die aktuelle Plattform verfügbar.<br>' \
+                            'Bitte versuche es später erneut.'
         msg_box.setText(f'<h1>Update <a href="{result[2]}">{result[0]}</a> verfügbar!</h1>'
-                        f'{markdown2.markdown(result[1]).replace("h3>", "h4>").replace("h2>", "h3>").replace("h1>", "h2>")}<a href="{result[3]}">Neueste Version jetzt herunterladen</a>')
+                        f'{markdown2.markdown(result[1]).replace("h3>", "h4>").replace("h2>", "h3>").replace("h1>", "h2>")}{download_link}')
         msg_box.setInformativeText(f'')
         msg_box.setTextFormat(Qt.RichText)
         msg_box.setTextInteractionFlags(Qt.TextBrowserInteraction)
