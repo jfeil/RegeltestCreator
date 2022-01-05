@@ -40,9 +40,10 @@ def save_dataset(parent: QWidget):
         return
     QApplication.setOverrideCursor(Qt.WaitCursor)
     dataset = "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?>\n\
-<REGELTEST>\n"
+<REGELTEST>\n<GRUPPEN>\n"
     for rulegroup in controller.get_all_rulegroups():
         dataset += rulegroup.export()
+    dataset += "</GRUPPEN>\n"
     for question in controller.get_all_questions():
         question_set = question[0].export()
         dataset += question_set[0]
@@ -51,7 +52,7 @@ def save_dataset(parent: QWidget):
                 dataset += mchoice.export()
         dataset += question_set[1]
     dataset += "</REGELTEST>"
-    with open(file_name[0], "w+") as file:
+    with open(file_name[0], "w+", encoding='iso-8859-1') as file:
         file.writelines(dataset)
     QApplication.restoreOverrideCursor()
 
