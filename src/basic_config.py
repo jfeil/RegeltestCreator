@@ -1,6 +1,6 @@
 import json
 import logging
-import os.path
+import pathlib
 import platform
 import sys
 from typing import Any, Tuple, Union
@@ -37,11 +37,11 @@ def check_for_update() -> Union[None, Tuple[str, str, str, str]]:  # new_version
         download_url = None
         if not app_version.is_devrelease:
             current_platform = platform.system()
-            fileending = {'Darwin': '.app',
-                          'Windows': '.exe',
-                          'Linux': ''}[current_platform]
+            fileending = {'Darwin': ['.app', '.zip'],
+                          'Windows': ['.exe'],
+                          'Linux': []}[current_platform]
             for asset in latest_release['assets']:
-                if fileending == os.path.splitext(asset['browser_download_url'])[1]:
+                if fileending == pathlib.Path(asset['browser_download_url']).suffixes:
                     download_url = asset['browser_download_url']
         else:
             download_url = latest_release['zipball_url']
