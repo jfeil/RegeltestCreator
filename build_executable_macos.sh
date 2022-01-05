@@ -1,0 +1,1 @@
+pyinstaller RegeltestCreator.pyw -F --osx-bundle-identifier de.jfeil.RegeltestCreator --windowed
