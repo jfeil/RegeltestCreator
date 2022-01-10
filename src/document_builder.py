@@ -153,7 +153,7 @@ class TitleFlowable(Flowable):
     def draw(self):
         if self.title_icon:
             self.canv.drawImage(self.title_icon, self.x, 30, width=self.image_size[0], height=self.image_size[1],
-                                mask=[0, 1, 0, 1, 0, 1])
+                                mask='auto')
         question = Paragraph(self.title_line, self.title_style)
         question.wrapOn(self.canv, 2 / 3 * self.width, self.height)
         question.drawOn(self.canv, self.x + 1 / 6 * self.width, 60)
