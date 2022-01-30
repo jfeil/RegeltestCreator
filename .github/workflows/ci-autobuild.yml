@@ -25,5 +25,5 @@ jobs:
       - run: pyinstaller RegeltestCreator.pyw -F ${{ matrix.pyinstaller }}
       - if: matrix.os == 'macos-latest'
         run: |
-          zip -r RegeltestCreator.app.zip dist/RegeltestCreator.app
-      - run: ls ${{ github.workspace }}
+          zip -r dist/RegeltestCreator.app.zip dist/RegeltestCreator.app
+      - run: ls ${{ github.workspace }}/dist
