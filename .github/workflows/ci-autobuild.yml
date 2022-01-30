@@ -11,11 +11,7 @@ jobs:
           # includes a new variable of npm with a value of 6
           # for the matrix leg matching the os and version
           - os: macos-latest
-            pyinstaller: -F --osx-bundle-identifier de.jfeil.RegeltestCreator --windowed
-          - os: windows-latest
-            pyinstaller: -F
-          - os: ubuntu-latest
-            pyinstaller: -F
+            pyinstaller: --osx-bundle-identifier de.jfeil.RegeltestCreator --windowed
 
 
     steps:
@@ -26,4 +22,4 @@ jobs:
           architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified      - run: pip install -r requirements.txt
       - run: pip install -r requirements.txt
       - run: pip install pyinstaller
-      - run: pyinstaller pyinstaller RegeltestCreator.pyw -F ${{ matrix.pyinstaller }}
+      - run: pyinstaller RegeltestCreator.pyw -F ${{ matrix.pyinstaller }}
