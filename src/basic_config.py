@@ -10,7 +10,7 @@ from packaging import version
 from sqlalchemy import inspect
 from sqlalchemy.orm import declarative_base
 
-from . import __version__
+from .__version__ import __version__
 
 log_level = logging.WARN
 current_platform = platform.system()
