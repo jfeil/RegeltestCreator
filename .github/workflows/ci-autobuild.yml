@@ -37,13 +37,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }} # Version range or exact version of a Python version to use, using SemVer's version range syntax
           architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified      - run: pip install -r requirements.txt
-      - run: echo __version__=\"${{ steps.version.outputs.version }}\" > src/__version__.py
+      - if: matrix.os == 'windows-latest'
+        run: echo __version__=`"${{ steps.version.outputs.version }}`" > src/__version__.py
+      - if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+        run: echo __version__=\"${{ steps.version.outputs.version }}\" > src/__version__.py
       - run: pip install -r requirements.txt
       - run: pip install pyinstaller
-      - if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install ffmpeg libsm6 libxext6  -y
       - run: pyinstaller RegeltestCreator.pyw -F ${{ matrix.pyinstaller }}
       - if: matrix.os == 'macos-latest'
         run: |
