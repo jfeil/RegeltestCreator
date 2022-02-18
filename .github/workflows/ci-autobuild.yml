@@ -42,8 +42,8 @@ jobs:
       - run: pip install pyinstaller
       - if: matrix.os == 'ubuntu-latest'
         run: |
-          apt-get update
-          apt-get install ffmpeg libsm6 libxext6  -y
+          sudo apt-get update
+          sudo apt-get install ffmpeg libsm6 libxext6  -y
       - run: pyinstaller RegeltestCreator.pyw -F ${{ matrix.pyinstaller }}
       - if: matrix.os == 'macos-latest'
         run: |
