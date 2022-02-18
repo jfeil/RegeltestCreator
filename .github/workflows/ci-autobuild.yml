@@ -19,6 +19,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Version
+        id: version
         uses: paulhatch/semantic-version@v4.0.2
         with:
           # The prefix to use to identify tags
@@ -36,11 +37,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }} # Version range or exact version of a Python version to use, using SemVer's version range syntax
           architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified      - run: pip install -r requirements.txt
-      - run: echo __version__=${{ steps.Versions.version }} > src/__init__.py
+      - run: echo __version__=${{ steps.version.outputs.version }} > src/__init__.py
       - run: pip install -r requirements.txt
       - run: pip install pyinstaller
-      - run: ls -al .
       - run: cat src/__init__.py
+      - run: ls .
       - run: pyinstaller RegeltestCreator.pyw -F ${{ matrix.pyinstaller }}
       - if: matrix.os == 'macos-latest'
         run: |
