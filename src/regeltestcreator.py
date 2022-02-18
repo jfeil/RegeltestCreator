@@ -1,6 +1,7 @@
 import random
 from typing import Dict, List, Tuple
 
+import markdown2
 from PySide6.QtCore import Qt, QCoreApplication, Signal, QPoint
 from PySide6.QtGui import QDrag, QShortcut, QKeySequence, QAction
 from PySide6.QtWidgets import QListWidget, QTreeWidgetItem, QTreeWidget, QVBoxLayout, QDialog, QFileDialog, QWidget, \
@@ -13,6 +14,7 @@ from src.question_editor import QuestionEditor
 from src.ui_regeltest_save import Ui_RegeltestSave
 from src.ui_regeltest_setup import Ui_RegeltestSetup
 from src.ui_regeltest_setup_widget import Ui_RegeltestSetup_Rulegroup
+from src.ui_update_checker import Ui_UpdateChecker
 
 
 class RegeltestCreator(QListWidget):
@@ -232,6 +234,38 @@ class RegeltestSetupRulegroup(QWidget, Ui_RegeltestSetup_Rulegroup):
 
     def get_parameters(self) -> Tuple[Rulegroup, int, int]:
         return self.rulegroup, self.ui.spinBox_textquestion.value(), self.ui.spinBox_mchoice.value()
+
+
+class UpdateChecker(QDialog, Ui_UpdateChecker):
+    def __init__(self, parent, versions, display_dev=False):
+        super(UpdateChecker, self).__init__(parent)
+        self.ui = Ui_UpdateChecker()
+        self.ui.setupUi(self)
+        self.setWindowTitle("Update-Check")
+        self.versions = versions
+
+        self.ui.comboBox.currentIndexChanged.connect(self.display)
+
+        if display_dev:
+            self.ui.comboBox.setCurrentIndex(1)
+
+        self.ui.text.setTextFormat(Qt.RichText)
+        self.ui.text.setTextInteractionFlags(Qt.TextBrowserInteraction)
+
+        self.display()
+
+    def display(self):
+        release = self.versions[self.ui.comboBox.currentIndex()]
+        if not release:
+            self.ui.text.setText("<h1>Kein Update verfügbar!</h1>Die aktuellste Version ist bereits installiert.")
+            return
+        if release[3]:
+            download_link = f'<a href="{release[3]}">Neueste Version jetzt herunterladen</a>'
+        else:
+            download_link = 'Noch kein Download für die aktuelle Plattform verfügbar.<br>' \
+                            'Bitte versuche es später erneut.'
+        self.ui.text.setText(f'<h1>Update <a href="{release[2]}">{release[0]}</a> verfügbar!</h1>'
+                             f'{markdown2.markdown(release[1]).replace("h3>", "h4>").replace("h2>", "h3>").replace("h1>", "h2>")}{download_link}')
 
 
 class RegeltestSetup(QDialog, Ui_RegeltestSetup):

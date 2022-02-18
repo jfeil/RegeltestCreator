@@ -10,7 +10,11 @@ from packaging import version
 from sqlalchemy import inspect
 from sqlalchemy.orm import declarative_base
 
+from . import __version__
+
 log_level = logging.WARN
+current_platform = platform.system()
+VERSION_INFO = Union[None, Tuple[str, str, str, str]]
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     is_bundled = True
@@ -20,34 +24,41 @@ else:
 display_name = "RegeltestCreator"
 app_name = "RegeltestCreator"
 app_author = "jfeil"
-app_version = "0.3.0"
+
+app_version = __version__
+if not is_bundled and "dev" not in __version__:
+    app_version += "dev"
+app_version = version.parse(app_version)
 
 api_url = "https://api.github.com/repos/jfeil/RegeltestCreator/releases"
-
-if not is_bundled:
-    app_version = f"{app_version}dev"
-app_version = version.parse(app_version)
 
 database_name = "database.db"
 
 
-def check_for_update() -> Union[None, Tuple[str, str, str, str]]:  # new_version, description, url, download_url
-    latest_release = json.loads(requests.get(api_url).text)[0]
-    if version.parse(latest_release['tag_name']) > app_version:
+def check_for_update() -> Tuple[VERSION_INFO, VERSION_INFO]:  # new_version, description, url, download_url
+    def check(cur_version, release_info):
+        if version.parse(release_info['tag_name']) <= cur_version:
+            return None
         download_url = None
-        if not app_version.is_devrelease:
-            current_platform = platform.system()
-            fileending = {'Darwin': ['.app', '.zip'],
-                          'Windows': ['.exe'],
-                          'Linux': []}[current_platform]
-            for asset in latest_release['assets']:
-                if fileending == pathlib.Path(asset['browser_download_url']).suffixes:
-                    download_url = asset['browser_download_url']
-        else:
-            download_url = latest_release['zipball_url']
-        return latest_release['tag_name'], latest_release['body'], latest_release['html_url'], download_url
-    else:
-        return None
+        fileending = {'Darwin': ['.app', '.zip'],
+                      'Windows': ['.exe'],
+                      'Linux': []}[current_platform]
+        for asset in release_info['assets']:
+            if fileending == pathlib.Path(asset['browser_download_url']).suffixes:
+                download_url = asset['browser_download_url']
+        return release_info['tag_name'], release_info['body'], release_info['html_url'], download_url
+
+    releases = json.loads(requests.get(api_url).text)
+    latest_dev_release = None
+    latest_release = None
+    for release in releases:
+        if not latest_dev_release and release['prerelease']:
+            latest_dev_release = release
+        elif not latest_release:
+            latest_release = release
+        if latest_release and latest_dev_release:
+            break
+    return check(app_version, latest_release), check(app_version, latest_dev_release)
 
 
 # Source: https://variable-scope.com/posts/setting-eager-defaults-for-sqlalchemy-orm-models

@@ -1,7 +1,6 @@
 import webbrowser
 from typing import List, Dict
 
-import markdown2
 from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog, QApplication, QMessageBox
 from bs4 import BeautifulSoup
@@ -9,7 +8,7 @@ from bs4 import BeautifulSoup
 from . import controller, document_builder
 from .basic_config import app_version, check_for_update, display_name
 from .datatypes import Rulegroup, create_rulegroups, create_questions_and_mchoice
-from .regeltestcreator import QuestionTree, RegeltestSaveDialog, RegeltestSetup
+from .regeltestcreator import QuestionTree, RegeltestSaveDialog, RegeltestSetup, UpdateChecker
 from .ui_mainwindow import Ui_MainWindow
 
 
@@ -57,26 +56,10 @@ def save_dataset(parent: QWidget):
     QApplication.restoreOverrideCursor()
 
 
-def display_update_dialog():
+def display_update_dialog(parent, releases):
     # new_version, description, url, download_url
-    result = check_for_update()
-    msg_box = QMessageBox()
-    msg_box.setWindowTitle("Update-Check")
-    if not result:
-        msg_box.setText("Kein Update verfügbar!<br><br>Die aktuellste Version ist bereits installiert.")
-        msg_box.setStandardButtons(QMessageBox.Ok)
-    else:
-        if result[3]:
-            download_link = f'<a href="{result[3]}">Neueste Version jetzt herunterladen</a>'
-        else:
-            download_link = 'Noch kein Download für die aktuelle Plattform verfügbar.<br>' \
-                            'Bitte versuche es später erneut.'
-        msg_box.setText(f'<h1>Update <a href="{result[2]}">{result[0]}</a> verfügbar!</h1>'
-                        f'{markdown2.markdown(result[1]).replace("h3>", "h4>").replace("h2>", "h3>").replace("h1>", "h2>")}{download_link}')
-        msg_box.setInformativeText(f'')
-        msg_box.setTextFormat(Qt.RichText)
-        msg_box.setTextInteractionFlags(Qt.TextBrowserInteraction)
-    msg_box.exec()
+    dialog = UpdateChecker(parent, releases, app_version.is_devrelease)
+    dialog.exec()
 
 
 def about_dialog():
@@ -98,7 +81,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowTitle(QCoreApplication.translate("MainWindow", f"{display_name} - {app_version}"
                                                        , None))
         self.ui.actionRegeldatensatz_einladen.triggered.connect(self.load_dataset)
-        self.ui.actionAuf_Updates_pr_fen.triggered.connect(display_update_dialog)
+        self.ui.actionAuf_Updates_pr_fen.triggered.connect(lambda: display_update_dialog(self, check_for_update()))
         self.ui.action_ber.triggered.connect(about_dialog)
 
         self.ui.menuBearbeiten.setEnabled(False)
@@ -127,8 +110,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def show(self) -> None:
         super(MainWindow, self).show()
-        if check_for_update():
-            display_update_dialog()
+        releases = check_for_update()
+        update_available = False
+        if (app_version.is_devrelease and releases[1]) or (not app_version.is_devrelease and releases[0]):
+            update_available = True
+        if update_available:
+            display_update_dialog(self, releases)
 
     def clear_questionlist(self):
         self.ui.regeltest_list.clear()
