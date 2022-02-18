@@ -30,14 +30,14 @@ jobs:
           # Same as above except indicating a minor change, supports regular expressions wrapped with '/'
           minor_pattern: "(MINOR)"
           # A string to determine the format of the version output
-          format: "${major}.${minor}.${patch}-dev${increment}"
+          format: "${major}.${minor}.${patch}.dev${increment}"
           # If this is set to true, *every* commit will be treated as a new version.
           bump_each_commit: false
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }} # Version range or exact version of a Python version to use, using SemVer's version range syntax
           architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified      - run: pip install -r requirements.txt
-      - run: echo __version__=${{ steps.version.outputs.version }} > src/__init__.py
+      - run: echo __version__=\"${{ steps.version.outputs.version }}\" > src/__init__.py
       - run: pip install -r requirements.txt
       - run: pip install pyinstaller
       - run: cat src/__init__.py
