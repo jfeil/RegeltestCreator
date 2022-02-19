@@ -251,6 +251,7 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
 
         self.ui.text.setTextFormat(Qt.RichText)
         self.ui.text.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        self.ui.text.setOpenExternalLinks(True)
 
         self.display()
 
