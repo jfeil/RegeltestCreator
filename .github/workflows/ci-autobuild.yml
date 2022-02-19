@@ -51,19 +51,19 @@ jobs:
         uses: actions/upload-artifact@v2
         if: matrix.os == 'macos-latest'
         with:
-          name: debug-apple
+          name: release-macos
           path: dist/RegeltestCreator.app.zip
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
         if: matrix.os == 'windows-latest'
         with:
-          name: debug-windows
+          name: release-windows
           path: dist/RegeltestCreator.exe
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
         if: matrix.os == 'ubuntu-latest'
         with:
-          name: debug-ubuntu
+          name: release-ubuntu
           path: dist/RegeltestCreator
   
   
@@ -85,15 +85,15 @@ jobs:
           prerelease: true
       - uses: actions/download-artifact@master
         with:
-          name: debug-ubuntu
+          name: release-ubuntu
           path: RegeltestCreator
       - uses: actions/download-artifact@master
         with:
-          name: debug-macos
+          name: release-macos
           path: RegeltestCreator.app.zip
       - uses: actions/download-artifact@master
         with:
-          name: debug-windows
+          name: release-windows
           path: RegeltestCreator.exe
       - name: Upload Release Asset
         id: upload-release-asset-ubuntu
