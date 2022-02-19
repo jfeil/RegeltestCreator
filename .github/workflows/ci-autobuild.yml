@@ -1,17 +1,34 @@
 name: CI-Autobuild
-on: [push]
+on:
+  workflow_call:
+    # Map the workflow outputs to job outputs
+    outputs:
+      version:
+        description: "The version string for the current release"
+        value: ${{ jobs.build.outputs.version }}
+      version_major:
+        description: "The major version id"
+        value: ${{ steps.version.outputs.major }}
+      version_minor:
+        description: "The minor version id"
+        value: ${{ steps.version.outputs.minor }}
+      version_patch:
+        description: "The patch version id"
+        value: ${{ steps.version.outputs.patch }}
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     outputs:
       version: ${{ steps.version.outputs.version }}
+      version_major: ${{ steps.version.outputs.major }}
+      version_minor: ${{ steps.version.outputs.minor }}
+      version_patch: ${{ steps.version.outputs.patch }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ['3.9']
         include:
-          # includes a new variable of npm with a value of 6
-          # for the matrix leg matching the os and version
           - os: macos-latest
             pyinstaller: --osx-bundle-identifier de.jfeil.RegeltestCreator --windowed
     steps:
@@ -65,65 +82,3 @@ jobs:
         with:
           name: release-ubuntu
           path: dist/RegeltestCreator
-  
-  
-  release:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - run: echo ${{ needs.build.outputs.version }}
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          tag_name: beta-${{ needs.build.outputs.version }}-${{ github.sha }}
-          release_name: Debug Release ${{ needs.build.outputs.version }}
-          body: |
-            ${{ github.event.commits[0].message }}
-          draft: false
-          prerelease: true
-      - uses: actions/download-artifact@master
-        with:
-          name: release-ubuntu
-          path: ./
-      - uses: actions/download-artifact@master
-        with:
-          name: release-macos
-          path: ./
-      - uses: actions/download-artifact@master
-        with:
-          name: release-windows
-          path: ./
-      - name: Upload Release Asset
-        id: upload-release-asset-ubuntu
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./RegeltestCreator
-          asset_name: RegeltestCreator
-          asset_content_type: application/octet-stream
-      - name: Upload Release Asset
-        id: upload-release-asset-macos
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./RegeltestCreator.app.zip
-          asset_name: RegeltestCreator.app.zip
-          asset_content_type: application/zip
-      - name: Upload Release Asset
-        id: upload-release-asset-windows
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./RegeltestCreator.exe
-          asset_name: RegeltestCreator.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
-
