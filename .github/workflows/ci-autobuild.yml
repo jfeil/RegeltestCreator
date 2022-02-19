@@ -87,15 +87,15 @@ jobs:
       - uses: actions/download-artifact@master
         with:
           name: release-ubuntu
-          path: RegeltestCreator
+          path: ./
       - uses: actions/download-artifact@master
         with:
           name: release-macos
-          path: RegeltestCreator.app.zip
+          path: ./
       - uses: actions/download-artifact@master
         with:
           name: release-windows
-          path: RegeltestCreator.exe
+          path: ./
       - name: Upload Release Asset
         id: upload-release-asset-ubuntu
         uses: actions/upload-release-asset@v1
