@@ -1,0 +1,84 @@
+name: CI-Autobuild
+on:
+  workflow_call:
+    # Map the workflow outputs to job outputs
+    outputs:
+      version:
+        description: "The version string for the current release"
+        value: ${{ jobs.build.outputs.version }}
+      version_major:
+        description: "The major version id"
+        value: ${{ steps.version.outputs.major }}
+      version_minor:
+        description: "The minor version id"
+        value: ${{ steps.version.outputs.minor }}
+      version_patch:
+        description: "The patch version id"
+        value: ${{ steps.version.outputs.patch }}
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      version_major: ${{ steps.version.outputs.major }}
+      version_minor: ${{ steps.version.outputs.minor }}
+      version_patch: ${{ steps.version.outputs.patch }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.9']
+        include:
+          - os: macos-latest
+            pyinstaller: --osx-bundle-identifier de.jfeil.RegeltestCreator --windowed
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Version
+        id: version
+        uses: paulhatch/semantic-version@v4.0.2
+        with:
+          # The prefix to use to identify tags
+          tag_prefix: "v"
+          # A string which, if present in a git commit, indicates that a change represents a
+          # major (breaking) change, supports regular expressions wrapped with '/'
+          major_pattern: "(MAJOR)"
+          # Same as above except indicating a minor change, supports regular expressions wrapped with '/'
+          minor_pattern: "(MINOR)"
+          # A string to determine the format of the version output
+          format: "${major}.${minor}.${patch}.dev${increment}"
+          # If this is set to true, *every* commit will be treated as a new version.
+          bump_each_commit: false
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }} # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified      - run: pip install -r requirements.txt
+      - if: matrix.os == 'windows-latest'
+        run: echo __version__=`"${{ steps.version.outputs.version }}`" > src/__version__.py
+      - if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+        run: echo __version__=\"${{ steps.version.outputs.version }}\" > src/__version__.py
+      - run: pip install -r requirements.txt
+      - run: pip install pyinstaller
+      - run: pyinstaller RegeltestCreator.pyw -F ${{ matrix.pyinstaller }}
+      - if: matrix.os == 'macos-latest'
+        run: |
+          zip -r dist/RegeltestCreator.app.zip dist/RegeltestCreator.app
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        if: matrix.os == 'macos-latest'
+        with:
+          name: release-macos
+          path: dist/RegeltestCreator.app.zip
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        if: matrix.os == 'windows-latest'
+        with:
+          name: release-windows
+          path: dist/RegeltestCreator.exe
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          name: release-ubuntu
+          path: dist/RegeltestCreator
