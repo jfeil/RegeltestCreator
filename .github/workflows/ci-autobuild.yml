@@ -8,13 +8,13 @@ on:
         value: ${{ jobs.build.outputs.version }}
       version_major:
         description: "The major version id"
-        value: ${{ steps.version.outputs.major }}
+        value: ${{ jobs.build.outputs.major }}
       version_minor:
         description: "The minor version id"
-        value: ${{ steps.version.outputs.minor }}
+        value: ${{ jobs.build.outputs.minor }}
       version_patch:
         description: "The patch version id"
-        value: ${{ steps.version.outputs.patch }}
+        value: ${{ jobs.build.outputs.patch }}
 
 jobs:
   build:
