@@ -12,8 +12,6 @@ jobs:
           # for the matrix leg matching the os and version
           - os: macos-latest
             pyinstaller: --osx-bundle-identifier de.jfeil.RegeltestCreator --windowed
-
-
     steps:
       - uses: actions/checkout@v2
         with:
@@ -47,6 +45,45 @@ jobs:
       - if: matrix.os == 'macos-latest'
         run: |
           zip -r dist/RegeltestCreator.app.zip dist/RegeltestCreator.app
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        if: matrix.os == 'macos-latest'
+        with:
+          name: debug-apple
+          path: dist/RegeltestCreator.app.zip
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        if: matrix.os == 'windows-latest'
+        with:
+          name: debug-windows
+          path: dist/RegeltestCreator.exe
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          name: debug-ubuntu
+          path: dist/RegeltestCreator
+  
+  
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Version
+        id: version
+        uses: paulhatch/semantic-version@v4.0.2
+        with:
+          # The prefix to use to identify tags
+          tag_prefix: "v"
+          # A string which, if present in a git commit, indicates that a change represents a
+          # major (breaking) change, supports regular expressions wrapped with '/'
+          major_pattern: "(MAJOR)"
+          # Same as above except indicating a minor change, supports regular expressions wrapped with '/'
+          minor_pattern: "(MINOR)"
+          # A string to determine the format of the version output
+          format: "${major}.${minor}.${patch}.dev${increment}"
+          # If this is set to true, *every* commit will be treated as a new version.
+          bump_each_commit: false
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -59,33 +96,26 @@ jobs:
             ${{ github.event.commits[0].message }}
           draft: false
           prerelease: true
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
-        if: matrix.os == 'macos-latest'
-        with:
-          name: debug-apple
-          path: dist/*.app.zip
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
-        if: matrix.os == 'windows-latest'
-        with:
-          name: debug-windows
-          path: dist/*.exe
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
-        if: matrix.os == 'ubuntu-latest'
+      - uses: actions/download-artifact@master
         with:
           name: debug-ubuntu
-          path: dist/*
+          path: RegeltestCreator
+      - uses: actions/download-artifact@master
+        with:
+          name: debug-macos
+          path: RegeltestCreator.app.zip
+      - uses: actions/download-artifact@master
+        with:
+          name: debug-windows
+          path: RegeltestCreator.exe
       - name: Upload Release Asset
         id: upload-release-asset-ubuntu
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: matrix.os == 'ubuntu-latest'
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: dist/RegeltestCreator
+          asset_path: ./RegeltestCreator
           asset_name: RegeltestCreator
           asset_content_type: application/octet-stream
       - name: Upload Release Asset
@@ -93,10 +123,9 @@ jobs:
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: matrix.os == 'macos-latest'
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: dist/RegeltestCreator.app.zip
+          asset_path: ./RegeltestCreator.app.zip
           asset_name: RegeltestCreator.app.zip
           asset_content_type: application/zip
       - name: Upload Release Asset
@@ -104,10 +133,9 @@ jobs:
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: matrix.os == 'windows-latest'
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: dist/RegeltestCreator.exe
+          asset_path: ./RegeltestCreator.exe
           asset_name: RegeltestCreator.exe
           asset_content_type: application/vnd.microsoft.portable-executable
 
