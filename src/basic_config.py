@@ -44,7 +44,7 @@ def check_for_update() -> Tuple[VERSION_INFO, VERSION_INFO]:  # new_version, des
                       'Windows': ['.exe'],
                       'Linux': []}[current_platform]
         for asset in release_info['assets']:
-            if fileending == pathlib.Path(asset['browser_download_url']).suffixes:
+            if set(fileending) <= set(pathlib.Path(asset['browser_download_url']).suffixes):
                 download_url = asset['browser_download_url']
         return release_info['tag_name'], release_info['body'], release_info['html_url'], download_url
 
