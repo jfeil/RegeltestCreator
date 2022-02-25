@@ -40,12 +40,18 @@ def check_for_update() -> Tuple[VERSION_INFO, VERSION_INFO]:  # new_version, des
         if version.parse(release_info['tag_name']) <= cur_version:
             return None
         download_url = None
-        fileending = {'Darwin': ['.app', '.zip'],
-                      'Windows': ['.exe'],
-                      'Linux': []}[current_platform]
+        fileendings = {'Darwin': ['.app', '.zip'],
+                       'Windows': ['.exe'],
+                       'Linux': []}
+        download_urls = {}
         for asset in release_info['assets']:
-            if set(fileending) <= set(pathlib.Path(asset['browser_download_url']).suffixes):
-                download_url = asset['browser_download_url']
+            if set(fileendings['Darwin']) <= set(pathlib.Path(asset['browser_download_url']).suffixes):
+                download_urls['Darwin'] = asset['browser_download_url']
+            elif set(fileendings['Windows']) <= set(pathlib.Path(asset['browser_download_url']).suffixes):
+                download_urls['Windows'] = asset['browser_download_url']
+            else:
+                download_urls['Linux'] = asset['browser_download_url']
+        download_url = download_urls[current_platform]
         return release_info['tag_name'], release_info['body'], release_info['html_url'], download_url
 
     releases = json.loads(requests.get(api_url).text)
@@ -54,7 +60,7 @@ def check_for_update() -> Tuple[VERSION_INFO, VERSION_INFO]:  # new_version, des
     for release in releases:
         if not latest_dev_release and release['prerelease']:
             latest_dev_release = release
-        elif not latest_release:
+        elif not latest_release and not release['prerelease']:
             latest_release = release
         if latest_release and latest_dev_release:
             break
