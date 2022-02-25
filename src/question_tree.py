@@ -120,7 +120,7 @@ class QuestionTree(QTreeWidget):
         def bool_to_char(value: bool):
             if value:
                 return "✔"
-            return "🗙"
+            return "✘"
 
         self.questions[item] = question.signature
         item.setText(0, str(question.rule_id))
