@@ -6,9 +6,10 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog
 from bs4 import BeautifulSoup
 
 from . import controller, document_builder
-from .basic_config import app_version, check_for_update, display_name
+from .basic_config import app_version, check_for_update, display_name, is_bundled
 from .datatypes import Rulegroup, create_rulegroups, create_questions_and_mchoice
-from .regeltestcreator import QuestionTree, RegeltestSaveDialog, RegeltestSetup, UpdateChecker
+from .question_tree import QuestionTree
+from .regeltestcreator import RegeltestSaveDialog, RegeltestSetup, UpdateChecker
 from .ui_mainwindow import Ui_MainWindow
 
 
@@ -110,6 +111,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def show(self) -> None:
         super(MainWindow, self).show()
+        if not is_bundled:
+            return
         releases = check_for_update()
         update_available = False
         if (app_version.is_devrelease and releases[1]) or (not app_version.is_devrelease and releases[0]):
