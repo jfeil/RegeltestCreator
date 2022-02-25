@@ -27,7 +27,7 @@ class QuestionTree(QTreeWidget):
         self.rulegroup_id = rulegroup_id
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
         self.setDragEnabled(True)
-        self.setSelectionMode(QTreeWidget.MultiSelection)
+        self.setSelectionMode(QTreeWidget.ExtendedSelection)
         self.setDefaultDropAction(Qt.CopyAction)
         self.itemDoubleClicked.connect(self._handle_double_click)
         self.setContextMenuPolicy(Qt.CustomContextMenu)

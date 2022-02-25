@@ -20,7 +20,7 @@ class RegeltestCreator(QListWidget):
     def __init__(self, *args):
         super(RegeltestCreator, self).__init__(*args)
         self.setAcceptDrops(True)
-        self.setSelectionMode(QListWidget.MultiSelection)
+        self.setSelectionMode(QListWidget.ExtendedSelection)
         self.questions = []  # type: List[str]
         delete_shortcut = QShortcut(QKeySequence(Qt.Key_Delete), self)
         delete_shortcut.activated.connect(self.remove_selected_items)
