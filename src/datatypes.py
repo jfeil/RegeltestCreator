@@ -188,7 +188,7 @@ def create_questions_and_mchoice(rules_xml):
         if changed:
             changed = datetime.strptime(rule.find("aend").contents[0].strip(), "%d.%m.%Y")
         else:
-            changed = default_date
+            changed = created
         rules += [Question(rule_id=rule_id, group_id=group_id, question=question, answer_index=mchoice_index,
                            answer_text=answer, created=created, last_edited=changed, signature=signature)]
     return rules, multiple_choice
