@@ -66,6 +66,7 @@ class QuestionTree(QTreeWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.prepare_menu)
         self.setObjectName("tree_widget")
+        self.setSortingEnabled(True)
         vertical_layout = QVBoxLayout(parent)
         ___qtreewidgetitem = self.headerItem()
         ___qtreewidgetitem.setText(4, QCoreApplication.translate("MainWindow", u"\u00c4nderungsdatum", None))
