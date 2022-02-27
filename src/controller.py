@@ -48,7 +48,7 @@ def get_new_question_id(rulegroup_index: int):
 
 
 def get_questions_by_foreignkey(rulegroup_index: int, mchoice: bool = None, randomize: bool = False):
-    question_query = db.get_questions_by_foreignkey(rulegroup_index, mchoice, randomize)
+    question_query = db.get_questions_by_foreignkey(rulegroup_index, mchoice, randomize).all()
     return question_query
 
 

@@ -1,16 +1,18 @@
 import webbrowser
 from typing import List, Dict
 
+import markdown2
 from PySide6.QtCore import QCoreApplication, Qt
-from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog, QApplication, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog, QApplication, QMessageBox, QDialog
 from bs4 import BeautifulSoup
 
 from . import controller, document_builder
 from .basic_config import app_version, check_for_update, display_name, is_bundled
 from .datatypes import Rulegroup, create_rulegroups, create_questions_and_mchoice
-from .question_tree import QuestionTree
-from .regeltestcreator import RegeltestSaveDialog, RegeltestSetup, UpdateChecker
+from .question_tree import RulegroupView, RuleDataModel
+from .regeltestcreator import RegeltestSaveDialog, RegeltestSetup
 from .ui_mainwindow import Ui_MainWindow
+from .ui_update_checker import Ui_UpdateChecker
 
 
 def load_dataset(parent: QWidget, reset_cursor=True) -> bool:
@@ -106,7 +108,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.ui.create_regeltest.clicked.connect(self.create_regeltest)
 
-        self.ruletabs = {}  # type: Dict[int, QuestionTree]
+        self.ruletabs = {}  # type: Dict[int, RulegroupView]
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
 
     def show(self) -> None:
@@ -149,16 +151,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             question_tree.refresh_questions()
         QApplication.restoreOverrideCursor()
 
-    def initialize_questions(self):
-        for rulegroup_index, tree_widget in self.ruletabs.items():
-            questions = controller.get_questions_by_foreignkey(rulegroup_index)
-            for question in questions:
-                tree_widget.add_question(question)
-
     def create_ruletabs(self, rulegroups: List[Rulegroup]):
         for rulegroup in rulegroups:
             tab = QWidget()
-            self.ruletabs[rulegroup.id] = QuestionTree(tab, rulegroup_id=rulegroup.id)
+            view = RulegroupView(tab, rulegroup_id=rulegroup.id)
+            model = RuleDataModel(rulegroup.id, view)
+            view.setModel(model)
+            self.ruletabs[rulegroup.id] = view
             self.ui.tabWidget.addTab(tab, "")
             self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id:02d} {rulegroup.name}")
 
@@ -183,3 +182,36 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                              , icon_path=settings.ui.icon_path_edit.text())
             QApplication.restoreOverrideCursor()
             webbrowser.open_new(output_path)
+
+
+class UpdateChecker(QDialog, Ui_UpdateChecker):
+    def __init__(self, parent, versions, display_dev=False):
+        super(UpdateChecker, self).__init__(parent)
+        self.ui = Ui_UpdateChecker()
+        self.ui.setupUi(self)
+        self.setWindowTitle("Update-Check")
+        self.versions = versions
+
+        self.ui.comboBox.currentIndexChanged.connect(self.display)
+
+        if display_dev:
+            self.ui.comboBox.setCurrentIndex(1)
+
+        self.ui.text.setTextFormat(Qt.RichText)
+        self.ui.text.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        self.ui.text.setOpenExternalLinks(True)
+
+        self.display()
+
+    def display(self):
+        release = self.versions[self.ui.comboBox.currentIndex()]
+        if not release:
+            self.ui.text.setText("<h1>Kein Update verfügbar!</h1>Die aktuellste Version ist bereits installiert.")
+            return
+        if release[3]:
+            download_link = f'<a href="{release[3]}">Neueste Version jetzt herunterladen</a>'
+        else:
+            download_link = 'Noch kein Download für die aktuelle Plattform verfügbar.<br>' \
+                            'Bitte versuche es später erneut.'
+        self.ui.text.setText(f'<h1>Update <a href="{release[2]}">{release[0]}</a> verfügbar!</h1>'
+                             f'{markdown2.markdown(release[1]).replace("h3>", "h4>").replace("h2>", "h3>").replace("h1>", "h2>")}{download_link}')

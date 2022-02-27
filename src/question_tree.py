@@ -1,54 +1,98 @@
-from typing import Dict
+from typing import Dict, Union, Any
 
-from PySide6.QtCore import Qt, QCoreApplication, QPoint
+import PySide6
+from PySide6.QtCore import Qt, QPoint, QAbstractTableModel
 from PySide6.QtGui import QAction, QDrag
-from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QVBoxLayout, QDialog, QMessageBox, QMenu
+from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QVBoxLayout, QDialog, QMessageBox, QMenu, QListView, \
+    QTableView, QStyledItemDelegate, QWidget
 
 from src import controller
 from src.datatypes import Question
 from src.question_editor import QuestionEditor
 
 
-class SortableQTreeWidgetItem(QTreeWidgetItem):
-    def __init__(self, parent):
-        super(SortableQTreeWidgetItem, self).__init__(parent)
+class RuleDelegate(QStyledItemDelegate):
+    def createEditor(self, parent: PySide6.QtWidgets.QWidget, option: PySide6.QtWidgets.QStyleOptionViewItem,
+                     index: Union[
+                         PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) -> PySide6.QtWidgets.QWidget:
+        editor = QWidget(parent)
+        dialog = QDialog(editor, Qt.Window)
 
-    def __lt__(self, other_item):
-        column = self.treeWidget().sortColumn()
-        try:
-            return float(self.text(column)) > float(other_item.text(column))
-        except ValueError:
-            return self.text(column).lower() < other_item.text(column).lower()
+        return editor
 
 
-class QuestionTree(QTreeWidget):
-    def __init__(self, parent, rulegroup_id):
-        super(QuestionTree, self).__init__(parent)
+class RuleDataModel(QAbstractTableModel):
+    # When subclassing QAbstractTableModel, you must implement rowCount(), columnCount(), and data(). Default
+    # implementations of the index() and parent() functions are provided by QAbstractTableModel. Well behaved models
+    # will also implement headerData().
+
+    # Models that provide interfaces to resizable data structures can provide implementations of insertRows(),
+    # removeRows(), insertColumns(), and removeColumns(). When implementing these functions, it is important to call
+    # the appropriate functions so that all connected views are aware of any changes:
+    #
+    # An insertRows() implementation must call beginInsertRows() before inserting new rows into the data structure,
+    # and it must call endInsertRows() immediately afterwards. An insertColumns() implementation must call
+    # beginInsertColumns() before inserting new columns into the data structure, and it must call endInsertColumns()
+    # immediately afterwards. A removeRows() implementation must call beginRemoveRows() before the rows are removed
+    # from the data structure, and it must call endRemoveRows() immediately afterwards. A removeColumns()
+    # implementation must call beginRemoveColumns() before the columns are removed from the data structure,
+    # and it must call endRemoveColumns() immediately afterwards.
+    def __init__(self, rulegroup_id, parent):
+        super(RuleDataModel, self).__init__(parent)
         self.rulegroup_id = rulegroup_id
-        self.questions = {}  # type: Dict[QTreeWidgetItem, str]
-        self.setDragEnabled(True)
-        self.setSelectionMode(QTreeWidget.ExtendedSelection)
-        self.setDefaultDropAction(Qt.CopyAction)
-        self.itemDoubleClicked.connect(self._handle_double_click)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.prepare_menu)
-        self.setObjectName("tree_widget")
-        self.setSortingEnabled(True)
-        vertical_layout = QVBoxLayout(parent)
-        ___qtreewidgetitem = self.headerItem()
-        ___qtreewidgetitem.setText(4, QCoreApplication.translate("MainWindow", u"\u00c4nderungsdatum", None))
-        ___qtreewidgetitem.setText(3, QCoreApplication.translate("MainWindow", u"Antwort", None))
-        ___qtreewidgetitem.setText(2, QCoreApplication.translate("MainWindow", u"Multiple choice?", None))
-        ___qtreewidgetitem.setText(1, QCoreApplication.translate("MainWindow", u"Frage", None))
-        ___qtreewidgetitem.setText(0, QCoreApplication.translate("MainWindow", u"Regelnummer", None))
-        vertical_layout.addWidget(self)
+        self.questions = controller.get_questions_by_foreignkey(rulegroup_id)
+        self.header = [
+            "Regelnummer",
+            "Frage",
+            "Multiple choice",
+            "Antwort",
+            "Änderungsdatum"]
+        self.keys = [
+            'rule_id',
+            'question',
+            'answer_index',
+            'answer_text',
+            'last_edited']
 
-    def _handle_double_click(self, item):
-        editor = QuestionEditor(controller.get_question(self.questions[item]))
-        if editor.exec() == QDialog.Accepted:
-            # was updated
-            signature = controller.update_question_set(editor.question, editor.mchoice)
-            self._set_question(item, controller.get_question(signature))
+    def rowCount(self, parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> int:
+        return len(self.questions)
+
+    def columnCount(self, parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> int:
+        return 5
+
+    def data(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex],
+             role: int = ...) -> Any:
+        col = index.column()
+        row = index.row()
+        if col == 2 and role == Qt.CheckStateRole:
+            return 2 * (self.questions[row].__dict__[self.keys[col]] != -1)
+        if col != 2 and role == Qt.DisplayRole:
+            return f"{self.questions[row].__dict__[self.keys[col]]}"
+
+        if (col == 1 or col == 3) and role == Qt.ToolTipRole:
+            return f"{self.questions[row].__dict__[self.keys[col]]}"
+
+    def setData(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex], value: Any,
+                role: int = ...) -> bool:
+        pass
+
+    def headerData(self, section: int, orientation: PySide6.QtCore.Qt.Orientation, role: int = ...) -> Any:
+        if orientation == Qt.Vertical:
+            return None
+        if role == Qt.DisplayRole:
+            return self.header[section]
+        else:
+            return None
+
+    def insertRows(self, row: int, count: int,
+                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+        return
+        self.beginInsertRows(parent)
+        self.endInsertRows()
+
+    def flags(self, index: Union[
+        PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) -> PySide6.QtCore.Qt.ItemFlags:
+        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
     def add_new_question(self):
         new_question = Question()
@@ -59,13 +103,47 @@ class QuestionTree(QTreeWidget):
             signature = controller.update_question_set(editor.question, editor.mchoice)
             self.add_question(controller.get_question(signature))
 
+
+class RulegroupView(QTableView):
+    def __init__(self, parent, rulegroup_id):
+        super(RulegroupView, self).__init__(parent)
+        self.rulegroup_id = rulegroup_id
+        self.questions = {}  # type: Dict[QTreeWidgetItem, str]
+        self.setSelectionMode(QTreeWidget.ExtendedSelection)
+        # self.doubleClicked.connect(self._handle_double_click)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.prepare_menu)
+        self.setObjectName("tree_widget")
+
+        self.setItemDelegate(RuleDelegate())
+        self.setEditTriggers(QTableView.DoubleClicked | QTableView.SelectedClicked)
+
+        self.setShowGrid(True)
+        self.setGridStyle(Qt.NoPen)
+        self.setSortingEnabled(True)
+        self.setSelectionBehavior(QListView.SelectRows)
+
+        self.setAlternatingRowColors(True)
+        self.horizontalHeader().setStretchLastSection(True)
+
+        self.setDragEnabled(True)
+        self.setDefaultDropAction(Qt.CopyAction)
+
+        vertical_layout = QVBoxLayout(parent)
+        vertical_layout.addWidget(self)
+
+    def _handle_double_click(self, index):
+        print(index)
+        return
+        editor = QuestionEditor(controller.get_question(self.questions[item]))
+        if editor.exec() == QDialog.Accepted:
+            # was updated
+            signature = controller.update_question_set(editor.question, editor.mchoice)
+            self._set_question(item, controller.get_question(signature))
+
     def refresh_questions(self):
         for item, question_signature in self.questions.items():
             self._set_question(item, controller.get_question(question_signature))
-
-    def add_question(self, question: Question):
-        item = SortableQTreeWidgetItem(self)
-        self._set_question(item, question)
 
     def prepare_menu(self, pos: QPoint):
         def delete_selection(selected_items):
@@ -132,7 +210,7 @@ class QuestionTree(QTreeWidget):
         item.setToolTip(3, question.answer_text)
 
     def startDrag(self, supportedActions: Qt.DropActions) -> None:
-        super(QuestionTree, self).startDrag(supportedActions)
+        super(RulegroupView, self).startDrag(supportedActions)
         indexes = self.selectionModel().selectedRows()
         signatures = [list(self.questions.values())[index.row()] for index in indexes]
         signatures = "".join(signatures).encode()
