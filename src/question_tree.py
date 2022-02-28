@@ -16,8 +16,11 @@ class RuleDelegate(QStyledItemDelegate):
                      index: Union[
                          PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) -> PySide6.QtWidgets.QWidget:
         editor = QWidget(parent)
-        dialog = QDialog(editor, Qt.Window)
-
+        question = index.model().data(index, role=Qt.UserRole)
+        dialog = QuestionEditor(question, parent=editor)
+        if dialog.exec() == QDialog.Accepted:
+            # was updated
+            index.model().setData(index, (dialog.question, dialog.mchoice), Qt.UserRole)
         return editor
 
 
@@ -64,17 +67,25 @@ class RuleDataModel(QAbstractTableModel):
              role: int = ...) -> Any:
         col = index.column()
         row = index.row()
-        if col == 2 and role == Qt.CheckStateRole:
+        if role == Qt.UserRole:
+            return self.questions[row]
+        elif col == 2 and role == Qt.CheckStateRole:
             return 2 * (self.questions[row].__dict__[self.keys[col]] != -1)
-        if col != 2 and role == Qt.DisplayRole:
+        elif col != 2 and role == Qt.DisplayRole:
             return f"{self.questions[row].__dict__[self.keys[col]]}"
-
-        if (col == 1 or col == 3) and role == Qt.ToolTipRole:
+        elif (col == 1 or col == 3) and role == Qt.ToolTipRole:
             return f"{self.questions[row].__dict__[self.keys[col]]}"
+        else:
+            return None
 
     def setData(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex], value: Any,
                 role: int = ...) -> bool:
-        pass
+        if role == Qt.UserRole:
+            #             signature = controller.update_question_set(dialog.question, dialog.mchoice)
+            #             self._set_question(item, controller.get_question(signature))
+            print(value)
+            return False
+        return False
 
     def headerData(self, section: int, orientation: PySide6.QtCore.Qt.Orientation, role: int = ...) -> Any:
         if orientation == Qt.Vertical:
@@ -115,7 +126,7 @@ class RulegroupView(QTableView):
         self.customContextMenuRequested.connect(self.prepare_menu)
         self.setObjectName("tree_widget")
 
-        self.setItemDelegate(RuleDelegate())
+        self.setItemDelegate(RuleDelegate(self))
         self.setEditTriggers(QTableView.DoubleClicked | QTableView.SelectedClicked)
 
         self.setShowGrid(True)

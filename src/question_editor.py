@@ -21,8 +21,8 @@ def checkstate_2_bool(value: Qt.CheckState):
 
 
 class QuestionEditor(QDialog, Ui_QuestionDialog):
-    def __init__(self, question: Question):
-        super(QuestionEditor, self).__init__()
+    def __init__(self, question: Question, parent=None, window_flags=Qt.Dialog):
+        super(QuestionEditor, self).__init__(parent, window_flags)
         self.ui = Ui_QuestionDialog()
         self.ui.setupUi(self)
         self.setWindowTitle("Frage bearbeiten")
