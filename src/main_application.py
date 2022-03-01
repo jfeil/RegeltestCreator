@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from . import controller, document_builder
 from .basic_config import app_version, check_for_update, display_name, is_bundled
 from .datatypes import Rulegroup, create_rulegroups, create_questions_and_mchoice
-from .question_tree import RulegroupView, RuleDataModel
+from .question_tree import RulegroupView, RuleDataModel, RuleSortFilterProxyModel
 from .regeltestcreator import RegeltestSaveDialog, RegeltestSetup
 from .ui_mainwindow import Ui_MainWindow
 from .ui_update_checker import Ui_UpdateChecker
@@ -156,7 +156,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             tab = QWidget()
             view = RulegroupView(tab, rulegroup_id=rulegroup.id)
             model = RuleDataModel(rulegroup.id, view)
-            view.setModel(model)
+            filter_model = RuleSortFilterProxyModel()
+            filter_model.setSourceModel(model)
+            view.setModel(filter_model)
             self.ruletabs[rulegroup.id] = view
             self.ui.tabWidget.addTab(tab, "")
             self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id:02d} {rulegroup.name}")

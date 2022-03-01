@@ -1,7 +1,7 @@
 from typing import Dict, Union, Any
 
 import PySide6
-from PySide6.QtCore import Qt, QPoint, QAbstractTableModel
+from PySide6.QtCore import Qt, QPoint, QAbstractTableModel, QSortFilterProxyModel
 from PySide6.QtGui import QAction, QDrag
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QVBoxLayout, QDialog, QMessageBox, QMenu, QListView, \
     QTableView, QStyledItemDelegate, QWidget
@@ -22,6 +22,10 @@ class RuleDelegate(QStyledItemDelegate):
             # was updated
             index.model().setData(index, (dialog.question, dialog.mchoice), Qt.UserRole)
         return editor
+
+
+class RuleSortFilterProxyModel(QSortFilterProxyModel):
+    pass
 
 
 class RuleDataModel(QAbstractTableModel):
