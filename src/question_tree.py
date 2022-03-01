@@ -1,9 +1,9 @@
-from typing import Dict, Union, Any
+from typing import Union, Any
 
 import PySide6
 from PySide6.QtCore import Qt, QPoint, QAbstractTableModel, QSortFilterProxyModel
 from PySide6.QtGui import QAction, QDrag
-from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem, QVBoxLayout, QDialog, QMessageBox, QMenu, QListView, \
+from PySide6.QtWidgets import QTreeWidget, QVBoxLayout, QDialog, QMessageBox, QMenu, QListView, \
     QTableView, QStyledItemDelegate, QWidget
 
 from src import controller
@@ -99,15 +99,18 @@ class RuleDataModel(QAbstractTableModel):
         else:
             return None
 
-    def insertRows(self, row: int, count: int,
-                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+    def insertRow(self, row: int,
+                  parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
         return
         self.beginInsertRows(parent)
         self.endInsertRows()
 
     def flags(self, index: Union[
         PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) -> PySide6.QtCore.Qt.ItemFlags:
-        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        return Qt.ItemIsDragEnabled | Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+
+    def supportedDragActions(self) -> PySide6.QtCore.Qt.DropActions:
+        return Qt.CopyAction
 
     def add_new_question(self):
         new_question = Question()
@@ -118,14 +121,15 @@ class RuleDataModel(QAbstractTableModel):
             signature = controller.update_question_set(editor.question, editor.mchoice)
             self.add_question(controller.get_question(signature))
 
+    def dropMimeData(self, data: PySide6.QtCore.QMimeData, action: PySide6.QtCore.Qt.DropAction, row: int, column: int,
+                     parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) -> bool:
+        pass
+
 
 class RulegroupView(QTableView):
-    def __init__(self, parent, rulegroup_id):
+    def __init__(self, parent):
         super(RulegroupView, self).__init__(parent)
-        self.rulegroup_id = rulegroup_id
-        self.questions = {}  # type: Dict[QTreeWidgetItem, str]
         self.setSelectionMode(QTreeWidget.ExtendedSelection)
-        # self.doubleClicked.connect(self._handle_double_click)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.prepare_menu)
         self.setObjectName("tree_widget")
@@ -142,23 +146,11 @@ class RulegroupView(QTableView):
         self.horizontalHeader().setStretchLastSection(True)
 
         self.setDragEnabled(True)
+        self.setDragDropMode(QTableView.DragOnly)
         self.setDefaultDropAction(Qt.CopyAction)
 
         vertical_layout = QVBoxLayout(parent)
         vertical_layout.addWidget(self)
-
-    def _handle_double_click(self, index):
-        print(index)
-        return
-        editor = QuestionEditor(controller.get_question(self.questions[item]))
-        if editor.exec() == QDialog.Accepted:
-            # was updated
-            signature = controller.update_question_set(editor.question, editor.mchoice)
-            self._set_question(item, controller.get_question(signature))
-
-    def refresh_questions(self):
-        for item, question_signature in self.questions.items():
-            self._set_question(item, controller.get_question(question_signature))
 
     def prepare_menu(self, pos: QPoint):
         def delete_selection(selected_items):
@@ -174,27 +166,18 @@ class RulegroupView(QTableView):
             msgBox.setDefaultButton(QMessageBox.Cancel)
             ret = msgBox.exec()
             if ret == QMessageBox.Yes:
-                for item in selected_items:
-                    controller.delete(controller.get_question(self.questions[item]))
-                    self.questions.pop(item)
-                    self.takeTopLevelItem(self.indexOfTopLevelItem(item))
+                for row in selected_items:
+                    self.model().removeRow(row)
 
-        delete_bool = True
-        items = self.selectedItems()
         actions = []
-        if not items:
-            items = [self.itemAt(pos)]
-            text = "Diese Frage löschen"
-            if items[0] is None:
-                delete_bool = False
-        else:
-            clearSelAct = QAction(self)
-            clearSelAct.setText("Auswahl zurücksetzen")
-            clearSelAct.triggered.connect(lambda: self.clearSelection())
-            actions += [clearSelAct]
-            text = "Aktuelle Auswahl löschen"
 
-        if delete_bool:
+        selection_model = self.selectionModel()
+        if selection_model.hasSelection():
+            items = selection_model.selectedRows()
+            if len(items) == 1:
+                text = "Diese Frage löschen"
+            else:
+                text = "Aktuelle Auswahl löschen"
             deleteAct = QAction(self)
             deleteAct.setText(text)
             deleteAct.triggered.connect(lambda: delete_selection(items))
@@ -202,38 +185,26 @@ class RulegroupView(QTableView):
 
         create_action = QAction(self)
         create_action.setText("Neue Frage erstellen")
-        create_action.triggered.connect(self.add_new_question)
+        create_action.triggered.connect(lambda: self.model().insertRow(-1))
         actions += [create_action]
 
         menu = QMenu(self)
         menu.addActions(actions)
         menu.exec(self.mapToGlobal(pos))
 
-    def _set_question(self, item: QTreeWidgetItem, question: Question):
-        def bool_to_char(value: bool):
-            if value:
-                return "✔"
-            return "✘"
-
-        self.questions[item] = question.signature
-        item.setText(0, str(question.rule_id))
-        item.setText(1, question.question)
-        item.setText(2, bool_to_char(question.answer_index != -1))
-        item.setText(3, question.answer_text)
-        item.setText(4, str(question.last_edited))
-        item.setToolTip(1, question.question)
-        item.setToolTip(3, question.answer_text)
-
     def startDrag(self, supportedActions: Qt.DropActions) -> None:
         super(RulegroupView, self).startDrag(supportedActions)
-        indexes = self.selectionModel().selectedRows()
-        signatures = [list(self.questions.values())[index.row()] for index in indexes]
-        signatures = "".join(signatures).encode()
-        if not indexes:
+        rows = self.selectionModel().selectedRows()
+        if not rows:
             return
-        mimeData = self.model().mimeData(indexes)
+        mimeData = self.model().mimeData(rows)
         if not mimeData:
             return
+        data = []
+        for row in rows:
+            data += [self.model().data(row, role=Qt.UserRole)]
+        signatures = [question.signature for question in data]
+        signatures = "".join(signatures).encode()
         mimeData.setData('application/questionitems', bytearray(signatures))
         drag = QDrag(self)
         drag.setMimeData(mimeData)

@@ -154,7 +154,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def create_ruletabs(self, rulegroups: List[Rulegroup]):
         for rulegroup in rulegroups:
             tab = QWidget()
-            view = RulegroupView(tab, rulegroup_id=rulegroup.id)
+            view = RulegroupView(tab)
             model = RuleDataModel(rulegroup.id, view)
             filter_model = RuleSortFilterProxyModel()
             filter_model.setSourceModel(model)
