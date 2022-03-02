@@ -48,24 +48,19 @@ class RuleDataModel(QAbstractTableModel):
         super(RuleDataModel, self).__init__(parent)
         self.rulegroup_id = rulegroup_id
         self.questions = controller.get_questions_by_foreignkey(rulegroup_id)
-        self.header = [
-            "Regelnummer",
-            "Frage",
-            "Multiple choice",
-            "Antwort",
-            "Änderungsdatum"]
-        self.keys = [
-            'rule_id',
-            'question',
-            'answer_index',
-            'answer_text',
-            'last_edited']
+        self.headers = [
+            ("Regelnummer", 'rule_id'),
+            ("Frage", 'question'),
+            ("Multiple choice", 'answer_index'),
+            ("Antwort", 'answer_text'),
+            ("Änderungsdatum", 'last_edited'),
+        ]
 
     def rowCount(self, parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> int:
         return len(self.questions)
 
     def columnCount(self, parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> int:
-        return 5
+        return len(self.headers)
 
     def data(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex],
              role: int = ...) -> Any:
@@ -73,12 +68,12 @@ class RuleDataModel(QAbstractTableModel):
         row = index.row()
         if role == Qt.UserRole:
             return self.questions[row]
-        elif col == 2 and role == Qt.CheckStateRole:
-            return 2 * (self.questions[row].__dict__[self.keys[col]] != -1)
-        elif col != 2 and role == Qt.DisplayRole:
-            return f"{self.questions[row].__dict__[self.keys[col]]}"
-        elif (col == 1 or col == 3) and role == Qt.ToolTipRole:
-            return f"{self.questions[row].__dict__[self.keys[col]]}"
+        elif self.headers[col][0] == "Multiple choice" and role == Qt.CheckStateRole:
+            return 2 * (self.questions[row].__dict__[self.headers[col][1]] != -1)
+        elif self.headers[col][0] != "Multiple choice" and role == Qt.DisplayRole:
+            return f"{self.questions[row].__dict__[self.headers[col][1]]}"
+        elif (self.headers[col][0] == "Frage" or self.headers[col][0] == "Antwort") and role == Qt.ToolTipRole:
+            return f"{self.questions[row].__dict__[self.headers[col][1]]}"
         else:
             return None
 
@@ -88,14 +83,14 @@ class RuleDataModel(QAbstractTableModel):
             #             signature = controller.update_question_set(dialog.question, dialog.mchoice)
             #             self._set_question(item, controller.get_question(signature))
             print(value)
-            return False
+            return True
         return False
 
     def headerData(self, section: int, orientation: PySide6.QtCore.Qt.Orientation, role: int = ...) -> Any:
         if orientation == Qt.Vertical:
             return None
         if role == Qt.DisplayRole:
-            return self.header[section]
+            return self.headers[section][0]
         else:
             return None
 
