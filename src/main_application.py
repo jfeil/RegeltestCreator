@@ -178,6 +178,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for question in regeltest_setup.collect_questions():
                 self.ui.regeltest_list.add_question(question)
 
+    def filter_column(self, column, keyword, mode=FilterMode.Include):
+        for (filter_model, _) in self.ruletabs.values():
+            filter_model = filter_model  # type: QSortFilterProxyModel
+            filter_model.setFilterFixedString(keyword)
+            filter_model.setFilterKeyColumn(column)
+
     def create_regeltest(self):
         question_set = []
         for signature in self.ui.regeltest_list.questions:
