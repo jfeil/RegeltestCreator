@@ -98,9 +98,9 @@ class Question(Base):
     question = Column(String)
     answer_index = Column(Integer, default=EagerDefault(-1))  # for no multiple choice
     answer_text = Column(String)
-    created = Column(Date, default=date.today())
-    last_edited = Column(Date, default=date.today())
-    signature = Column(String, default=uuid.uuid4().hex, primary_key=True)
+    created = Column(Date, default=date.today)
+    last_edited = Column(Date, default=date.today)
+    signature = Column(String, default=(lambda: uuid.uuid4().hex), primary_key=True)
 
     table_headers = {
         'group_id': "Regelgruppe",
@@ -114,12 +114,17 @@ class Question(Base):
         'signature': "Signatur"
     }
 
+    def table_checkbox(self, dict_key):
+        return defaultdict(lambda: None, {
+            'multiple_choice': 2 * (self.answer_index != -1)
+        })[dict_key]
+
     def table_value(self, dict_key):
         return {
             'group_id': self.group_id,
             'rule_id': self.rule_id,
             'question': self.question,
-            'multiple_choice': self.answer_index != -1,
+            'multiple_choice': {-1: None, 0: 'A', 1: 'B', 2: 'C'}[self.answer_index],
             'answer_index': self.answer_index,
             'answer_text': self.answer_text,
             'created': str(self.created),
@@ -130,7 +135,7 @@ class Question(Base):
     def table_tooltip(self, dict_key):
         return defaultdict(lambda: None, {
             'question': self.question,
-            'answer_text': self.answer_text,
+            'answer_text': self.answer_text
         })[dict_key]
 
     def export(self) -> Tuple[str, str]:

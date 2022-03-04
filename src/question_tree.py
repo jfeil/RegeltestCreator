@@ -1,4 +1,4 @@
-from typing import Union, Any
+from typing import Union, Any, List
 
 import PySide6
 from PySide6.QtCore import Qt, QPoint, QAbstractTableModel, QSortFilterProxyModel
@@ -48,7 +48,7 @@ class RuleDataModel(QAbstractTableModel):
     def __init__(self, rulegroup_id, parent):
         super(RuleDataModel, self).__init__(parent)
         self.rulegroup_id = rulegroup_id
-        self.questions = controller.get_questions_by_foreignkey(rulegroup_id)  # type: Question
+        self.questions = controller.get_questions_by_foreignkey(rulegroup_id)  # type: List[Question]
         self.headers = [
             'rule_id',
             'question',
@@ -73,16 +73,14 @@ class RuleDataModel(QAbstractTableModel):
         if role != Qt.CheckStateRole and role != Qt.DisplayRole and role != Qt.ToolTipRole:
             return None
 
-        value = self.questions[row].table_value(self.headers[col])
-        tooltip = self.questions[row].table_tooltip(self.headers[col])
-
-        if type(value) is bool and role == Qt.CheckStateRole:
-            return 2 * value
-
-        if type(value) is not bool and role == Qt.DisplayRole:
+        if role == Qt.CheckStateRole:
+            checkbox = self.questions[row].table_checkbox(self.headers[col])
+            return checkbox
+        elif role == Qt.DisplayRole:
+            value = self.questions[row].table_value(self.headers[col])
             return value
-
-        if role == Qt.ToolTipRole:
+        elif role == Qt.ToolTipRole:
+            tooltip = self.questions[row].table_tooltip(self.headers[col])
             return tooltip
 
     def setData(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex], value: Any,
@@ -101,10 +99,33 @@ class RuleDataModel(QAbstractTableModel):
 
     def insertRows(self, row: int, count: int,
                    parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
-        self.beginInsertRows(parent, row, row + count)
+        inserted_count = -1
         for i in range(count):
-            self.insertRow(row + i)
+            if self.insertRow(row + i):
+                inserted_count += 1
+        if inserted_count == -1:
+            return False
+        self.beginInsertRows(parent, row, row + inserted_count)
         self.endInsertRows()
+        return True
+
+    def removeRows(self, row: int, count: int,
+                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+        removed_count = -1
+        for i in range(count):
+            if self.removeRow(row + i):
+                removed_count += 1
+        if removed_count == -1:
+            return False
+        self.beginRemoveRows(parent, row, row + removed_count)
+        self.endRemoveRows()
+        return True
+
+    def removeRow(self, row: int,
+                  parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+        controller.delete(self.questions[row])
+        self.questions.pop(row)
+        return True
 
     def insertRow(self, row: int,
                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
@@ -114,7 +135,7 @@ class RuleDataModel(QAbstractTableModel):
         editor = QuestionEditor(new_question)
         if editor.exec() == QDialog.Accepted:
             signature = controller.update_question_set(editor.question, editor.mchoice)
-            self.questions += [controller.get_question(signature)]
+            self.questions.insert(row, controller.get_question(signature))
             return True
         return False
 
@@ -125,9 +146,6 @@ class RuleDataModel(QAbstractTableModel):
     def supportedDragActions(self) -> PySide6.QtCore.Qt.DropActions:
         return Qt.CopyAction
 
-    def dropMimeData(self, data: PySide6.QtCore.QMimeData, action: PySide6.QtCore.Qt.DropAction, row: int, column: int,
-                     parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) -> bool:
-        pass
 
 class RulegroupView(QTableView):
     def __init__(self, parent):
@@ -168,9 +186,10 @@ class RulegroupView(QTableView):
             msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
             msgBox.setDefaultButton(QMessageBox.Cancel)
             ret = msgBox.exec()
+            selected_items = sorted(selected_items, key=(lambda val: val.row()), reverse=True)
             if ret == QMessageBox.Yes:
                 for row in selected_items:
-                    self.model().removeRow(row)
+                    self.model().removeRow(row.row())
 
         actions = []
 
