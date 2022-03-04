@@ -224,6 +224,8 @@ def create_questions_and_mchoice(rules_xml):
             created = default_date
         if changed:
             changed = datetime.strptime(rule.find("aend").contents[0].strip(), "%d.%m.%Y")
+            if changed < created:
+                changed = created
         else:
             changed = created
         rules += [Question(rule_id=rule_id, group_id=group_id, question=question, answer_index=mchoice_index,
