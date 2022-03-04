@@ -3,34 +3,17 @@ from typing import Union, Any, List
 import PySide6
 from PySide6.QtCore import Qt, QPoint, QAbstractTableModel, QSortFilterProxyModel
 from PySide6.QtGui import QAction, QDrag, QShortcut, QKeySequence
-from PySide6.QtWidgets import QTreeWidget, QVBoxLayout, QDialog, QMessageBox, QMenu, QListView, \
-    QTableView, QStyledItemDelegate, QWidget
+from PySide6.QtWidgets import QTreeWidget, QVBoxLayout, QDialog, QMessageBox, QMenu, QListView, QTableView, \
+    QStyledItemDelegate, QWidget
 
 from src import controller
 from src.datatypes import Question
 from src.question_editor import QuestionEditor
 
 
-class RuleDelegate(QStyledItemDelegate):
-    def createEditor(self, parent: PySide6.QtWidgets.QWidget, option: PySide6.QtWidgets.QStyleOptionViewItem,
-                     index: Union[
-                         PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) -> PySide6.QtWidgets.QWidget:
-        editor = QWidget(parent)
-        question = index.model().data(index, role=Qt.UserRole)
-        dialog = QuestionEditor(question, parent=editor)
-        if dialog.exec() == QDialog.Accepted:
-            # was updated
-            index.model().setData(index, (dialog.question, dialog.mchoice), Qt.UserRole)
-        return editor
-
-
-class RuleSortFilterProxyModel(QSortFilterProxyModel):
-    pass
-
-
 class RuleDataModel(QAbstractTableModel):
     # When subclassing QAbstractTableModel, you must implement rowCount(), columnCount(), and data(). Default
-    # implementations of the index() and parent() functions are provided by QAbstractTableModel. Well behaved models
+    # implementations of the index() and parent() functions are provided by QAbstractTableModel. Well-behaved models
     # will also implement headerData().
 
     # Models that provide interfaces to resizable data structures can provide implementations of insertRows(),
@@ -45,13 +28,7 @@ class RuleDataModel(QAbstractTableModel):
     # implementation must call beginRemoveColumns() before the columns are removed from the data structure,
     # and it must call endRemoveColumns() immediately afterwards.
 
-    headers = [
-        'rule_id',
-        'question',
-        'multiple_choice',
-        'answer_text',
-        'last_edited',
-    ]
+    headers = ['rule_id', 'question', 'multiple_choice', 'answer_text', 'last_edited', ]
 
     def __init__(self, rulegroup_id, parent):
         super(RuleDataModel, self).__init__(parent)
@@ -77,6 +54,7 @@ class RuleDataModel(QAbstractTableModel):
                       parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
         self.beginInsertColumns(parent, column, self.columnCount())
         self.endInsertColumns()
+        return False
 
     def insertColumn(self, column: int,
                      parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
@@ -172,6 +150,19 @@ class RuleDataModel(QAbstractTableModel):
 
     def supportedDragActions(self) -> PySide6.QtCore.Qt.DropActions:
         return Qt.CopyAction
+
+
+class RuleDelegate(QStyledItemDelegate):
+    def createEditor(self, parent: PySide6.QtWidgets.QWidget, option: PySide6.QtWidgets.QStyleOptionViewItem,
+                     index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) \
+            -> PySide6.QtWidgets.QWidget:
+        editor = QWidget(parent)
+        question = index.model().data(index, role=Qt.UserRole)
+        dialog = QuestionEditor(question, parent=editor)
+        if dialog.exec() == QDialog.Accepted:
+            # was updated
+            index.model().setData(index, (dialog.question, dialog.mchoice), Qt.UserRole)
+        return editor
 
 
 class RulegroupView(QTableView):
@@ -272,3 +263,7 @@ class RulegroupView(QTableView):
         result = drag.exec_(supportedActions, Qt.CopyAction)
         if result == Qt.CopyAction:
             self.clearSelection()
+
+
+class RuleSortFilterProxyModel(QSortFilterProxyModel):
+    pass

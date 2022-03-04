@@ -114,6 +114,7 @@ class Question(Base):
         'signature': "Signatur"
     }
 
+    # noinspection PyTypeChecker
     def table_checkbox(self, dict_key):
         return defaultdict(lambda: None, {
             'multiple_choice': 2 * (self.answer_index != -1)
@@ -132,6 +133,7 @@ class Question(Base):
             'signature': self.signature
         }[dict_key]
 
+    # noinspection PyTypeChecker
     def table_tooltip(self, dict_key):
         return defaultdict(lambda: None, {
             'question': self.question,
@@ -145,8 +147,10 @@ class Question(Base):
             answer_text = self.answer_text
         return (f"<REGELSATZ>\n<LNR>\n{self.group_id:02d}{self.rule_id:03d}\n</LNR>\n<FRAGE>\n{self.question}\n"
                 f"</FRAGE>\n<MCHOICE>\n",
-                f"</MCHOICE>\n<ANTWORT>\n{answer_text}\n</ANTWORT>\n<ERST>\n{self.created.strftime('%d.%m.%Y')}\n</ERST>\n<AEND>\n"
-                f"{self.last_edited.strftime('%d.%m.%Y')}\n</AEND>\n<SIGNATUR>\n{self.signature}\n</SIGNATUR>\n</REGELSATZ>\n")
+                f"</MCHOICE>\n<ANTWORT>\n{answer_text}\n</ANTWORT>\n<ERST>\n{self.created.strftime('%d.%m.%Y')}\n"
+                f"</ERST>\n<AEND>\n "
+                f"{self.last_edited.strftime('%d.%m.%Y')}\n</AEND>\n<SIGNATUR>\n{self.signature}\n</SIGNATUR>\n"
+                f"</REGELSATZ>\n")
 
     def __repr__(self):
         return f"Question(text={self.question!r}, answer={self.answer_index!r}:{self.answer_text!r}" \

@@ -35,11 +35,15 @@ api_url = "https://api.github.com/repos/jfeil/RegeltestCreator/releases"
 database_name = "database.db"
 
 
+class EagerDefault:
+    def __init__(self, value: Any):
+        self.value = value
+
+
 def check_for_update() -> Tuple[VERSION_INFO, VERSION_INFO]:  # new_version, description, url, download_url
     def check(cur_version, release_info):
         if version.parse(release_info['tag_name']) <= cur_version:
             return None
-        download_url = None
         fileendings = {'Darwin': ['.app', '.zip'],
                        'Windows': ['.exe'],
                        'Linux': []}
@@ -68,11 +72,6 @@ def check_for_update() -> Tuple[VERSION_INFO, VERSION_INFO]:  # new_version, des
 
 
 # Source: https://variable-scope.com/posts/setting-eager-defaults-for-sqlalchemy-orm-models
-class EagerDefault:
-    def __init__(self, value: Any):
-        self.value = value
-
-
 def defaults_included_constructor(instance, **kwds):
     mapper = inspect(instance).mapper
     for column in mapper.columns:

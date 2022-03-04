@@ -32,10 +32,12 @@ class RegeltestCreator(QListWidget):
         self.questions.append(question.signature)
 
     def delete_selected_items(self):
-        rows = sorted([index.row() for index in self.selectedIndexes()], reverse=True)
-        if not rows:
+        selection_model = self.selectionModel()
+        if not selection_model.hasSelection():
             return
-        for index in rows:
+        selected_rows = sorted([index.row() for index in selection_model.selectedRows()], reverse=True)
+
+        for index in selected_rows:
             self.questions.pop(index)
             item = self.takeItem(index)
             del item
@@ -117,13 +119,14 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
         parameters = controller.get_rulegroup_config()
         divisor = 5
         for i in range(len(parameters) // divisor):
-            self.create_tab(f"{parameters[i*divisor + 1][0].id:02d} - {parameters[(i+1)*divisor-1][0].id:02d}", parameters[i*divisor:(i+1)*divisor])
+            self.create_tab(f"{parameters[i * divisor + 1][0].id:02d} - {parameters[(i + 1) * divisor - 1][0].id:02d}",
+                            parameters[i * divisor:(i + 1) * divisor])
         if len(parameters) // divisor != len(parameters) / divisor:
             len_rest = len(parameters) % divisor
             if len_rest == 1:
                 text = f"{parameters[-1][0].id:02d}"
             else:
-                text = f"{parameters[len(parameters)-len_rest][0].id:02d} - {parameters[-1][0].id:02d}"
+                text = f"{parameters[len(parameters) - len_rest][0].id:02d} - {parameters[-1][0].id:02d}"
             self.create_tab(text, parameters[len(parameters) - len_rest:])
         self.updated()
 
@@ -134,6 +137,7 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
             question_count += text + mchoice
         self.ui.statistics.setText(f"{question_count} Fragen aktuell ausgewählt ({question_count * 2} Punkte)")
 
+    # noinspection PyUnresolvedReferences
     def create_tab(self, title: str, parameters: List[Tuple[Rulegroup, int, int]]):
         tab_widget = QWidget()
         self.ui.tabWidget.addTab(tab_widget, title)
@@ -152,9 +156,11 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
             text_questions = []
             mchoice_questions = []
             if text:
-                text_questions = controller.get_questions_by_foreignkey(rulegroup.id, mchoice=False, randomize=True)[0:text]
+                text_questions = controller.get_questions_by_foreignkey(rulegroup.id, mchoice=False, randomize=True)[
+                                 0:text]
             if mchoice:
-                mchoice_questions = controller.get_questions_by_foreignkey(rulegroup.id, mchoice=True, randomize=True)[0:mchoice]
+                mchoice_questions = controller.get_questions_by_foreignkey(rulegroup.id, mchoice=True, randomize=True)[
+                                    0:mchoice]
             text_questions += mchoice_questions
             if self.ui.checkbox_textmchoice.isChecked():
                 random.shuffle(text_questions)

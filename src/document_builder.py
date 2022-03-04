@@ -81,6 +81,7 @@ class QuestionFlowable(Flowable):
         if self.answer_index == -1:
             self.height_answer = [max(self.lines_answer, min_lines) * linespacing]
         else:
+            # noinspection PyTypeChecker
             self.height_answer = [
                 max(len(simpleSplit(a, fontName, fontSize, ratio_answer * self.width)) * linespacing, 1.1 * radio_size)
                 for a in self.mchoice]

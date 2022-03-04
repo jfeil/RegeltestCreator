@@ -89,8 +89,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.setWindowTitle(QCoreApplication.translate("MainWindow", f"{display_name} - {app_version}"
-                                                       , None))
+        # noinspection PyTypeChecker
+        self.setWindowTitle(QCoreApplication.translate("MainWindow", f"{display_name} - {app_version}", None))
         self.ui.actionRegeldatensatz_einladen.triggered.connect(self.load_dataset)
         self.ui.actionAuf_Updates_pr_fen.triggered.connect(lambda: display_update_dialog(self, check_for_update()))
         self.ui.action_ber.triggered.connect(about_dialog)
@@ -171,6 +171,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ruletabs[rulegroup.id] = (filter_model, model)
             self.ui.tabWidget.addTab(tab, "")
             self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id:02d} {rulegroup.name}")
+        # self.filter_column(3, 'FaD')
+        # self.filter_column(3, 'VW')
 
     def setup_regeltest(self):
         regeltest_setup = RegeltestSetup(self)
@@ -195,8 +197,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         output_path = settings.ui.output_edit.text()
         if result:
             QApplication.setOverrideCursor(Qt.WaitCursor)
-            document_builder.create_document(question_set, output_path, settings.ui.title_edit.text()
-                                             , icon_path=settings.ui.icon_path_edit.text())
+            document_builder.create_document(question_set, output_path, settings.ui.title_edit.text(),
+                                             icon_path=settings.ui.icon_path_edit.text())
             QApplication.restoreOverrideCursor()
             webbrowser.open_new(output_path)
 
@@ -230,5 +232,6 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
         else:
             download_link = 'Noch kein Download für die aktuelle Plattform verfügbar.<br>' \
                             'Bitte versuche es später erneut.'
+        release_notes = markdown2.markdown(release[1]).replace("h3>", "h4>").replace("h2>", "h3>").replace("h1>", "h2>")
         self.ui.text.setText(f'<h1>Update <a href="{release[2]}">{release[0]}</a> verfügbar!</h1>'
-                             f'{markdown2.markdown(release[1]).replace("h3>", "h4>").replace("h2>", "h3>").replace("h1>", "h2>")}{download_link}')
+                             f'{release_notes}{download_link}')

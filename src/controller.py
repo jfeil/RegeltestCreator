@@ -27,10 +27,6 @@ def populate_tabwidget(mainwindow: MainWindow):
     mainwindow.create_ruletabs(db.get_rulegroups())
 
 
-def populate_questions(mainwindow: MainWindow):
-    mainwindow.initialize_questions()
-
-
 def update_question_set(question: Question, mchoice: List[MultipleChoice]) -> Signature:
     return db.update_question_set(question, mchoice)
 
@@ -60,7 +56,8 @@ def get_rulegroup_config() -> List[Tuple[Rulegroup, int, int]]:
     rulegroups = db.get_rulegroups()
     return [(rulegroup,
              db.get_questions_by_foreignkey(rulegroup_id=rulegroup.id, mchoice=False).count(),
-             db.get_questions_by_foreignkey(rulegroup_id=rulegroup.id, mchoice=True).count()) for rulegroup in rulegroups]
+             db.get_questions_by_foreignkey(rulegroup_id=rulegroup.id, mchoice=True).count()) for rulegroup in
+            rulegroups]
 
 
 def fill_database(dataset):
