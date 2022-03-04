@@ -44,16 +44,17 @@ class RuleDataModel(QAbstractTableModel):
     # from the data structure, and it must call endRemoveRows() immediately afterwards. A removeColumns()
     # implementation must call beginRemoveColumns() before the columns are removed from the data structure,
     # and it must call endRemoveColumns() immediately afterwards.
+
     def __init__(self, rulegroup_id, parent):
         super(RuleDataModel, self).__init__(parent)
         self.rulegroup_id = rulegroup_id
-        self.questions = controller.get_questions_by_foreignkey(rulegroup_id)
+        self.questions = controller.get_questions_by_foreignkey(rulegroup_id)  # type: Question
         self.headers = [
-            ("Regelnummer", 'rule_id'),
-            ("Frage", 'question'),
-            ("Multiple choice", 'answer_index'),
-            ("Antwort", 'answer_text'),
-            ("Änderungsdatum", 'last_edited'),
+            'rule_id',
+            'question',
+            'multiple_choice',
+            'answer_text',
+            'last_edited',
         ]
 
     def rowCount(self, parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> int:
@@ -68,21 +69,27 @@ class RuleDataModel(QAbstractTableModel):
         row = index.row()
         if role == Qt.UserRole:
             return self.questions[row]
-        elif self.headers[col][0] == "Multiple choice" and role == Qt.CheckStateRole:
-            return 2 * (self.questions[row].__dict__[self.headers[col][1]] != -1)
-        elif self.headers[col][0] != "Multiple choice" and role == Qt.DisplayRole:
-            return f"{self.questions[row].__dict__[self.headers[col][1]]}"
-        elif (self.headers[col][0] == "Frage" or self.headers[col][0] == "Antwort") and role == Qt.ToolTipRole:
-            return f"{self.questions[row].__dict__[self.headers[col][1]]}"
-        else:
+
+        if role != Qt.CheckStateRole and role != Qt.DisplayRole and role != Qt.ToolTipRole:
             return None
+
+        value = self.questions[row].table_value(self.headers[col])
+        tooltip = self.questions[row].table_tooltip(self.headers[col])
+
+        if type(value) is bool and role == Qt.CheckStateRole:
+            return 2 * value
+
+        if type(value) is not bool and role == Qt.DisplayRole:
+            return value
+
+        if role == Qt.ToolTipRole:
+            return tooltip
 
     def setData(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex], value: Any,
                 role: int = ...) -> bool:
         if role == Qt.UserRole:
-            #             signature = controller.update_question_set(dialog.question, dialog.mchoice)
-            #             self._set_question(item, controller.get_question(signature))
-            print(value)
+            signature = controller.update_question_set(*value)
+            self.questions[index.row()] = controller.get_question(signature)
             return True
         return False
 
@@ -90,15 +97,26 @@ class RuleDataModel(QAbstractTableModel):
         if orientation == Qt.Vertical:
             return None
         if role == Qt.DisplayRole:
-            return self.headers[section][0]
-        else:
-            return None
+            return Question.table_headers[self.headers[section]]
+
+    def insertRows(self, row: int, count: int,
+                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+        self.beginInsertRows(parent, row, row + count)
+        for i in range(count):
+            self.insertRow(row + i)
+        self.endInsertRows()
 
     def insertRow(self, row: int,
                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
-        return
-        self.beginInsertRows(parent)
-        self.endInsertRows()
+        new_question = Question()
+        new_question.rulegroup = controller.get_rulegroup(self.rulegroup_id)
+        new_question.rule_id = controller.get_new_question_id(self.rulegroup_id)
+        editor = QuestionEditor(new_question)
+        if editor.exec() == QDialog.Accepted:
+            signature = controller.update_question_set(editor.question, editor.mchoice)
+            self.questions += [controller.get_question(signature)]
+            return True
+        return False
 
     def flags(self, index: Union[
         PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) -> PySide6.QtCore.Qt.ItemFlags:
@@ -107,19 +125,9 @@ class RuleDataModel(QAbstractTableModel):
     def supportedDragActions(self) -> PySide6.QtCore.Qt.DropActions:
         return Qt.CopyAction
 
-    def add_new_question(self):
-        new_question = Question()
-        new_question.rulegroup = controller.get_rulegroup(self.rulegroup_id)
-        new_question.rule_id = controller.get_new_question_id(self.rulegroup_id)
-        editor = QuestionEditor(new_question)
-        if editor.exec() == QDialog.Accepted:
-            signature = controller.update_question_set(editor.question, editor.mchoice)
-            self.add_question(controller.get_question(signature))
-
     def dropMimeData(self, data: PySide6.QtCore.QMimeData, action: PySide6.QtCore.Qt.DropAction, row: int, column: int,
                      parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) -> bool:
         pass
-
 
 class RulegroupView(QTableView):
     def __init__(self, parent):
@@ -180,7 +188,7 @@ class RulegroupView(QTableView):
 
         create_action = QAction(self)
         create_action.setText("Neue Frage erstellen")
-        create_action.triggered.connect(lambda: self.model().insertRow(-1))
+        create_action.triggered.connect(lambda: self.model().insertRow(self.model().rowCount()))
         actions += [create_action]
 
         menu = QMenu(self)

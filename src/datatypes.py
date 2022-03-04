@@ -1,6 +1,7 @@
 import logging
 import re
 import uuid
+from collections import defaultdict
 from datetime import datetime, date
 from typing import List, Tuple
 
@@ -100,6 +101,37 @@ class Question(Base):
     created = Column(Date, default=date.today())
     last_edited = Column(Date, default=date.today())
     signature = Column(String, default=uuid.uuid4().hex, primary_key=True)
+
+    table_headers = {
+        'group_id': "Regelgruppe",
+        'rule_id': "Regelnummer",
+        'question': "Frage",
+        'multiple_choice': "Multiple choice",
+        'answer_index': "Multiple choice Antwort",
+        'answer_text': "Antwort",
+        'created': "Erstelldatum",
+        'last_edited': "Änderungsdatum",
+        'signature': "Signatur"
+    }
+
+    def table_value(self, dict_key):
+        return {
+            'group_id': self.group_id,
+            'rule_id': self.rule_id,
+            'question': self.question,
+            'multiple_choice': self.answer_index != -1,
+            'answer_index': self.answer_index,
+            'answer_text': self.answer_text,
+            'created': str(self.created),
+            'last_edited': str(self.last_edited),
+            'signature': self.signature
+        }[dict_key]
+
+    def table_tooltip(self, dict_key):
+        return defaultdict(lambda: None, {
+            'question': self.question,
+            'answer_text': self.answer_text,
+        })[dict_key]
 
     def export(self) -> Tuple[str, str]:
         if self.answer_index != -1:
