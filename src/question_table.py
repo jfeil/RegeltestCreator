@@ -48,7 +48,7 @@ class RuleDataModel(QAbstractTableModel):
     def __init__(self, rulegroup_id, parent):
         super(RuleDataModel, self).__init__(parent)
         self.rulegroup_id = rulegroup_id
-        self.questions = controller.get_questions_by_foreignkey(rulegroup_id)  # type: List[Question]
+        self.questions = []  # type: List[Question]
         self.headers = [
             'rule_id',
             'question',
@@ -56,6 +56,15 @@ class RuleDataModel(QAbstractTableModel):
             'answer_text',
             'last_edited',
         ]
+        self.read_data()
+
+    def read_data(self):
+        self.questions = controller.get_questions_by_foreignkey(self.rulegroup_id)
+
+    def reset(self) -> None:
+        self.beginResetModel()
+        self.read_data()
+        self.endResetModel()
 
     def rowCount(self, parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> int:
         return len(self.questions)

@@ -1,8 +1,11 @@
 import webbrowser
+from enum import Enum, auto
 from typing import List, Dict
+from typing import Tuple
 
 import markdown2
 from PySide6.QtCore import QCoreApplication, Qt
+from PySide6.QtCore import QSortFilterProxyModel
 from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog, QApplication, QMessageBox, QDialog
 from bs4 import BeautifulSoup
 
@@ -13,6 +16,11 @@ from .question_table import RulegroupView, RuleDataModel, RuleSortFilterProxyMod
 from .regeltestcreator import RegeltestSaveDialog, RegeltestSetup
 from .ui_mainwindow import Ui_MainWindow
 from .ui_update_checker import Ui_UpdateChecker
+
+
+class FilterMode(Enum):
+    Include = auto()
+    Exclude = auto()
 
 
 def load_dataset(parent: QWidget, reset_cursor=True) -> bool:
@@ -108,7 +116,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.ui.create_regeltest.clicked.connect(self.create_regeltest)
 
-        self.ruletabs = {}  # type: Dict[int, RulegroupView]
+        self.ruletabs = {}  # type: Dict[int, Tuple[QSortFilterProxyModel, RuleDataModel]]
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
 
     def show(self) -> None:
@@ -147,8 +155,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def load_dataset(self):
         load_dataset(self, reset_cursor=False)
-        for question_tree in self.ruletabs.values():
-            question_tree.refresh_questions()
+        for (_, model) in self.ruletabs.values():
+            model.reset()
         QApplication.restoreOverrideCursor()
 
     def create_ruletabs(self, rulegroups: List[Rulegroup]):
@@ -159,7 +167,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             filter_model = RuleSortFilterProxyModel()
             filter_model.setSourceModel(model)
             view.setModel(filter_model)
-            self.ruletabs[rulegroup.id] = view
+            view.sortByColumn(0, Qt.AscendingOrder)
+            self.ruletabs[rulegroup.id] = (filter_model, model)
             self.ui.tabWidget.addTab(tab, "")
             self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id:02d} {rulegroup.name}")
 
