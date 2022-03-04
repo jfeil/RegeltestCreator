@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from . import controller, document_builder
 from .basic_config import app_version, check_for_update, display_name, is_bundled
 from .datatypes import Rulegroup, create_rulegroups, create_questions_and_mchoice
-from .question_tree import RulegroupView, RuleDataModel, RuleSortFilterProxyModel
+from .question_table import RulegroupView, RuleDataModel, RuleSortFilterProxyModel
 from .regeltestcreator import RegeltestSaveDialog, RegeltestSetup
 from .ui_mainwindow import Ui_MainWindow
 from .ui_update_checker import Ui_UpdateChecker
