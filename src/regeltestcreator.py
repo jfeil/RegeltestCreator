@@ -20,8 +20,8 @@ class RegeltestCreator(QListWidget):
         self.setAcceptDrops(True)
         self.setSelectionMode(QListWidget.ExtendedSelection)
         self.questions = []  # type: List[str]
-        delete_shortcut = QShortcut(QKeySequence(Qt.Key_Delete), self)
-        delete_shortcut.activated.connect(self.remove_selected_items)
+        delete_shortcut = QShortcut(QKeySequence(Qt.Key_Delete), self, None, None, Qt.WidgetShortcut)
+        delete_shortcut.activated.connect(self.delete_selected_items)
 
     def add_question(self, question: Question):
         if question.signature in self.questions:
@@ -31,8 +31,8 @@ class RegeltestCreator(QListWidget):
         item.setText(question.question)
         self.questions.append(question.signature)
 
-    def remove_selected_items(self):
-        rows = [index.row() for index in self.selectedIndexes()[::-1]]
+    def delete_selected_items(self):
+        rows = sorted([index.row() for index in self.selectedIndexes()], reverse=True)
         if not rows:
             return
         for index in rows:

@@ -2,7 +2,7 @@ from typing import Union, Any, List
 
 import PySide6
 from PySide6.QtCore import Qt, QPoint, QAbstractTableModel, QSortFilterProxyModel
-from PySide6.QtGui import QAction, QDrag
+from PySide6.QtGui import QAction, QDrag, QShortcut, QKeySequence
 from PySide6.QtWidgets import QTreeWidget, QVBoxLayout, QDialog, QMessageBox, QMenu, QListView, \
     QTableView, QStyledItemDelegate, QWidget
 
@@ -45,17 +45,18 @@ class RuleDataModel(QAbstractTableModel):
     # implementation must call beginRemoveColumns() before the columns are removed from the data structure,
     # and it must call endRemoveColumns() immediately afterwards.
 
+    headers = [
+        'rule_id',
+        'question',
+        'multiple_choice',
+        'answer_text',
+        'last_edited',
+    ]
+
     def __init__(self, rulegroup_id, parent):
         super(RuleDataModel, self).__init__(parent)
         self.rulegroup_id = rulegroup_id
         self.questions = []  # type: List[Question]
-        self.headers = [
-            'rule_id',
-            'question',
-            'multiple_choice',
-            'answer_text',
-            'last_edited',
-        ]
         self.read_data()
 
     def read_data(self):
@@ -71,6 +72,23 @@ class RuleDataModel(QAbstractTableModel):
 
     def columnCount(self, parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> int:
         return len(self.headers)
+
+    def insertColumns(self, column: int, count: int,
+                      parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+        self.beginInsertColumns(parent, column, self.columnCount())
+        self.endInsertColumns()
+
+    def insertColumn(self, column: int,
+                     parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+        pass
+
+    def removeColumns(self, column: int, count: int,
+                      parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+        pass
+
+    def removeColumn(self, column: int,
+                     parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+        pass
 
     def data(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex],
              role: int = ...) -> Any:
@@ -114,7 +132,7 @@ class RuleDataModel(QAbstractTableModel):
                 inserted_count += 1
         if inserted_count == -1:
             return False
-        self.beginInsertRows(parent, row, row + inserted_count)
+        self.beginInsertRows(parent, row, self.rowCount() - 1)
         self.endInsertRows()
         return True
 
@@ -179,39 +197,50 @@ class RulegroupView(QTableView):
         self.setDragDropMode(QTableView.DragOnly)
         self.setDefaultDropAction(Qt.CopyAction)
 
+        delete_shortcut = QShortcut(QKeySequence(Qt.Key_Delete), self, None, None, Qt.WidgetShortcut)
+        delete_shortcut.activated.connect(self.delete_selected_items)
+        force_delete_shortcut = QShortcut(QKeySequence(Qt.SHIFT + Qt.Key_Delete), self, None, None, Qt.WidgetShortcut)
+        force_delete_shortcut.activated.connect(lambda: self.delete_selected_items(False))
+
         vertical_layout = QVBoxLayout(parent)
         vertical_layout.addWidget(self)
 
-    def prepare_menu(self, pos: QPoint):
-        def delete_selection(selected_items):
+    def delete_selected_items(self, ask_for_confirmation=True):
+        selection_model = self.selectionModel()
+        if not selection_model.hasSelection():
+            return
+        selected_rows = sorted([index.row() for index in selection_model.selectedRows()], reverse=True)
+
+        if ask_for_confirmation:
             msgBox = QMessageBox()
             msgBox.setWindowTitle("Fragen löschen.")
-            msgBox.setText("Fragen löschen.")
-            if len(selected_items) == 1:
-                text = f"Möchtest du wirklich diese Frage löschen? Dies lässt sich nicht umkehren!"
+            if len(selected_rows) == 1:
+                text = f"Möchtest du wirklich diese Frage löschen?"
             else:
-                text = f"Möchtest du wirklich diese {len(selected_items)} Fragen löschen? Dies lässt sich nicht umkehren!"
-            msgBox.setInformativeText(text)
+                text = f"Möchtest du wirklich diese {len(selected_rows)} Fragen löschen?"
+            msgBox.setText(text)
+            msgBox.setInformativeText("Dies lässt sich nicht umkehren!")
             msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
             msgBox.setDefaultButton(QMessageBox.Cancel)
             ret = msgBox.exec()
-            selected_items = sorted(selected_items, key=(lambda val: val.row()), reverse=True)
-            if ret == QMessageBox.Yes:
-                for row in selected_items:
-                    self.model().removeRow(row.row())
+        else:
+            ret = QMessageBox.Yes
+        if ret == QMessageBox.Yes:
+            for row in selected_rows:
+                self.model().removeRow(row)
 
+    def prepare_menu(self, pos: QPoint):
         actions = []
 
         selection_model = self.selectionModel()
         if selection_model.hasSelection():
-            items = selection_model.selectedRows()
-            if len(items) == 1:
+            if len(selection_model.selectedRows()) == 1:
                 text = "Diese Frage löschen"
             else:
                 text = "Aktuelle Auswahl löschen"
             deleteAct = QAction(self)
             deleteAct.setText(text)
-            deleteAct.triggered.connect(lambda: delete_selection(items))
+            deleteAct.triggered.connect(self.delete_selected_items())
             actions += [deleteAct]
 
         create_action = QAction(self)
