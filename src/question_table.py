@@ -52,21 +52,17 @@ class RuleDataModel(QAbstractTableModel):
 
     def insertColumns(self, column: int, count: int,
                       parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+        # Todo
         self.beginInsertColumns(parent, column, self.columnCount())
         self.endInsertColumns()
-        return False
-
-    def insertColumn(self, column: int,
-                     parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
-        pass
+        return True
 
     def removeColumns(self, column: int, count: int,
                       parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
-        pass
-
-    def removeColumn(self, column: int,
-                     parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
-        pass
+        # Todo
+        self.beginRemoveColumns(parent, column, self.columnCount())
+        self.endRemoveColumns()
+        return True
 
     def data(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex],
              role: int = ...) -> Any:
@@ -231,7 +227,7 @@ class RulegroupView(QTableView):
                 text = "Aktuelle Auswahl löschen"
             deleteAct = QAction(self)
             deleteAct.setText(text)
-            deleteAct.triggered.connect(self.delete_selected_items())
+            deleteAct.triggered.connect(self.delete_selected_items)
             actions += [deleteAct]
 
         create_action = QAction(self)

@@ -108,8 +108,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.actionAnsicht_zur_cksetzen.triggered.connect(lambda: self.ui.regeltest_creator.show())
         self.ui.actionRegeldatensatz_exportieren.triggered.connect(lambda: save_dataset(self))
 
-        self.ui.regeltest_list.model().rowsInserted.connect(self.rows_changed)
-        self.ui.regeltest_list.model().rowsRemoved.connect(self.rows_changed)
+        self.ui.regeltest_list.model().rowsInserted.connect(self.regeltest_list_updated)
+        self.ui.regeltest_list.model().rowsRemoved.connect(self.regeltest_list_updated)
 
         self.ui.add_questionlist.clicked.connect(self.setup_regeltest)
         self.ui.clear_questionlist.clicked.connect(self.clear_questionlist)
@@ -133,7 +133,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def clear_questionlist(self):
         self.ui.regeltest_list.clear()
         self.ui.regeltest_list.questions.clear()
-        self.rows_changed()
+        self.regeltest_list_updated()
 
     def delete_rulegroup(self, index_tabwidget: int):
         msgBox = QMessageBox()
@@ -149,7 +149,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             controller.delete(controller.get_rulegroup(index_rulegroup))
             self.ui.tabWidget.removeTab(index_tabwidget)
 
-    def rows_changed(self):
+    def regeltest_list_updated(self):
         self.ui.regeltest_stats.setText(
             f"{self.ui.regeltest_list.count()} Fragen selektiert ({self.ui.regeltest_list.count() * 2} Punkte)")
 
