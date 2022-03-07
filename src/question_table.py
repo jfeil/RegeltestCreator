@@ -1,4 +1,4 @@
-from typing import Union, Any, List
+from typing import Union, Any, List, Callable, Tuple
 
 import PySide6
 from PySide6.QtCore import Qt, QPoint, QAbstractTableModel, QSortFilterProxyModel
@@ -9,6 +9,8 @@ from PySide6.QtWidgets import QTreeWidget, QVBoxLayout, QDialog, QMessageBox, QM
 from src import controller
 from src.datatypes import Question
 from src.question_editor import QuestionEditor
+
+dict_key = str
 
 
 class RuleDataModel(QAbstractTableModel):
@@ -64,10 +66,15 @@ class RuleDataModel(QAbstractTableModel):
         self.endRemoveColumns()
         return True
 
-    def data(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex],
+    def data(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex, int],
              role: int = ...) -> Any:
-        col = index.column()
-        row = index.row()
+        if type(index) == int:
+            row = index
+            col = 0
+        else:
+            col = index.column()
+            row = index.row()
+
         if role == Qt.UserRole:
             return self.questions[row]
 
@@ -96,7 +103,7 @@ class RuleDataModel(QAbstractTableModel):
         if orientation == Qt.Vertical:
             return None
         if role == Qt.DisplayRole:
-            return Question.table_headers[self.headers[section]]
+            return Question.dict_to_header[self.headers[section]]
 
     def insertRows(self, row: int, count: int,
                    parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
@@ -262,4 +269,19 @@ class RulegroupView(QTableView):
 
 
 class RuleSortFilterProxyModel(QSortFilterProxyModel):
-    pass
+    filters = []  # List[Tuple[dict_key, Callable]]
+
+    def filterAcceptsRow(self, source_row: int, source_parent: Union[
+        PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) -> bool:
+        if not RuleSortFilterProxyModel.filters:
+            return True
+
+        cur_question = self.sourceModel().data(source_row, Qt.UserRole)
+        for target, filter_function in RuleSortFilterProxyModel.filters:
+            if filter_function(cur_question.__dict__[target]):
+                return True
+        return False
+
+    @staticmethod
+    def add_filter(filter_param: Tuple[dict_key, Callable]):
+        RuleSortFilterProxyModel.filters += [filter_param]

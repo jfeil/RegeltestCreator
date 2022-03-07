@@ -102,7 +102,7 @@ class Question(Base):
     last_edited = Column(Date, default=date.today)
     signature = Column(String, default=(lambda: uuid.uuid4().hex), primary_key=True)
 
-    table_headers = {
+    dict_to_header = {
         'group_id': "Regelgruppe",
         'rule_id': "Regelnummer",
         'question': "Frage",
@@ -113,6 +113,8 @@ class Question(Base):
         'last_edited': "Änderungsdatum",
         'signature': "Signatur"
     }
+
+    header_to_dict = {y: x for x, y in dict_to_header.items()}
 
     # noinspection PyTypeChecker
     def table_checkbox(self, dict_key):

@@ -172,7 +172,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ui.tabWidget.addTab(tab, "")
             self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id:02d} {rulegroup.name}")
         # self.filter_column(3, 'FaD')
-        # self.filter_column(3, 'VW')
 
     def setup_regeltest(self):
         regeltest_setup = RegeltestSetup(self)
@@ -181,10 +180,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.ui.regeltest_list.add_question(question)
 
     def filter_column(self, column, keyword, mode=FilterMode.Include):
+        # RuleSortFilterProxyModel.add_filter(('answer_text', lambda x: 'FaD' in x))
+        # RuleSortFilterProxyModel.add_filter(('last_edited', lambda x: datetime.date.fromisoformat('2020-06-01') < x))
+
         for (filter_model, _) in self.ruletabs.values():
-            filter_model = filter_model  # type: QSortFilterProxyModel
-            filter_model.setFilterFixedString(keyword)
-            filter_model.setFilterKeyColumn(column)
+            filter_model = filter_model  # type: RuleSortFilterProxyModel
+            filter_model.invalidateFilter()
 
     def create_regeltest(self):
         question_set = []
