@@ -12,9 +12,11 @@ from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect,
                             Qt)
 from PySide6.QtGui import (QAction)
 from PySide6.QtWidgets import (QDockWidget, QFrame, QGridLayout,
-                               QLabel, QMenu, QMenuBar, QPushButton, QStatusBar, QTabWidget, QTreeWidget,
-                               QTreeWidgetItem,
-                               QVBoxLayout, QWidget)
+                               QHBoxLayout, QLabel, QListView,
+                               QListWidget, QMenu,
+                               QMenuBar, QPushButton, QSizePolicy, QStatusBar,
+                               QTabWidget, QTreeWidget, QTreeWidgetItem, QVBoxLayout,
+                               QWidget)
 
 from .regeltestcreator import RegeltestCreator
 
@@ -44,8 +46,55 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.widget_2 = QWidget(self.centralwidget)
+        self.widget_2.setObjectName(u"widget_2")
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.widget_2.sizePolicy().hasHeightForWidth())
+        self.widget_2.setSizePolicy(sizePolicy)
+        self.horizontalLayout_2 = QHBoxLayout(self.widget_2)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.filter_list = QListWidget(self.widget_2)
+        self.filter_list.setObjectName(u"filter_list")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Ignored)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.filter_list.sizePolicy().hasHeightForWidth())
+        self.filter_list.setSizePolicy(sizePolicy1)
+        self.filter_list.setFrameShape(QFrame.StyledPanel)
+        self.filter_list.setFrameShadow(QFrame.Sunken)
+        self.filter_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.filter_list.setMovement(QListView.Free)
+        self.filter_list.setFlow(QListView.LeftToRight)
+        self.filter_list.setLayoutMode(QListView.SinglePass)
+        self.filter_list.setSpacing(2)
+        self.filter_list.setViewMode(QListView.IconMode)
+        self.filter_list.setUniformItemSizes(False)
+        self.filter_list.setWordWrap(False)
+
+        self.horizontalLayout_2.addWidget(self.filter_list)
+
+        self.widget_3 = QWidget(self.widget_2)
+        self.widget_3.setObjectName(u"widget_3")
+        self.verticalLayout_4 = QVBoxLayout(self.widget_3)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.add_filter = QPushButton(self.widget_3)
+        self.add_filter.setObjectName(u"add_filter")
+
+        self.verticalLayout_4.addWidget(self.add_filter)
+
+        self.horizontalLayout_2.addWidget(self.widget_3)
+
+        self.verticalLayout.addWidget(self.widget_2)
+
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.tabWidget.sizePolicy().hasHeightForWidth())
+        self.tabWidget.setSizePolicy(sizePolicy2)
         self.Test = QWidget()
         self.Test.setObjectName(u"Test")
         self.verticalLayout_2 = QVBoxLayout(self.Test)
@@ -142,7 +191,9 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
+        self.filter_list.setCurrentRow(-1)
         self.tabWidget.setCurrentIndex(0)
+
 
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
@@ -162,6 +213,7 @@ class Ui_MainWindow(object):
         self.actionAuf_Updates_pr_fen.setText(
             QCoreApplication.translate("MainWindow", u"Auf Updates pr\u00fcfen", None))
         self.action_ber.setText(QCoreApplication.translate("MainWindow", u"\u00dcber", None))
+        self.add_filter.setText(QCoreApplication.translate("MainWindow", u"Neuer Filter", None))
         ___qtreewidgetitem = self.treeWidget.headerItem()
         ___qtreewidgetitem.setText(4, QCoreApplication.translate("MainWindow", u"\u00c4nderungsdatum", None));
         ___qtreewidgetitem.setText(3, QCoreApplication.translate("MainWindow", u"Antwort", None));

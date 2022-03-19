@@ -116,6 +116,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.ui.create_regeltest.clicked.connect(self.create_regeltest)
 
+        self.ui.filter_list.clear()
+        self.ui.add_filter.clicked.connect(self.add_filter)
+
         self.ruletabs = {}  # type: Dict[int, Tuple[QSortFilterProxyModel, RuleDataModel]]
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
 
@@ -178,6 +181,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if regeltest_setup.exec():
             for question in regeltest_setup.collect_questions():
                 self.ui.regeltest_list.add_question(question)
+
+    def add_filter(self):
+        pass
 
     def filter_column(self, column, keyword, mode=FilterMode.Include):
         # RuleSortFilterProxyModel.add_filter(('answer_text', lambda x: 'FaD' in x))

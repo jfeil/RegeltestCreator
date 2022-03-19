@@ -1,9 +1,10 @@
 import logging
 import re
 import uuid
-from collections import defaultdict
+from collections import namedtuple
 from datetime import datetime, date
-from typing import List, Tuple
+from enum import Enum, auto
+from typing import List, Tuple, Dict
 
 import bs4
 from sqlalchemy import Column, Integer, String, ForeignKey, Date
@@ -84,6 +85,18 @@ c)  Das kann nur Lorem Ipsum sein.
 
 """
 
+QuestionValues = namedtuple('QuestionValues', ['table_value', 'table_tooltip', 'table_checkbox'])
+QuestionParameters = namedtuple('QuestionParameters', ['table_header', 'filter_options'])
+
+
+class FilterOption(Enum):
+    smaller_equal = auto()
+    smaller = auto()
+    larger_equal = auto()
+    larger = auto()
+    equal = auto()
+    contains = auto()
+
 
 class Question(Base):
     # LNR[0:2] = group_id
@@ -102,45 +115,49 @@ class Question(Base):
     last_edited = Column(Date, default=date.today)
     signature = Column(String, default=(lambda: uuid.uuid4().hex), primary_key=True)
 
-    dict_to_header = {
-        'group_id': "Regelgruppe",
-        'rule_id': "Regelnummer",
-        'question': "Frage",
-        'multiple_choice': "Multiple choice",
-        'answer_index': "Multiple choice Antwort",
-        'answer_text': "Antwort",
-        'created': "Erstelldatum",
-        'last_edited': "Änderungsdatum",
-        'signature': "Signatur"
-    }
+    parameters = {
+        'group_id': QuestionParameters(table_header="Regelgruppe", filter_options=None),
+        'rule_id': QuestionParameters(table_header="Regelnummer", filter_options=(FilterOption.equal,)),
+        'question': QuestionParameters(table_header="Frage",
+                                       filter_options=(FilterOption.contains, FilterOption.equal)),
+        'multiple_choice': QuestionParameters(table_header="Multiple choice", filter_options=(FilterOption.equal,)),
+        'answer_index': QuestionParameters(table_header="Multiple choice Antwort",
+                                           filter_options=(FilterOption.equal,)),
+        'answer_text': QuestionParameters(table_header="Antwort",
+                                          filter_options=(FilterOption.contains, FilterOption.equal)),
+        'created': QuestionParameters(table_header="Erstelldatum",
+                                      filter_options=(FilterOption.smaller_equal, FilterOption.smaller,
+                                                      FilterOption.larger, FilterOption.larger_equal)),
+        'last_edited': QuestionParameters(table_header="Änderungsdatum",
+                                          filter_options=(FilterOption.smaller_equal, FilterOption.smaller,
+                                                          FilterOption.larger, FilterOption.larger_equal)),
+        'signature': QuestionParameters(table_header="Signatur",
+                                        filter_options=(FilterOption.contains, FilterOption.equal)),
+    }  # type: Dict[str, QuestionParameters]
 
-    header_to_dict = {y: x for x, y in dict_to_header.items()}
-
-    # noinspection PyTypeChecker
-    def table_checkbox(self, dict_key):
-        return defaultdict(lambda: None, {
-            'multiple_choice': 2 * (self.answer_index != -1)
-        })[dict_key]
-
-    def table_value(self, dict_key):
+    def values(self, key) -> QuestionValues:
         return {
-            'group_id': self.group_id,
-            'rule_id': self.rule_id,
-            'question': self.question,
-            'multiple_choice': {-1: None, 0: 'A', 1: 'B', 2: 'C'}[self.answer_index],
-            'answer_index': self.answer_index,
-            'answer_text': self.answer_text,
-            'created': str(self.created),
-            'last_edited': str(self.last_edited),
-            'signature': self.signature
-        }[dict_key]
-
-    # noinspection PyTypeChecker
-    def table_tooltip(self, dict_key):
-        return defaultdict(lambda: None, {
-            'question': self.question,
-            'answer_text': self.answer_text
-        })[dict_key]
+            'group_id': QuestionValues(table_value=self.group_id, table_tooltip=None,
+                                       table_checkbox=None),
+            'rule_id': QuestionValues(table_value=self.rule_id, table_tooltip=None,
+                                      table_checkbox=None),
+            'question': QuestionValues(table_value=self.question, table_tooltip=self.question,
+                                       table_checkbox=None),
+            'multiple_choice': QuestionValues(table_value={-1: None, 0: 'A', 1: 'B', 2: 'C'}[self.answer_index],
+                                              table_tooltip=None,
+                                              table_checkbox=2 * (self.answer_index != -1)),
+            'answer_index': QuestionValues(table_value=self.answer_index,
+                                           table_tooltip=None,
+                                           table_checkbox=None),
+            'answer_text': QuestionValues(table_value=self.answer_text, table_tooltip=self.answer_text,
+                                          table_checkbox=None),
+            'created': QuestionValues(table_value=str(self.created), table_tooltip=None,
+                                      table_checkbox=None),
+            'last_edited': QuestionValues(table_value=str(self.last_edited), table_tooltip=None,
+                                          table_checkbox=None),
+            'signature': QuestionValues(table_value=self.signature, table_tooltip=None,
+                                        table_checkbox=None),
+        }[key]
 
     def export(self) -> Tuple[str, str]:
         if self.answer_index != -1:

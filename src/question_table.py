@@ -82,13 +82,13 @@ class RuleDataModel(QAbstractTableModel):
             return None
 
         if role == Qt.CheckStateRole:
-            checkbox = self.questions[row].table_checkbox(self.headers[col])
+            checkbox = self.questions[row].values(self.headers[col]).table_checkbox
             return checkbox
         elif role == Qt.DisplayRole:
-            value = self.questions[row].table_value(self.headers[col])
+            value = self.questions[row].values(self.headers[col]).table_value
             return value
         elif role == Qt.ToolTipRole:
-            tooltip = self.questions[row].table_tooltip(self.headers[col])
+            tooltip = self.questions[row].values(self.headers[col]).table_tooltip
             return tooltip
 
     def setData(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex], value: Any,
@@ -103,7 +103,7 @@ class RuleDataModel(QAbstractTableModel):
         if orientation == Qt.Vertical:
             return None
         if role == Qt.DisplayRole:
-            return Question.dict_to_header[self.headers[section]]
+            return Question.parameters[self.headers[section]].table_header
 
     def insertRows(self, row: int, count: int,
                    parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
@@ -285,3 +285,7 @@ class RuleSortFilterProxyModel(QSortFilterProxyModel):
     @staticmethod
     def add_filter(filter_param: Tuple[dict_key, Callable]):
         RuleSortFilterProxyModel.filters += [filter_param]
+
+    @staticmethod
+    def remove_filter(index: int):
+        RuleSortFilterProxyModel.filters.pop(index)
