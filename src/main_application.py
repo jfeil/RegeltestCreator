@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 from . import controller, document_builder
 from .basic_config import app_version, check_for_update, display_name, is_bundled
 from .datatypes import Rulegroup, create_rulegroups, create_questions_and_mchoice
+from .filter_editor import FilterEditor
 from .question_table import RulegroupView, RuleDataModel, RuleSortFilterProxyModel
 from .regeltestcreator import RegeltestSaveDialog, RegeltestSetup
 from .ui_mainwindow import Ui_MainWindow
@@ -187,7 +188,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         properties = {}
         for i in range(first_ruletab.columnCount()):
             properties.update(first_ruletab.headerData(i, Qt.Horizontal, Qt.UserRole))
-        print(properties)
+        editor = FilterEditor(properties)
+        return_val = editor.exec()
+        if return_val == QMessageBox.Discard:
+            print("Discarded")
+        elif return_val == QMessageBox.Save:
+            print("Saved")
+        else:
+            print("Closed")
 
     def filter_column(self, column, keyword, mode=FilterMode.Include):
         # RuleSortFilterProxyModel.add_filter(('answer_text', lambda x: 'FaD' in x))
