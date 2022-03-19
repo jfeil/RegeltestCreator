@@ -1,6 +1,6 @@
 import webbrowser
 from enum import Enum, auto
-from typing import List, Dict
+from typing import List, Dict, Callable
 from typing import Tuple
 
 import markdown2
@@ -195,12 +195,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         elif return_val == QMessageBox.Save:
             print("Saved")
         else:
+            self.filter_column(editor.create_filter())
             print("Closed")
 
-    def filter_column(self, column, keyword, mode=FilterMode.Include):
+    def filter_column(self, filter_tuple: Tuple[str, Callable], mode=FilterMode.Include):
         # RuleSortFilterProxyModel.add_filter(('answer_text', lambda x: 'FaD' in x))
         # RuleSortFilterProxyModel.add_filter(('last_edited', lambda x: datetime.date.fromisoformat('2020-06-01') < x))
-
+        RuleSortFilterProxyModel.add_filter(filter_tuple)
         for (filter_model, _) in self.ruletabs.values():
             filter_model = filter_model  # type: RuleSortFilterProxyModel
             filter_model.invalidateFilter()

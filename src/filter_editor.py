@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Tuple, Callable
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QLineEdit, QCheckBox, QDateEdit, QSpinBox
 
-from src.datatypes import QuestionParameters
+from src.datatypes import QuestionParameters, FilterOption
 from src.ui_filter_editor import Ui_FilterEditor
 
 
@@ -52,3 +52,45 @@ class FilterEditor(QDialog, Ui_FilterEditor):
             return
 
         self.ui.gridLayout.addWidget(self.filter, 2, 1, 1, 1)
+
+    def create_filter(self) -> Tuple[str, Callable]:
+        # ('answer_text', lambda x: 'FaD' in x)
+        index = self.ui.combobox_column.currentIndex()
+        dict_key, parameters = list(self.filter_configuration.items())[index]
+        parameters = parameters  # type: QuestionParameters
+
+        filter_option = parameters.filter_options[self.ui.combobox_filteroption.currentIndex()]
+
+        if parameters.datatype == str:
+            value = self.filter.text()
+        elif parameters.datatype == bool:
+            value = self.filter.isChecked()
+        elif parameters.datatype == datetime:
+            value = self.filter.date()
+        elif parameters.datatype == int:
+            value = self.filter.value()
+        else:
+            raise ValueError('Invalid datatype!')
+
+        if filter_option == FilterOption.smaller_equal:
+            def filter_callable(x):
+                return value <= x
+        elif filter_option == FilterOption.smaller:
+            def filter_callable(x):
+                return value < x
+        elif filter_option == FilterOption.larger_equal:
+            def filter_callable(x):
+                return value >= x
+        elif filter_option == FilterOption.larger:
+            def filter_callable(x):
+                return value > x
+        elif filter_option == FilterOption.equal:
+            def filter_callable(x):
+                return value == x
+        elif filter_option == FilterOption.contains:
+            def filter_callable(x):
+                return value in x
+        else:
+            raise ValueError('Invalid FilterOption!')
+
+        return dict_key, filter_callable
