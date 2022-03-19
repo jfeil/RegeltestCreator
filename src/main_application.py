@@ -183,7 +183,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.ui.regeltest_list.add_question(question)
 
     def add_filter(self):
-        pass
+        first_ruletab = list(self.ruletabs.values())[0][1]
+        properties = {}
+        for i in range(first_ruletab.columnCount()):
+            properties.update(first_ruletab.headerData(i, Qt.Horizontal, Qt.UserRole))
+        print(properties)
 
     def filter_column(self, column, keyword, mode=FilterMode.Include):
         # RuleSortFilterProxyModel.add_filter(('answer_text', lambda x: 'FaD' in x))

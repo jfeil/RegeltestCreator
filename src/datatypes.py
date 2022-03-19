@@ -86,7 +86,7 @@ c)  Das kann nur Lorem Ipsum sein.
 """
 
 QuestionValues = namedtuple('QuestionValues', ['table_value', 'table_tooltip', 'table_checkbox'])
-QuestionParameters = namedtuple('QuestionParameters', ['table_header', 'filter_options'])
+QuestionParameters = namedtuple('QuestionParameters', ['table_header', 'filter_options', 'datatype'])
 
 
 class FilterOption(Enum):
@@ -116,23 +116,26 @@ class Question(Base):
     signature = Column(String, default=(lambda: uuid.uuid4().hex), primary_key=True)
 
     parameters = {
-        'group_id': QuestionParameters(table_header="Regelgruppe", filter_options=None),
-        'rule_id': QuestionParameters(table_header="Regelnummer", filter_options=(FilterOption.equal,)),
+        'group_id': QuestionParameters(table_header="Regelgruppe", filter_options=None, datatype=int),
+        'rule_id': QuestionParameters(table_header="Regelnummer", filter_options=(FilterOption.equal,), datatype=int),
         'question': QuestionParameters(table_header="Frage",
-                                       filter_options=(FilterOption.contains, FilterOption.equal)),
-        'multiple_choice': QuestionParameters(table_header="Multiple choice", filter_options=(FilterOption.equal,)),
+                                       filter_options=(FilterOption.contains, FilterOption.equal), datatype=str),
+        'multiple_choice': QuestionParameters(table_header="Multiple choice", filter_options=(FilterOption.equal,),
+                                              datatype=bool),
         'answer_index': QuestionParameters(table_header="Multiple choice Antwort",
-                                           filter_options=(FilterOption.equal,)),
+                                           filter_options=(FilterOption.equal,), datatype=int),
         'answer_text': QuestionParameters(table_header="Antwort",
-                                          filter_options=(FilterOption.contains, FilterOption.equal)),
+                                          filter_options=(FilterOption.contains, FilterOption.equal), datatype=str),
         'created': QuestionParameters(table_header="Erstelldatum",
                                       filter_options=(FilterOption.smaller_equal, FilterOption.smaller,
-                                                      FilterOption.larger, FilterOption.larger_equal)),
+                                                      FilterOption.larger, FilterOption.larger_equal),
+                                      datatype=datetime),
         'last_edited': QuestionParameters(table_header="Änderungsdatum",
                                           filter_options=(FilterOption.smaller_equal, FilterOption.smaller,
-                                                          FilterOption.larger, FilterOption.larger_equal)),
+                                                          FilterOption.larger, FilterOption.larger_equal),
+                                          datatype=datetime),
         'signature': QuestionParameters(table_header="Signatur",
-                                        filter_options=(FilterOption.contains, FilterOption.equal)),
+                                        filter_options=(FilterOption.contains, FilterOption.equal), datatype=str),
     }  # type: Dict[str, QuestionParameters]
 
     def values(self, key) -> QuestionValues:

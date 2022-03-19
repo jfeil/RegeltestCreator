@@ -104,6 +104,8 @@ class RuleDataModel(QAbstractTableModel):
             return None
         if role == Qt.DisplayRole:
             return Question.parameters[self.headers[section]].table_header
+        if role == Qt.UserRole:
+            return {self.headers[section]: Question.parameters[self.headers[section]]}
 
     def insertRows(self, row: int, count: int,
                    parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
