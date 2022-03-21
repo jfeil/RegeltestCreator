@@ -1,4 +1,4 @@
-from typing import Union, Any, List, Callable, Tuple
+from typing import Union, Any, List
 
 import PySide6
 from PySide6.QtCore import Qt, QPoint, QAbstractTableModel, QSortFilterProxyModel
@@ -271,7 +271,7 @@ class RulegroupView(QTableView):
 
 
 class RuleSortFilterProxyModel(QSortFilterProxyModel):
-    filters = []  # List[Tuple[dict_key, Callable]]
+    filters = []  # List[Tuple[Tuple[dict_key, Callable], Tuple[str, FilterOption, Any]]]
 
     def filterAcceptsRow(self, source_row: int, source_parent: Union[
         PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) -> bool:
@@ -279,15 +279,7 @@ class RuleSortFilterProxyModel(QSortFilterProxyModel):
             return True
 
         cur_question = self.sourceModel().data(source_row, Qt.UserRole)
-        for target, filter_function in RuleSortFilterProxyModel.filters:
-            if filter_function(cur_question.__dict__[target]):
-                return True
-        return False
-
-    @staticmethod
-    def add_filter(filter_param: Tuple[dict_key, Callable]):
-        RuleSortFilterProxyModel.filters += [filter_param]
-
-    @staticmethod
-    def remove_filter(index: int):
-        RuleSortFilterProxyModel.filters.pop(index)
+        answer = True
+        for ((target, filter_function), _) in RuleSortFilterProxyModel.filters:
+            answer = answer & filter_function(cur_question.__dict__[target])
+        return answer
