@@ -100,8 +100,16 @@ class FilterEditor(QDialog, Ui_FilterEditor):
             self.filter = QCheckBox()
         elif current_params.datatype == datetime:
             self.filter = QDateEdit()
+            cur_date = datetime.today()
+            if cur_date.month < 6:
+                year = cur_date.year - 1
+            else:
+                year = cur_date.year
+            cur_date = cur_date.replace(day=1, month=6, year=year)
+            self.filter.setDate(cur_date)
         elif current_params.datatype == int:
             self.filter = QSpinBox()
+            self.filter.setValue(1)
         else:
             raise ValueError('Invalid FilterOption!')
 
@@ -126,16 +134,16 @@ class FilterEditor(QDialog, Ui_FilterEditor):
 
         if filter_option == FilterOption.smaller_equal:
             def filter_callable(x):
-                return value <= x
+                return value >= x
         elif filter_option == FilterOption.smaller:
             def filter_callable(x):
-                return value < x
+                return value > x
         elif filter_option == FilterOption.larger_equal:
             def filter_callable(x):
-                return value >= x
+                return value <= x
         elif filter_option == FilterOption.larger:
             def filter_callable(x):
-                return value > x
+                return value < x
         elif filter_option == FilterOption.equal:
             def filter_callable(x):
                 return value == x
