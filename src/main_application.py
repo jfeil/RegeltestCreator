@@ -7,7 +7,7 @@ import markdown2
 from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtCore import QSortFilterProxyModel
 from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog, QApplication, QMessageBox, QDialog, \
-    QListWidgetItem
+    QListWidgetItem, QDialogButtonBox
 from bs4 import BeautifulSoup
 
 from . import controller, document_builder
@@ -200,22 +200,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for i in range(first_ruletab.columnCount()):
             properties.update(first_ruletab.headerData(i, Qt.Horizontal, Qt.UserRole))
         editor = FilterEditor(filter_configuration=properties, current_filter=current_configuration)
-        return_val = editor.exec()
-        if return_val == QDialog.Rejected:
+        editor.exec()
+        if editor.result == QDialogButtonBox.ButtonRole.DestructiveRole:
+            # Closed via Discard
             if not edit_mode:
                 return
             else:
                 RuleSortFilterProxyModel.filters.pop(index)
                 self.ui.filter_list.takeItem(index)
                 del list_entry
-        elif return_val == QDialog.Accepted:
+        elif editor.result == QDialogButtonBox.ButtonRole.AcceptRole:
+            # Closed via Save
             if not edit_mode:
                 RuleSortFilterProxyModel.filters += [(editor.create_filter(), editor.current_configuration())]
                 self.ui.filter_list.addItem(QListWidgetItem(f"Filter {self.ui.filter_list.count() + 1}"))
             else:
                 RuleSortFilterProxyModel.filters[index] = (editor.create_filter(), editor.current_configuration())
+        elif editor.result == QDialogButtonBox.ButtonRole.RejectRole:
+            # Closed via Cancel
+            return
+        elif editor.result is None:
+            # Closed via X
+            return
         else:
-            raise ValueError("Invalid response")
+            raise ValueError(f"Invalid response {editor.result}")
         self.refresh_column_filter()
 
     def refresh_column_filter(self):

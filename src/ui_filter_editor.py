@@ -12,7 +12,6 @@ from PySide6.QtCore import (QCoreApplication, QMetaObject, Qt)
 from PySide6.QtWidgets import (QComboBox, QDialogButtonBox, QGridLayout, QLabel, QSizePolicy,
                                QSpacerItem)
 
-
 class Ui_FilterEditor(object):
     def setupUi(self, FilterEditor):
         if not FilterEditor.objectName():
@@ -23,7 +22,7 @@ class Ui_FilterEditor(object):
         self.buttonBox = QDialogButtonBox(FilterEditor)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Discard | QDialogButtonBox.Save)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Discard | QDialogButtonBox.Save)
 
         self.gridLayout.addWidget(self.buttonBox, 4, 1, 1, 1)
 
@@ -61,7 +60,6 @@ class Ui_FilterEditor(object):
         self.buttonBox.rejected.connect(FilterEditor.reject)
 
         QMetaObject.connectSlotsByName(FilterEditor)
-
     # setupUi
 
     def retranslateUi(self, FilterEditor):
@@ -70,3 +68,4 @@ class Ui_FilterEditor(object):
         self.label_filter.setText(QCoreApplication.translate("FilterEditor", u"Filter", None))
         self.label_filteroption.setText(QCoreApplication.translate("FilterEditor", u"Filteroption", None))
     # retranslateUi
+
