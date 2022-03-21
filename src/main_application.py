@@ -1,12 +1,13 @@
 import webbrowser
 from enum import Enum, auto
-from typing import List, Dict, Callable
+from typing import List, Dict, Union
 from typing import Tuple
 
 import markdown2
 from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtCore import QSortFilterProxyModel
-from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog, QApplication, QMessageBox, QDialog
+from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog, QApplication, QMessageBox, QDialog, \
+    QListWidgetItem
 from bs4 import BeautifulSoup
 
 from . import controller, document_builder
@@ -118,6 +119,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.create_regeltest.clicked.connect(self.create_regeltest)
 
         self.ui.filter_list.clear()
+        self.ui.filter_list.itemDoubleClicked.connect(self.add_filter)
         self.ui.add_filter.clicked.connect(self.add_filter)
 
         self.ruletabs = {}  # type: Dict[int, Tuple[QSortFilterProxyModel, RuleDataModel]]
@@ -183,25 +185,40 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for question in regeltest_setup.collect_questions():
                 self.ui.regeltest_list.add_question(question)
 
-    def add_filter(self):
+    def add_filter(self, list_entry: Union[QListWidgetItem, bool] = False):
+        if not list_entry or type(list_entry) == bool:
+            # Add filter mode -> no list entry double_clicked
+            current_configuration = None
+            edit_mode = False
+        else:
+            # Edit mode -> Doubleclick on existing entry!
+            index = self.ui.filter_list.indexFromItem(list_entry).row()
+            current_configuration = RuleSortFilterProxyModel.filters[index][1]
+            edit_mode = True
         first_ruletab = list(self.ruletabs.values())[0][1]
         properties = {}
         for i in range(first_ruletab.columnCount()):
             properties.update(first_ruletab.headerData(i, Qt.Horizontal, Qt.UserRole))
-        editor = FilterEditor(properties)
+        editor = FilterEditor(filter_configuration=properties, current_filter=current_configuration)
         return_val = editor.exec()
-        if return_val == QMessageBox.Discard:
-            print("Discarded")
-        elif return_val == QMessageBox.Save:
-            print("Saved")
+        if return_val == QDialog.Rejected:
+            if not edit_mode:
+                return
+            else:
+                RuleSortFilterProxyModel.filters.pop(index)
+                self.ui.filter_list.takeItem(index)
+                del list_entry
+        elif return_val == QDialog.Accepted:
+            if not edit_mode:
+                RuleSortFilterProxyModel.filters += [(editor.create_filter(), editor.current_configuration())]
+                self.ui.filter_list.addItem(QListWidgetItem(f"Filter {self.ui.filter_list.count() + 1}"))
+            else:
+                RuleSortFilterProxyModel.filters[index] = (editor.create_filter(), editor.current_configuration())
         else:
-            self.filter_column(editor.create_filter())
-            print("Closed")
+            raise ValueError("Invalid response")
+        self.refresh_column_filter()
 
-    def filter_column(self, filter_tuple: Tuple[str, Callable], mode=FilterMode.Include):
-        # RuleSortFilterProxyModel.add_filter(('answer_text', lambda x: 'FaD' in x))
-        # RuleSortFilterProxyModel.add_filter(('last_edited', lambda x: datetime.date.fromisoformat('2020-06-01') < x))
-        RuleSortFilterProxyModel.add_filter(filter_tuple)
+    def refresh_column_filter(self):
         for (filter_model, _) in self.ruletabs.values():
             filter_model = filter_model  # type: RuleSortFilterProxyModel
             filter_model.invalidateFilter()
