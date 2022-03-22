@@ -211,11 +211,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 del list_entry
         elif editor.result == QDialogButtonBox.ButtonRole.AcceptRole:
             # Closed via Save
+            dict_key, filter_option, filter_value = editor.current_configuration()
             if not edit_mode:
-                RuleSortFilterProxyModel.filters += [(editor.create_filter(), editor.current_configuration())]
-                self.ui.filter_list.addItem(QListWidgetItem(f"Filter {self.ui.filter_list.count() + 1}"))
+                RuleSortFilterProxyModel.filters += [(editor.create_filter(), (dict_key, filter_option, filter_value))]
+                self.ui.filter_list.addItem(
+                    QListWidgetItem(f"{properties[dict_key].table_header} {filter_option} '{filter_value}'"))
             else:
-                RuleSortFilterProxyModel.filters[index] = (editor.create_filter(), editor.current_configuration())
+                RuleSortFilterProxyModel.filters[index] = (
+                editor.create_filter(), (dict_key, filter_option, filter_value))
+                list_entry.setText(f"{properties[dict_key].table_header} {filter_option} '{filter_value}'")
         elif editor.result == QDialogButtonBox.ButtonRole.RejectRole:
             # Closed via Cancel
             return

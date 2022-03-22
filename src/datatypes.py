@@ -97,6 +97,20 @@ class FilterOption(Enum):
     equal = auto()
     contains = auto()
 
+    def __str__(self):
+        if self == FilterOption.smaller_equal:
+            return 'kleiner/gleich als'
+        elif self == FilterOption.smaller:
+            return 'kleiner als'
+        elif self == FilterOption.larger:
+            return 'größer als'
+        elif self == FilterOption.larger_equal:
+            return 'größer/gleich als'
+        elif self == FilterOption.equal:
+            return 'gleich'
+        elif self == FilterOption.contains:
+            return 'beinhaltet'
+
 
 class Question(Base):
     # LNR[0:2] = group_id
