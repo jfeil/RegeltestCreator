@@ -149,7 +149,7 @@ class FilterEditor(QDialog, Ui_FilterEditor):
                 return value == x
         elif filter_option == FilterOption.contains:
             def filter_callable(x):
-                return value in x
+                return value.lower() in x.lower()
         else:
             raise ValueError('Invalid FilterOption!')
 
