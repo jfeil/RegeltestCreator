@@ -6,8 +6,9 @@ from typing import Tuple
 import markdown2
 from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtCore import QSortFilterProxyModel
+from PySide6.QtGui import QShortcut, QKeySequence
 from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog, QApplication, QMessageBox, QDialog, \
-    QListWidgetItem, QDialogButtonBox
+    QListWidgetItem, QDialogButtonBox, QListView
 from bs4 import BeautifulSoup
 
 from . import controller, document_builder
@@ -119,11 +120,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.create_regeltest.clicked.connect(self.create_regeltest)
 
         self.ui.filter_list.clear()
+        delete_shortcut = QShortcut(QKeySequence(Qt.Key_Delete), self.ui.filter_list, None, None, Qt.WidgetShortcut)
+        delete_shortcut.activated.connect(self.delete_selected_filter)
+        self.ui.filter_list.setSelectionMode(QListView.ExtendedSelection)
         self.ui.filter_list.itemDoubleClicked.connect(self.add_filter)
         self.ui.add_filter.clicked.connect(self.add_filter)
 
         self.ruletabs = {}  # type: Dict[int, Tuple[QSortFilterProxyModel, RuleDataModel]]
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
+
+    def delete_selected_filter(self):
+        selection_model = self.ui.filter_list.selectionModel()
+        if not selection_model.hasSelection():
+            return
+        selected_rows = sorted([index.row() for index in selection_model.selectedRows()], reverse=True)
+        for index in selected_rows:
+            self.__delete_filter(index)
+        self.refresh_column_filter()
+
+    def __delete_filter(self, index):
+        RuleSortFilterProxyModel.filters.pop(index)
+        filter_item = self.ui.filter_list.takeItem(index)
+        del filter_item
 
     def show(self) -> None:
         super(MainWindow, self).show()
@@ -206,9 +224,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if not edit_mode:
                 return
             else:
-                RuleSortFilterProxyModel.filters.pop(index)
-                self.ui.filter_list.takeItem(index)
-                del list_entry
+                self.__delete_filter(index)
         elif editor.result == QDialogButtonBox.ButtonRole.AcceptRole:
             # Closed via Save
             dict_key, filter_option, filter_value = editor.current_configuration()
@@ -218,7 +234,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     QListWidgetItem(f"{properties[dict_key].table_header} {filter_option} '{filter_value}'"))
             else:
                 RuleSortFilterProxyModel.filters[index] = (
-                editor.create_filter(), (dict_key, filter_option, filter_value))
+                    editor.create_filter(), (dict_key, filter_option, filter_value))
                 list_entry.setText(f"{properties[dict_key].table_header} {filter_option} '{filter_value}'")
         elif editor.result == QDialogButtonBox.ButtonRole.RejectRole:
             # Closed via Cancel
