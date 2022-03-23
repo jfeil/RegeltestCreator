@@ -4,7 +4,7 @@ from typing import List, Dict, Union
 from typing import Tuple
 
 import markdown2
-from PySide6.QtCore import QCoreApplication, Qt
+from PySide6.QtCore import QCoreApplication, Qt, Signal
 from PySide6.QtCore import QSortFilterProxyModel
 from PySide6.QtGui import QShortcut, QKeySequence
 from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog, QApplication, QMessageBox, QDialog, \
@@ -17,6 +17,7 @@ from .datatypes import Rulegroup, create_rulegroups, create_questions_and_mchoic
 from .filter_editor import FilterEditor
 from .question_table import RulegroupView, RuleDataModel, RuleSortFilterProxyModel
 from .regeltestcreator import RegeltestSaveDialog, RegeltestSetup
+from .ui_first_setup_widget import Ui_FirstSetupWidget
 from .ui_mainwindow import Ui_MainWindow
 from .ui_update_checker import Ui_UpdateChecker
 
@@ -84,6 +85,22 @@ def about_dialog():
                     "<center>entwickelt von Jan Feil</center><br>"
                     "<a href=https://github.com/jfeil/RegeltestCreator>Weitere Informationen und Programmcode</a>")
     msg_box.exec()
+
+
+class FirstSetupWidget(QWidget, Ui_FirstSetupWidget):
+    action_done = Signal()
+
+    def __init__(self, parent=None):
+        super(FirstSetupWidget, self).__init__(parent)
+        self.ui = Ui_FirstSetupWidget()
+        self.ui.setupUi(self)
+
+        self.ui.create_button.clicked.connect(lambda: print("CREATED"))
+        self.ui.import_button.clicked.connect(self.load_dataset)
+
+    def load_dataset(self):
+        load_dataset(self.parent())
+        self.action_done.emit()
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -184,18 +201,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         QApplication.restoreOverrideCursor()
 
     def create_ruletabs(self, rulegroups: List[Rulegroup]):
-        for rulegroup in rulegroups:
-            tab = QWidget()
-            view = RulegroupView(tab)
-            model = RuleDataModel(rulegroup.id, view)
-            filter_model = RuleSortFilterProxyModel()
-            filter_model.setSourceModel(model)
-            view.setModel(filter_model)
-            view.sortByColumn(0, Qt.AscendingOrder)
-            self.ruletabs[rulegroup.id] = (filter_model, model)
-            self.ui.tabWidget.addTab(tab, "")
-            self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id:02d} {rulegroup.name}")
-        # self.filter_column(3, 'FaD')
+        if rulegroups.count() == 0:
+            setup_tab = FirstSetupWidget()
+            self.ui.tabWidget.setTabsClosable(False)
+
+            def cleanup():
+                self.ui.tabWidget.clear()
+                controller.populate_tabwidget(self)
+
+            setup_tab.action_done.connect(cleanup)
+            self.ui.tabWidget.addTab(setup_tab, "Setup")
+        else:
+            self.ui.tabWidget.setTabsClosable(True)
+            for rulegroup in rulegroups:
+                tab = QWidget()
+                view = RulegroupView(tab)
+                model = RuleDataModel(rulegroup.id, view)
+                filter_model = RuleSortFilterProxyModel()
+                filter_model.setSourceModel(model)
+                view.setModel(filter_model)
+                view.sortByColumn(0, Qt.AscendingOrder)
+                self.ruletabs[rulegroup.id] = (filter_model, model)
+                self.ui.tabWidget.addTab(tab, "")
+                self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id:02d} {rulegroup.name}")
+            # self.filter_column(3, 'FaD')
 
     def setup_regeltest(self):
         regeltest_setup = RegeltestSetup(self)

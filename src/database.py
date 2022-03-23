@@ -29,6 +29,9 @@ class DatabaseConnector:
                 not inspect(self.engine).has_table(MultipleChoice.__tablename__):
             self.clear_database()
 
+        if not self.initialized:
+            self._init_database()
+
     def _init_database(self):
         # Create database based on basis - need to read docu first lol
         Base.metadata.create_all(self.engine)
