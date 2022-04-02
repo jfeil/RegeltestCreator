@@ -121,7 +121,7 @@ class Question(Base):
     multiple_choice = relationship("MultipleChoice", back_populates="rule", cascade="all, delete-orphan")
 
     group_id = Column(Integer, ForeignKey('rulegroup.id'))
-    rule_id = Column(Integer, server_default='SELECT MAX(1, MAX(rule_id)+1) FROM question')
+    rule_id = Column(Integer, default=-1)
     question = Column(String)
     answer_index = Column(Integer, default=EagerDefault(-1))  # for no multiple choice
     answer_text = Column(String)

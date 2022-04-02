@@ -1,8 +1,7 @@
 from typing import List, Tuple, Union
 
 from .database import db
-from .datatypes import Question, MultipleChoice, Rulegroup
-from .main_application import MainWindow
+from .datatypes import Question, Rulegroup
 
 Signature = str
 
@@ -11,7 +10,7 @@ def clear_database():
     db.clear_database()
 
 
-def get_all_rulegroups():
+def get_rulegroups():
     return db.get_rulegroups()
 
 
@@ -23,12 +22,12 @@ def delete(item: Union[Rulegroup, Question]):
     db.delete(item)
 
 
-def populate_tabwidget(mainwindow: MainWindow):
-    mainwindow.create_ruletabs(db.get_rulegroups())
+def rollback():
+    db.session.rollback()
 
 
-def update_question_set(question: Question, mchoice: List[MultipleChoice]) -> Signature:
-    return db.update_question_set(question, mchoice)
+def update_question_set(question: Question):
+    db.update_question_set(question)
 
 
 def get_question(signature: str):
@@ -41,6 +40,10 @@ def get_rulegroup(rulegroup_index: int):
 
 def get_new_question_id(rulegroup_index: int):
     return db.get_new_question_id(rulegroup_index)
+
+
+def get_new_rulegroup_id():
+    return db.get_new_rulegroup_id()
 
 
 def get_questions_by_foreignkey(rulegroup_index: int, mchoice: bool = None, randomize: bool = False):
@@ -58,6 +61,10 @@ def get_rulegroup_config() -> List[Tuple[Rulegroup, int, int]]:
              db.get_questions_by_foreignkey(rulegroup_id=rulegroup.id, mchoice=False).count(),
              db.get_questions_by_foreignkey(rulegroup_id=rulegroup.id, mchoice=True).count()) for rulegroup in
             rulegroups]
+
+
+def add_rulegroup(rulegroup: Rulegroup):
+    db.add_rulegroup(rulegroup)
 
 
 def fill_database(dataset):

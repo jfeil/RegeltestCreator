@@ -11,7 +11,7 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog
     QListWidgetItem, QDialogButtonBox, QListView
 from bs4 import BeautifulSoup
 
-from . import controller, document_builder
+from . import db_abstraction, document_builder
 from .basic_config import app_version, check_for_update, display_name, is_bundled
 from .datatypes import Rulegroup, create_rulegroups, create_questions_and_mchoice
 from .filter_editor import FilterEditor
@@ -19,6 +19,7 @@ from .question_table import RulegroupView, RuleDataModel, RuleSortFilterProxyMod
 from .regeltestcreator import RegeltestSaveDialog, RegeltestSetup
 from .ui_first_setup_widget import Ui_FirstSetupWidget
 from .ui_mainwindow import Ui_MainWindow
+from .ui_rulegroup_editor import Ui_RulegroupEditor
 from .ui_update_checker import Ui_UpdateChecker
 
 
@@ -40,9 +41,9 @@ def load_dataset(parent: QWidget, reset_cursor=True) -> bool:
         return False
     QApplication.setOverrideCursor(Qt.WaitCursor)
     datasets = read_in(file_name[0])
-    controller.clear_database()
+    db_abstraction.clear_database()
     for dataset in datasets:
-        controller.fill_database(dataset)
+        db_abstraction.fill_database(dataset)
     if reset_cursor:
         QApplication.restoreOverrideCursor()
     return True
@@ -55,10 +56,10 @@ def save_dataset(parent: QWidget):
     QApplication.setOverrideCursor(Qt.WaitCursor)
     dataset = "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?>\n\
 <REGELTEST>\n<GRUPPEN>\n"
-    for rulegroup in controller.get_all_rulegroups():
+    for rulegroup in db_abstraction.get_rulegroups():
         dataset += rulegroup.export()
     dataset += "</GRUPPEN>\n"
-    for question in controller.get_all_questions():
+    for question in db_abstraction.get_all_questions():
         question_set = question[0].export()
         dataset += question_set[0]
         if question[1]:
@@ -87,20 +88,17 @@ def about_dialog():
     msg_box.exec()
 
 
-class FirstSetupWidget(QWidget, Ui_FirstSetupWidget):
-    action_done = Signal()
-
-    def __init__(self, parent=None):
-        super(FirstSetupWidget, self).__init__(parent)
-        self.ui = Ui_FirstSetupWidget()
+class RulegroupEditor(QDialog, Ui_RulegroupEditor):
+    def __init__(self, id: int = 1, name: str = "", parent=None):
+        super(RulegroupEditor, self).__init__(parent=parent)
+        self.ui = Ui_RulegroupEditor()
         self.ui.setupUi(self)
 
-        self.ui.create_button.clicked.connect(lambda: print("CREATED"))
-        self.ui.import_button.clicked.connect(self.load_dataset)
+        self.ui.rulegroup_id.setValue(id)
+        self.ui.rulegroup_name.setText(name)
 
-    def load_dataset(self):
-        load_dataset(self.parent())
-        self.action_done.emit()
+    def create_rulegroup(self) -> Rulegroup:
+        return Rulegroup(id=self.ui.rulegroup_id.value(), name=self.ui.rulegroup_name.text())
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -115,9 +113,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.actionAuf_Updates_pr_fen.triggered.connect(lambda: display_update_dialog(self, check_for_update()))
         self.ui.action_ber.triggered.connect(about_dialog)
 
-        self.ui.menuBearbeiten.setEnabled(False)
+        # self.ui.menuBearbeiten.setEnabled()
         self.ui.actionRegeltest_einrichten.setEnabled(False)
-        self.ui.actionNeue_Kategorie_erstellen.setEnabled(False)
+        # self.ui.actionNeue_Kategorie_erstellen.setEnabled(False)
         self.ui.actionRegeltest_l_schen.setEnabled(False)
 
         self.ui.tabWidget.clear()
@@ -127,6 +125,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.regeltest_list.setAcceptDrops(True)
         self.ui.actionAnsicht_zur_cksetzen.triggered.connect(lambda: self.ui.regeltest_creator.show())
         self.ui.actionRegeldatensatz_exportieren.triggered.connect(lambda: save_dataset(self))
+        self.ui.actionNeue_Kategorie_erstellen.triggered.connect(self.add_rulegroup)
 
         self.ui.regeltest_list.model().rowsInserted.connect(self.regeltest_list_updated)
         self.ui.regeltest_list.model().rowsRemoved.connect(self.regeltest_list_updated)
@@ -143,8 +142,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.filter_list.itemDoubleClicked.connect(self.add_filter)
         self.ui.add_filter.clicked.connect(self.add_filter)
 
-        self.ruletabs = {}  # type: Dict[int, Tuple[QSortFilterProxyModel, RuleDataModel]]
+        self.ruletabs = []  # type: List[Tuple[Rulegroup, QSortFilterProxyModel, RuleDataModel]]
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
+
+    def add_rulegroup(self):
+        editor = RulegroupEditor(id=db_abstraction.get_new_rulegroup_id())
+        if editor.exec() == QDialog.Accepted:
+            new_rulegroup = editor.create_rulegroup()
+            db_abstraction.add_rulegroup(new_rulegroup)
+            self.create_ruletab(new_rulegroup)
+
+    def edit_rulegroup(self, current_rulegroup: Rulegroup):
+        editor = RulegroupEditor(id=current_rulegroup.id, name=current_rulegroup.name)
+        if editor.exec() == QDialog.Accepted:
+            new_rulegroup = editor.create_rulegroup()
+            current_rulegroup.id = new_rulegroup.id
+            current_rulegroup.name = new_rulegroup.name
 
     def delete_selected_filter(self):
         selection_model = self.ui.filter_list.selectionModel()
@@ -185,9 +198,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         msgBox.setDefaultButton(QMessageBox.Cancel)
         ret = msgBox.exec()
         if ret == QMessageBox.Yes:
-            index_rulegroup = list(self.ruletabs.keys())[index_tabwidget]
-            self.ruletabs.pop(index_rulegroup)
-            controller.delete(controller.get_rulegroup(index_rulegroup))
+            rulegroup, _, _ = self.ruletabs[index_tabwidget]
+            self.ruletabs.pop(index_tabwidget)
+            db_abstraction.delete(rulegroup)
             self.ui.tabWidget.removeTab(index_tabwidget)
 
     def regeltest_list_updated(self):
@@ -196,35 +209,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def load_dataset(self):
         load_dataset(self, reset_cursor=False)
-        for (_, model) in self.ruletabs.values():
+        for (_, _, model) in self.ruletabs:
             model.reset()
         QApplication.restoreOverrideCursor()
 
+    def create_ruletab(self, rulegroup: Rulegroup):
+        tab = QWidget()
+        view = RulegroupView(tab)
+        model = RuleDataModel(rulegroup, view)
+        filter_model = RuleSortFilterProxyModel()
+        filter_model.setSourceModel(model)
+        view.setModel(filter_model)
+        view.sortByColumn(0, Qt.AscendingOrder)
+        self.ruletabs.append((rulegroup, filter_model, model))
+        self.ui.tabWidget.addTab(tab, "")
+        self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id:02d} {rulegroup.name}")
+
     def create_ruletabs(self, rulegroups: List[Rulegroup]):
+        # noinspection PyArgumentList
         if rulegroups.count() == 0:
-            setup_tab = FirstSetupWidget()
+            setup_tab = FirstSetupWidget(self)
             self.ui.tabWidget.setTabsClosable(False)
 
             def cleanup():
                 self.ui.tabWidget.clear()
-                controller.populate_tabwidget(self)
+                self.create_ruletabs(db_abstraction.get_rulegroups())
 
             setup_tab.action_done.connect(cleanup)
             self.ui.tabWidget.addTab(setup_tab, "Setup")
         else:
             self.ui.tabWidget.setTabsClosable(True)
             for rulegroup in rulegroups:
-                tab = QWidget()
-                view = RulegroupView(tab)
-                model = RuleDataModel(rulegroup.id, view)
-                filter_model = RuleSortFilterProxyModel()
-                filter_model.setSourceModel(model)
-                view.setModel(filter_model)
-                view.sortByColumn(0, Qt.AscendingOrder)
-                self.ruletabs[rulegroup.id] = (filter_model, model)
-                self.ui.tabWidget.addTab(tab, "")
-                self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id:02d} {rulegroup.name}")
-            # self.filter_column(3, 'FaD')
+                self.create_ruletab(rulegroup)
 
     def setup_regeltest(self):
         regeltest_setup = RegeltestSetup(self)
@@ -242,7 +258,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             index = self.ui.filter_list.indexFromItem(list_entry).row()
             current_configuration = RuleSortFilterProxyModel.filters[index][1]
             edit_mode = True
-        first_ruletab = list(self.ruletabs.values())[0][1]
+        first_ruletab = self.ruletabs[0][2]
         properties = {}
         for i in range(first_ruletab.columnCount()):
             properties.update(first_ruletab.headerData(i, Qt.Horizontal, Qt.UserRole))
@@ -276,7 +292,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.refresh_column_filter()
 
     def refresh_column_filter(self):
-        for (filter_model, _) in self.ruletabs.values():
+        for (_, filter_model, _) in self.ruletabs:
             filter_model = filter_model  # type: RuleSortFilterProxyModel
             filter_model.invalidateFilter()
 
@@ -284,7 +300,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         question_set = []
         for signature in self.ui.regeltest_list.questions:
             question_set += [
-                (controller.get_question(signature), controller.get_multiplechoice_by_foreignkey(signature))]
+                (db_abstraction.get_question(signature), db_abstraction.get_multiplechoice_by_foreignkey(signature))]
         settings = RegeltestSaveDialog(self)
         settings.ui.title_edit.setFocus()
         result = settings.exec()
@@ -295,6 +311,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                              icon_path=settings.ui.icon_path_edit.text())
             QApplication.restoreOverrideCursor()
             webbrowser.open_new(output_path)
+
+
+class FirstSetupWidget(QWidget, Ui_FirstSetupWidget):
+    action_done = Signal()
+
+    def __init__(self, main_window: MainWindow):
+        super(FirstSetupWidget, self).__init__(main_window)
+        self.ui = Ui_FirstSetupWidget()
+        self.ui.setupUi(self)
+
+        self.ui.create_button.clicked.connect(main_window.add_rulegroup)
+        self.ui.import_button.clicked.connect(self.load_dataset)
+
+    def load_dataset(self):
+        load_dataset(self.parent())
+        self.action_done.emit()
 
 
 class UpdateChecker(QDialog, Ui_UpdateChecker):

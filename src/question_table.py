@@ -6,7 +6,7 @@ from PySide6.QtGui import QAction, QDrag, QShortcut, QKeySequence
 from PySide6.QtWidgets import QTreeWidget, QVBoxLayout, QDialog, QMessageBox, QMenu, QListView, QTableView, \
     QStyledItemDelegate, QWidget
 
-from src import controller
+from src import db_abstraction
 from src.datatypes import Question
 from src.question_editor import QuestionEditor
 
@@ -32,14 +32,14 @@ class RuleDataModel(QAbstractTableModel):
 
     headers = ['rule_id', 'question', 'multiple_choice', 'answer_text', 'last_edited', ]
 
-    def __init__(self, rulegroup_id, parent):
+    def __init__(self, rulegroup, parent):
         super(RuleDataModel, self).__init__(parent)
-        self.rulegroup_id = rulegroup_id
+        self.rulegroup = rulegroup
         self.questions = []  # type: List[Question]
         self.read_data()
 
     def read_data(self):
-        self.questions = controller.get_questions_by_foreignkey(self.rulegroup_id)
+        self.questions = db_abstraction.get_questions_by_foreignkey(self.rulegroup.id)
 
     def reset(self) -> None:
         self.beginResetModel()
@@ -94,8 +94,8 @@ class RuleDataModel(QAbstractTableModel):
     def setData(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex], value: Any,
                 role: int = ...) -> bool:
         if role == Qt.UserRole:
-            signature = controller.update_question_set(*value)
-            self.questions[index.row()] = controller.get_question(signature)
+            db_abstraction.update_question_set(value)
+            self.questions[index.row()] = value
             return True
         return False
 
@@ -133,20 +133,22 @@ class RuleDataModel(QAbstractTableModel):
 
     def removeRow(self, row: int,
                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
-        controller.delete(self.questions[row])
+        db_abstraction.delete(self.questions[row])
         self.questions.pop(row)
         return True
 
     def insertRow(self, row: int,
                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
         new_question = Question()
-        new_question.rulegroup = controller.get_rulegroup(self.rulegroup_id)
-        new_question.rule_id = controller.get_new_question_id(self.rulegroup_id)
+        new_question.rulegroup = db_abstraction.get_rulegroup(self.rulegroup.id)
+        new_question.rule_id = db_abstraction.get_new_question_id(self.rulegroup.id)
         editor = QuestionEditor(new_question)
         if editor.exec() == QDialog.Accepted:
-            signature = controller.update_question_set(editor.question, editor.mchoice)
-            self.questions.insert(row, controller.get_question(signature))
+            db_abstraction.update_question_set(editor.question)
+            self.questions.insert(row, editor.question)
             return True
+        else:
+            db_abstraction.rollback()
         return False
 
     def flags(self, index: Union[
@@ -166,7 +168,9 @@ class RuleDelegate(QStyledItemDelegate):
         dialog = QuestionEditor(question, parent=editor)
         if dialog.exec() == QDialog.Accepted:
             # was updated
-            index.model().setData(index, (dialog.question, dialog.mchoice), Qt.UserRole)
+            index.model().setData(index, dialog.question, Qt.UserRole)
+        else:
+            db_abstraction.rollback()
         return editor
 
 
