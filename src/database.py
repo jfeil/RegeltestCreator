@@ -32,6 +32,8 @@ class DatabaseConnector:
         if not self.initialized:
             self._init_database()
 
+        self.session = Session(self.engine)
+
     def _init_database(self):
         # Create database based on basis - need to read docu first lol
         Base.metadata.create_all(self.engine)
@@ -45,56 +47,46 @@ class DatabaseConnector:
         self.initialized = False
 
     def get_rulegroups(self):
-        with Session(self.engine, expire_on_commit=False) as session:
-            rulegroups = session.query(Rulegroup)
-            session.close()
+        rulegroups = self.session.query(Rulegroup)
         return rulegroups
+
+    def add_rulegroup(self, rulegroup):
+        self.session.add(rulegroup)
+        self.session.commit()
 
     def get_question_multiplechoice(self):
         return_dict = []
-        with Session(self.engine, expire_on_commit=False) as session:
-            for question in session.query(Question):
-                return_dict += [(question, session.query(MultipleChoice).where(MultipleChoice.rule == question).all())]
+        for question in self.session.query(Question):
+            return_dict += [(question, self.session.query(MultipleChoice).where(MultipleChoice.rule == question).all())]
         return return_dict
 
-    def update_question_set(self, question: Question, mchoice: List[MultipleChoice]):
-        with Session(self.engine) as session:
-            session.add(question)
-            question.multiple_choice = mchoice
-            session.commit()
-            signature = question.signature
-            session.close()
+    def update_question_set(self, question: Question):
+        self.session.add(question)
+        self.session.commit()
+        signature = question.signature
         return signature
 
     def get_question_by_primarykey(self, signature: str):
-        with Session(self.engine, expire_on_commit=False) as session:
-            question = session.query(Question).where(Question.signature == signature).first()
-            session.close()
+        question = self.session.query(Question).where(Question.signature == signature).first()
         return question
 
     def get_rulegroup_by_primarykey(self, rulegroup_index: int):
-        with Session(self.engine, expire_on_commit=False) as session:
-            rulegroup = session.query(Rulegroup).where(Rulegroup.id == rulegroup_index).first()
-            session.close()
+        rulegroup = self.session.query(Rulegroup).where(Rulegroup.id == rulegroup_index).first()
         return rulegroup
 
     def get_questions_by_foreignkey(self, rulegroup_id: int, mchoice=None, randomize: bool = False):
-        with Session(self.engine, expire_on_commit=False) as session:
-            questions = session.query(Question).where(Question.group_id == rulegroup_id)
-            if mchoice is not None:
-                if mchoice:
-                    questions = questions.where(Question.answer_index != -1)
-                else:
-                    questions = questions.where(Question.answer_index == -1)
-            if randomize:
-                questions = questions.order_by(func.random())
-            session.close()
+        questions = self.session.query(Question).where(Question.group_id == rulegroup_id)
+        if mchoice is not None:
+            if mchoice:
+                questions = questions.where(Question.answer_index != -1)
+            else:
+                questions = questions.where(Question.answer_index == -1)
+        if randomize:
+            questions = questions.order_by(func.random())
         return questions
 
     def get_multiplechoice_by_foreignkey(self, question_signature: str):
-        with Session(self.engine, expire_on_commit=False) as session:
-            mchoice = session.query(MultipleChoice).where(MultipleChoice.rule_signature == question_signature).all()
-            session.close()
+        mchoice = self.session.query(MultipleChoice).where(MultipleChoice.rule_signature == question_signature).all()
         return mchoice
 
     def fill_database(self, dataset: List[Union[Rulegroup, Question, MultipleChoice]]):
@@ -102,22 +94,25 @@ class DatabaseConnector:
         if not self.initialized:
             self._init_database()
 
-        with Session(self.engine) as session:
-            session.add_all(dataset)
-            session.commit()
-            session.close()
+        self.session.add_all(dataset)
+        self.session.commit()
 
     def delete(self, item: Union[Rulegroup, Question]):
-        with Session(self.engine) as session:
-            session.delete(item)
-            session.commit()
-            session.close()
+        self.session.delete(item)
+        self.session.commit()
 
     def get_new_question_id(self, rulegroup_index: int):
-        with Session(self.engine) as session:
-            stmt = select(Question.rule_id).where(Question.group_id.like(rulegroup_index))
-            return_val = max(session.execute(stmt))[0] + 1
-            session.close()
+        stmt = select(Question.rule_id).where(Question.group_id.like(rulegroup_index))
+        return_val = max(self.session.execute(stmt))[0] + 1
+        return return_val
+
+    def get_new_rulegroup_id(self):
+        stmt = select(Rulegroup.id)
+        values = self.session.execute(stmt).fetchall()
+        if values:
+            return_val = max(values)[0] + 1
+        else:
+            return_val = 1
         return return_val
 
 

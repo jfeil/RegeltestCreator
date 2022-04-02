@@ -3,7 +3,7 @@ import datetime
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog
 
-from src import controller
+from src import db_abstraction
 from src.datatypes import Question, MultipleChoice
 from src.ui_question_editor import Ui_QuestionDialog
 
@@ -33,7 +33,7 @@ class QuestionEditor(QDialog, Ui_QuestionDialog):
             index = 0
         else:
             mchoice = True
-            multiple_choice = controller.get_multiplechoice_by_foreignkey(question.signature)
+            multiple_choice = db_abstraction.get_multiplechoice_by_foreignkey(question.signature)
             for mchoice_option in multiple_choice:
                 if mchoice_option.index == 0:
                     self.ui.option_1_edit.setText(mchoice_option.text)
@@ -77,6 +77,7 @@ class QuestionEditor(QDialog, Ui_QuestionDialog):
         else:
             self.question.answer_index = -1
         self.question.last_edited = datetime.date.today()
+        self.question.multiple_choice = self.mchoice
         if self.ui.mchoice_combo.currentIndex() == 0 and checkstate_2_bool(self.ui.checkBox.checkState()):
             # wrong! Don't close!
             pass
