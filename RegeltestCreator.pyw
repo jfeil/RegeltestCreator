@@ -3,8 +3,8 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
-from src import db_abstraction
 from src.basic_config import log_level
+from src.database import db
 from src.main_application import MainWindow
 
 logging.basicConfig()
@@ -15,9 +15,11 @@ logging.getLogger().setLevel(log_level)
 def run():
     app = QApplication(sys.argv)
     main_window = MainWindow()
-    main_window.create_ruletabs(db_abstraction.get_rulegroups())
+    main_window.create_ruletabs(db.get_rulegroups())
     main_window.show()
-    sys.exit(app.exec())
+    exit_code = app.exec()
+    db.close_connection()
+    sys.exit(exit_code)
 
 
 if __name__ == '__main__':

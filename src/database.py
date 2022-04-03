@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import List, Union
+from typing import List, Union, Tuple
 
 from appdirs import AppDirs
 from sqlalchemy import create_engine, inspect, func, select
@@ -42,6 +42,12 @@ class DatabaseConnector:
         # check if database is empty :)
         return self.initialized
 
+    def abort(self):
+        self.session.rollback()
+
+    def close_connection(self):
+        self.session.close()
+
     def clear_database(self):
         Base.metadata.drop_all(self.engine)
         self.initialized = False
@@ -66,11 +72,11 @@ class DatabaseConnector:
         signature = question.signature
         return signature
 
-    def get_question_by_primarykey(self, signature: str):
+    def get_question(self, signature: str):
         question = self.session.query(Question).where(Question.signature == signature).first()
         return question
 
-    def get_rulegroup_by_primarykey(self, rulegroup_index: int):
+    def get_rulegroup(self, rulegroup_index: int):
         rulegroup = self.session.query(Rulegroup).where(Rulegroup.id == rulegroup_index).first()
         return rulegroup
 
@@ -83,7 +89,7 @@ class DatabaseConnector:
                 questions = questions.where(Question.answer_index == -1)
         if randomize:
             questions = questions.order_by(func.random())
-        return questions
+        return questions.all()
 
     def get_multiplechoice_by_foreignkey(self, question_signature: str):
         mchoice = self.session.query(MultipleChoice).where(MultipleChoice.rule_signature == question_signature).all()
@@ -114,6 +120,13 @@ class DatabaseConnector:
         else:
             return_val = 1
         return return_val
+
+    def get_rulegroup_config(self) -> List[Tuple[Rulegroup, int, int]]:
+        rulegroups = self.get_rulegroups()
+        return [(rulegroup,
+                 len(self.get_questions_by_foreignkey(rulegroup_id=rulegroup.id, mchoice=False)),
+                 len(self.get_questions_by_foreignkey(rulegroup_id=rulegroup.id, mchoice=True))) for rulegroup in
+                rulegroups]
 
 
 db = DatabaseConnector()

@@ -6,7 +6,7 @@ from PySide6.QtGui import QAction, QDrag, QShortcut, QKeySequence
 from PySide6.QtWidgets import QTreeWidget, QVBoxLayout, QDialog, QMessageBox, QMenu, QListView, QTableView, \
     QStyledItemDelegate, QWidget
 
-from src import db_abstraction
+from src.database import db
 from src.datatypes import Question
 from src.question_editor import QuestionEditor
 
@@ -39,7 +39,7 @@ class RuleDataModel(QAbstractTableModel):
         self.read_data()
 
     def read_data(self):
-        self.questions = db_abstraction.get_questions_by_foreignkey(self.rulegroup.id)
+        self.questions = db.get_questions_by_foreignkey(self.rulegroup.id)
 
     def reset(self) -> None:
         self.beginResetModel()
@@ -94,7 +94,7 @@ class RuleDataModel(QAbstractTableModel):
     def setData(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex], value: Any,
                 role: int = ...) -> bool:
         if role == Qt.UserRole:
-            db_abstraction.update_question_set(value)
+            db.update_question_set(value)
             self.questions[index.row()] = value
             return True
         return False
@@ -133,22 +133,22 @@ class RuleDataModel(QAbstractTableModel):
 
     def removeRow(self, row: int,
                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
-        db_abstraction.delete(self.questions[row])
+        db.delete(self.questions[row])
         self.questions.pop(row)
         return True
 
     def insertRow(self, row: int,
                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
         new_question = Question()
-        new_question.rulegroup = db_abstraction.get_rulegroup(self.rulegroup.id)
-        new_question.rule_id = db_abstraction.get_new_question_id(self.rulegroup.id)
+        new_question.rulegroup = db.get_rulegroup(self.rulegroup.id)
+        new_question.rule_id = db.get_new_question_id(self.rulegroup.id)
         editor = QuestionEditor(new_question)
         if editor.exec() == QDialog.Accepted:
-            db_abstraction.update_question_set(editor.question)
+            db.update_question_set(editor.question)
             self.questions.insert(row, editor.question)
             return True
         else:
-            db_abstraction.rollback()
+            db.abort()
         return False
 
     def flags(self, index: Union[
@@ -170,7 +170,7 @@ class RuleDelegate(QStyledItemDelegate):
             # was updated
             index.model().setData(index, dialog.question, Qt.UserRole)
         else:
-            db_abstraction.rollback()
+            db.abort()
         return editor
 
 

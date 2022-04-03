@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QListWidget, QVBoxLayout, QDialog, QFileDialog, QW
     QSpacerItem, QSizePolicy
 from PySide6.QtWidgets import QListWidgetItem
 
-from src import db_abstraction
+from src.database import db
 from src.datatypes import Question, Rulegroup
 from src.ui_regeltest_save import Ui_RegeltestSave
 from src.ui_regeltest_setup import Ui_RegeltestSetup
@@ -50,7 +50,7 @@ class RegeltestCreator(QListWidget):
             n = 32
             signatures = [signatures[i:i + n] for i in range(0, len(signatures), n)]
             for signature in signatures:
-                self.add_question(db_abstraction.get_question(signature))
+                self.add_question(db.get_question(signature))
 
 
 class RegeltestSaveDialog(QDialog, Ui_RegeltestSave):
@@ -116,7 +116,7 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
 
         self.rulegroup_widgets = []  # type: List[RegeltestSetupRulegroup]
 
-        parameters = db_abstraction.get_rulegroup_config()
+        parameters = db.get_rulegroup_config()
         divisor = 5
         for i in range(len(parameters) // divisor):
             self.create_tab(f"{parameters[i * divisor + 1][0].id:02d} - {parameters[(i + 1) * divisor - 1][0].id:02d}",
@@ -156,12 +156,12 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
             text_questions = []
             mchoice_questions = []
             if text:
-                text_questions = db_abstraction.get_questions_by_foreignkey(rulegroup.id, mchoice=False,
-                                                                            randomize=True)[
+                text_questions = db.get_questions_by_foreignkey(rulegroup.id, mchoice=False,
+                                                                randomize=True)[
                                  0:text]
             if mchoice:
-                mchoice_questions = db_abstraction.get_questions_by_foreignkey(rulegroup.id, mchoice=True,
-                                                                               randomize=True)[
+                mchoice_questions = db.get_questions_by_foreignkey(rulegroup.id, mchoice=True,
+                                                                   randomize=True)[
                                     0:mchoice]
             text_questions += mchoice_questions
             if self.ui.checkbox_textmchoice.isChecked():
