@@ -94,12 +94,24 @@ class RulegroupEditor(QDialog, Ui_RulegroupEditor):
         super(RulegroupEditor, self).__init__(parent=parent)
         self.ui = Ui_RulegroupEditor()
         self.ui.setupUi(self)
+        self.id = id
+        self.name = name
 
-        self.ui.rulegroup_id.setValue(id)
-        self.ui.rulegroup_name.setText(name)
+    @property
+    def id(self):
+        return self.ui.rulegroup_id.value()
 
-    def create_rulegroup(self) -> Rulegroup:
-        return Rulegroup(id=self.ui.rulegroup_id.value(), name=self.ui.rulegroup_name.text())
+    @id.setter
+    def id(self, value):
+        self.ui.rulegroup_id.setValue(value)
+
+    @property
+    def name(self):
+        return self.ui.rulegroup_name.text()
+
+    @name.setter
+    def name(self, value):
+        self.ui.rulegroup_name.setText(value)
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -213,35 +225,47 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.tabWidget.addTab(tab, "")
         self._update_tabtitle(self.ui.tabWidget.indexOf(tab))
 
-    def _rulegroup_editor(self, editor):
-        pass
+    class RulegroupEditorResult(Enum):
+        Success = auto()
+        Invalid = auto()
+        Canceled = auto()
+
+    def _rulegroup_editor(self, rulegroup: Union[Rulegroup, None], editor: RulegroupEditor) -> RulegroupEditorResult:
+        if editor.exec() == QDialog.Accepted:
+            if rulegroup and rulegroup.id == editor.id:
+                # ID was not changed -> update of title
+                return MainWindow.RulegroupEditorResult.Success
+            if db.get_rulegroup(editor.id):
+                QMessageBox(QMessageBox.Icon.Critical, "Fehler", "Regelgruppennummer existiert bereits!",
+                            parent=self, ).exec()
+                return MainWindow.RulegroupEditorResult.Invalid
+            return MainWindow.RulegroupEditorResult.Success
+        else:
+            return MainWindow.RulegroupEditorResult.Canceled
 
     def rename_rulegroup(self, index):
         if not self.ruletabs:
             return
         rulegroup, _, _ = self.ruletabs[index]
         editor = RulegroupEditor(id=rulegroup.id, name=rulegroup.name)
-        if editor.exec() == QDialog.Accepted:
-            new_rulegroup = editor.create_rulegroup()
-            if db.get_rulegroup(new_rulegroup.id):
-                db.abort()
-                return
-            rulegroup.id = new_rulegroup.id
-            rulegroup.name = new_rulegroup.name
+        result = self._rulegroup_editor(rulegroup, editor)
+        while result == MainWindow.RulegroupEditorResult.Invalid:
+            result = self._rulegroup_editor(rulegroup, editor)
+        if result == MainWindow.RulegroupEditorResult.Success:
+            rulegroup.id = editor.id
+            rulegroup.name = editor.name
             self._update_tabtitle(index)
             db.commit()
-        else:
-            db.abort()
 
     def add_rulegroup(self):
         editor = RulegroupEditor(id=db.get_new_rulegroup_id())
-        if editor.exec() == QDialog.Accepted:
-            new_rulegroup = editor.create_rulegroup()
-            if db.get_rulegroup(new_rulegroup.id):
-                db.abort()
-                return
-            db.add_rulegroup(new_rulegroup)
-            self.create_ruletab(new_rulegroup)
+        result = self._rulegroup_editor(None, editor)
+        while result == MainWindow.RulegroupEditorResult.Invalid:
+            result = self._rulegroup_editor(None, editor)
+        if result == MainWindow.RulegroupEditorResult.Success:
+            rulegroup = Rulegroup(id=editor.id, name=editor.name)
+            db.add_rulegroup(rulegroup)
+            self.create_ruletab(rulegroup)
 
     def _update_tabtitle(self, index):
         rulegroup, _, _ = self.ruletabs[index]
