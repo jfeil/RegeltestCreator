@@ -6,8 +6,8 @@ from appdirs import AppDirs
 from sqlalchemy import create_engine, inspect, func, select
 from sqlalchemy.orm import Session
 
-from .basic_config import app_name, app_author, database_name, Base
-from .datatypes import Rulegroup, Question, MultipleChoice
+from src.basic_config import app_name, app_author, database_name, Base
+from src.datatypes import Rulegroup, Question, MultipleChoice
 
 
 class DatabaseConnector:
@@ -30,6 +30,7 @@ class DatabaseConnector:
             self.clear_database()
 
         if not self.initialized:
+            self.initialized = True
             self._init_database()
 
         self.session = Session(self.engine)
@@ -56,7 +57,7 @@ class DatabaseConnector:
         self.initialized = False
 
     def get_rulegroups(self):
-        rulegroups = self.session.query(Rulegroup)
+        rulegroups = self.session.query(Rulegroup).all()
         return rulegroups
 
     def add_rulegroup(self, rulegroup):
