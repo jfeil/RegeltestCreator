@@ -11,16 +11,17 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog
     QListWidgetItem, QDialogButtonBox, QListView
 from bs4 import BeautifulSoup
 
-from . import db_abstraction, document_builder
-from .basic_config import app_version, check_for_update, display_name, is_bundled
-from .datatypes import Rulegroup, create_rulegroups, create_questions_and_mchoice
-from .filter_editor import FilterEditor
-from .question_table import RulegroupView, RuleDataModel, RuleSortFilterProxyModel
-from .regeltestcreator import RegeltestSaveDialog, RegeltestSetup
-from .ui_first_setup_widget import Ui_FirstSetupWidget
-from .ui_mainwindow import Ui_MainWindow
-from .ui_rulegroup_editor import Ui_RulegroupEditor
-from .ui_update_checker import Ui_UpdateChecker
+from src import document_builder
+from src.basic_config import app_version, check_for_update, display_name, is_bundled
+from src.database import db
+from src.datatypes import Rulegroup, create_rulegroups, create_questions_and_mchoice
+from src.filter_editor import FilterEditor
+from src.question_table import RulegroupView, RuleDataModel, RuleSortFilterProxyModel
+from src.regeltestcreator import RegeltestSaveDialog, RegeltestSetup
+from src.ui_first_setup_widget import Ui_FirstSetupWidget
+from src.ui_mainwindow import Ui_MainWindow
+from src.ui_rulegroup_editor import Ui_RulegroupEditor
+from src.ui_update_checker import Ui_UpdateChecker
 
 
 class FilterMode(Enum):
@@ -41,9 +42,9 @@ def load_dataset(parent: QWidget, reset_cursor=True) -> bool:
         return False
     QApplication.setOverrideCursor(Qt.WaitCursor)
     datasets = read_in(file_name[0])
-    db_abstraction.clear_database()
+    db.clear_database()
     for dataset in datasets:
-        db_abstraction.fill_database(dataset)
+        db.fill_database(dataset)
     if reset_cursor:
         QApplication.restoreOverrideCursor()
     return True
@@ -56,10 +57,10 @@ def save_dataset(parent: QWidget):
     QApplication.setOverrideCursor(Qt.WaitCursor)
     dataset = "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?>\n\
 <REGELTEST>\n<GRUPPEN>\n"
-    for rulegroup in db_abstraction.get_rulegroups():
+    for rulegroup in db.get_rulegroups():
         dataset += rulegroup.export()
     dataset += "</GRUPPEN>\n"
-    for question in db_abstraction.get_all_questions():
+    for question in db.get_all_questions():
         question_set = question[0].export()
         dataset += question_set[0]
         if question[1]:
@@ -146,10 +147,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
 
     def add_rulegroup(self):
-        editor = RulegroupEditor(id=db_abstraction.get_new_rulegroup_id())
+        editor = RulegroupEditor(id=db.get_new_rulegroup_id())
         if editor.exec() == QDialog.Accepted:
             new_rulegroup = editor.create_rulegroup()
-            db_abstraction.add_rulegroup(new_rulegroup)
+            db.add_rulegroup(new_rulegroup)
             self.create_ruletab(new_rulegroup)
 
     def edit_rulegroup(self, current_rulegroup: Rulegroup):
@@ -200,7 +201,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if ret == QMessageBox.Yes:
             rulegroup, _, _ = self.ruletabs[index_tabwidget]
             self.ruletabs.pop(index_tabwidget)
-            db_abstraction.delete(rulegroup)
+            db.delete(rulegroup)
             self.ui.tabWidget.removeTab(index_tabwidget)
 
     def regeltest_list_updated(self):
@@ -233,7 +234,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             def cleanup():
                 self.ui.tabWidget.clear()
-                self.create_ruletabs(db_abstraction.get_rulegroups())
+                self.create_ruletabs(db.get_rulegroups())
 
             setup_tab.action_done.connect(cleanup)
             self.ui.tabWidget.addTab(setup_tab, "Setup")
@@ -300,7 +301,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         question_set = []
         for signature in self.ui.regeltest_list.questions:
             question_set += [
-                (db_abstraction.get_question(signature), db_abstraction.get_multiplechoice_by_foreignkey(signature))]
+                (db.get_question(signature), db.get_multiplechoice_by_foreignkey(signature))]
         settings = RegeltestSaveDialog(self)
         settings.ui.title_edit.setFocus()
         result = settings.exec()
