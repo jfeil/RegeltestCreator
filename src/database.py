@@ -45,6 +45,9 @@ class DatabaseConnector:
     def abort(self):
         self.session.rollback()
 
+    def commit(self):
+        self.session.commit()
+
     def close_connection(self):
         self.session.close()
 

@@ -122,6 +122,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.tabWidget.clear()
         self.ui.tabWidget.setTabsClosable(True)
         self.ui.tabWidget.tabCloseRequested.connect(self.delete_rulegroup)
+        self.ui.tabWidget.tabBarDoubleClicked.connect(self.rename_rulegroup)
 
         self.ui.regeltest_list.setAcceptDrops(True)
         self.ui.actionAnsicht_zur_cksetzen.triggered.connect(lambda: self.ui.regeltest_creator.show())
@@ -145,20 +146,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.ruletabs = []  # type: List[Tuple[Rulegroup, QSortFilterProxyModel, RuleDataModel]]
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
-
-    def add_rulegroup(self):
-        editor = RulegroupEditor(id=db.get_new_rulegroup_id())
-        if editor.exec() == QDialog.Accepted:
-            new_rulegroup = editor.create_rulegroup()
-            db.add_rulegroup(new_rulegroup)
-            self.create_ruletab(new_rulegroup)
-
-    def edit_rulegroup(self, current_rulegroup: Rulegroup):
-        editor = RulegroupEditor(id=current_rulegroup.id, name=current_rulegroup.name)
-        if editor.exec() == QDialog.Accepted:
-            new_rulegroup = editor.create_rulegroup()
-            current_rulegroup.id = new_rulegroup.id
-            current_rulegroup.name = new_rulegroup.name
 
     def delete_selected_filter(self):
         selection_model = self.ui.filter_list.selectionModel()
@@ -224,7 +211,41 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         view.sortByColumn(0, Qt.AscendingOrder)
         self.ruletabs.append((rulegroup, filter_model, model))
         self.ui.tabWidget.addTab(tab, "")
-        self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(tab), f"{rulegroup.id:02d} {rulegroup.name}")
+        self._update_tabtitle(self.ui.tabWidget.indexOf(tab))
+
+    def _rulegroup_editor(self, editor):
+        pass
+
+    def rename_rulegroup(self, index):
+        if not self.ruletabs:
+            return
+        rulegroup, _, _ = self.ruletabs[index]
+        editor = RulegroupEditor(id=rulegroup.id, name=rulegroup.name)
+        if editor.exec() == QDialog.Accepted:
+            new_rulegroup = editor.create_rulegroup()
+            if db.get_rulegroup(new_rulegroup.id):
+                db.abort()
+                return
+            rulegroup.id = new_rulegroup.id
+            rulegroup.name = new_rulegroup.name
+            self._update_tabtitle(index)
+            db.commit()
+        else:
+            db.abort()
+
+    def add_rulegroup(self):
+        editor = RulegroupEditor(id=db.get_new_rulegroup_id())
+        if editor.exec() == QDialog.Accepted:
+            new_rulegroup = editor.create_rulegroup()
+            if db.get_rulegroup(new_rulegroup.id):
+                db.abort()
+                return
+            db.add_rulegroup(new_rulegroup)
+            self.create_ruletab(new_rulegroup)
+
+    def _update_tabtitle(self, index):
+        rulegroup, _, _ = self.ruletabs[index]
+        self.ui.tabWidget.setTabText(index, f"{rulegroup.id:02d} {rulegroup.name}")
 
     def create_ruletabs(self, rulegroups: List[Rulegroup]):
         # noinspection PyArgumentList
