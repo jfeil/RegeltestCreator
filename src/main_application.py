@@ -203,6 +203,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             db.delete(rulegroup)
             self.ui.tabWidget.removeTab(index_tabwidget)
 
+        if not self.ruletabs:
+            self._display_setup_screen()
+
     def regeltest_list_updated(self):
         self.ui.regeltest_stats.setText(
             f"{self.ui.regeltest_list.count()} Fragen selektiert ({self.ui.regeltest_list.count() * 2} Punkte)")
@@ -263,6 +266,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         while result == MainWindow.RulegroupEditorResult.Invalid:
             result = self._rulegroup_editor(None, editor)
         if result == MainWindow.RulegroupEditorResult.Success:
+            if not self.ruletabs:
+                self.ui.tabWidget.setTabsClosable(True)
+                self.ui.tabWidget.clear()
+
             rulegroup = Rulegroup(id=editor.id, name=editor.name)
             db.add_rulegroup(rulegroup)
             self.create_ruletab(rulegroup)
@@ -271,18 +278,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         rulegroup, _, _ = self.ruletabs[index]
         self.ui.tabWidget.setTabText(index, f"{rulegroup.id:02d} {rulegroup.name}")
 
+    def _display_setup_screen(self):
+        setup_tab = FirstSetupWidget(self)
+        self.ui.tabWidget.setTabsClosable(False)
+
+        def cleanup():
+            self.ui.tabWidget.clear()
+            self.create_ruletabs(db.get_rulegroups())
+
+        setup_tab.action_done.connect(cleanup)
+        self.ui.tabWidget.addTab(setup_tab, "Einrichten")
+
     def create_ruletabs(self, rulegroups: List[Rulegroup]):
-        # noinspection PyArgumentList
-        if rulegroups.count() == 0:
-            setup_tab = FirstSetupWidget(self)
-            self.ui.tabWidget.setTabsClosable(False)
-
-            def cleanup():
-                self.ui.tabWidget.clear()
-                self.create_ruletabs(db.get_rulegroups())
-
-            setup_tab.action_done.connect(cleanup)
-            self.ui.tabWidget.addTab(setup_tab, "Setup")
+        if not rulegroups:
+            self._display_setup_screen()
         else:
             self.ui.tabWidget.setTabsClosable(True)
             for rulegroup in rulegroups:
