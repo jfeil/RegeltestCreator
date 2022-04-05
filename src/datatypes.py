@@ -46,49 +46,6 @@ class MultipleChoice(Base):
         return f"MultipleChoice(rule_signature={self.rule_signature!r}, index={self.index!r}, text={self.text!r})"
 
 
-"""
-<REGELSATZ>
-<LNR>
-10010
-</LNR>
-<FRAGE>
-Kann diese Antwort einen Sinn ergeben?
-</FRAGE>
-<MCHOICE>
-
-</MCHOICE>
-<ANTWORT>
-Weil das ein Beispiel ist, kann hier nichts sinnvolles stehen!
-</ANTWORT>
-<ERST>
-02.10.2003
-</ERST>
-<AEND>
-29.01.2019
-</AEND>
-<SIGNATUR>
-5342851d460a2c99b62255db60461ce6
-</SIGNATUR>
-</REGELSATZ>
-
-ALTERNATIVE:
-
-<MCHOICE>
-a ( ) A, B, C.
-b ( ) Hello World.
-c ( ) Lorem Ipsum.
-</MCHOICE>
-<ANTWORT>
-c)  Das kann nur Lorem Ipsum sein.
-</ANTWORT>
-
-
-"""
-
-QuestionValues = namedtuple('QuestionValues', ['table_value', 'table_tooltip', 'table_checkbox'])
-QuestionParameters = namedtuple('QuestionParameters', ['table_header', 'filter_options', 'datatype'])
-
-
 class FilterOption(Enum):
     smaller_equal = auto()
     smaller = auto()
@@ -113,8 +70,9 @@ class FilterOption(Enum):
 
 
 class Question(Base):
-    # LNR[0:2] = group_id
-    # LNR[2:-1] = rule_id
+    QuestionValues = namedtuple('QuestionValues', ['table_value', 'table_tooltip', 'table_checkbox'])
+    QuestionParameters = namedtuple('QuestionParameters', ['table_header', 'filter_options', 'datatype'])
+
     __tablename__ = 'question'
 
     rulegroup = relationship("Rulegroup", back_populates="children")
@@ -154,26 +112,27 @@ class Question(Base):
 
     def values(self, key) -> QuestionValues:
         return {
-            'group_id': QuestionValues(table_value=self.group_id, table_tooltip=None,
-                                       table_checkbox=None),
-            'rule_id': QuestionValues(table_value=self.rule_id, table_tooltip=None,
-                                      table_checkbox=None),
-            'question': QuestionValues(table_value=self.question, table_tooltip=self.question,
-                                       table_checkbox=None),
-            'multiple_choice': QuestionValues(table_value={-1: None, 0: 'A', 1: 'B', 2: 'C'}[self.answer_index],
-                                              table_tooltip=None,
-                                              table_checkbox=2 * (self.answer_index != -1)),
-            'answer_index': QuestionValues(table_value=self.answer_index,
-                                           table_tooltip=None,
-                                           table_checkbox=None),
-            'answer_text': QuestionValues(table_value=self.answer_text, table_tooltip=self.answer_text,
-                                          table_checkbox=None),
-            'created': QuestionValues(table_value=str(self.created), table_tooltip=None,
-                                      table_checkbox=None),
-            'last_edited': QuestionValues(table_value=str(self.last_edited), table_tooltip=None,
-                                          table_checkbox=None),
-            'signature': QuestionValues(table_value=self.signature, table_tooltip=None,
-                                        table_checkbox=None),
+            'group_id': Question.QuestionValues(table_value=self.group_id, table_tooltip=None,
+                                                table_checkbox=None),
+            'rule_id': Question.QuestionValues(table_value=self.rule_id, table_tooltip=None,
+                                               table_checkbox=None),
+            'question': Question.QuestionValues(table_value=self.question, table_tooltip=self.question,
+                                                table_checkbox=None),
+            'multiple_choice': Question.QuestionValues(
+                table_value={-1: None, 0: 'A', 1: 'B', 2: 'C'}[self.answer_index],
+                table_tooltip=None,
+                table_checkbox=2 * (self.answer_index != -1)),
+            'answer_index': Question.QuestionValues(table_value=self.answer_index,
+                                                    table_tooltip=None,
+                                                    table_checkbox=None),
+            'answer_text': Question.QuestionValues(table_value=self.answer_text, table_tooltip=self.answer_text,
+                                                   table_checkbox=None),
+            'created': Question.QuestionValues(table_value=str(self.created), table_tooltip=None,
+                                               table_checkbox=None),
+            'last_edited': Question.QuestionValues(table_value=str(self.last_edited), table_tooltip=None,
+                                                   table_checkbox=None),
+            'signature': Question.QuestionValues(table_value=self.signature, table_tooltip=None,
+                                                 table_checkbox=None),
         }[key]
 
     def export(self) -> Tuple[str, str]:

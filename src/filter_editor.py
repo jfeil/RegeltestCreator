@@ -4,12 +4,12 @@ from typing import Dict, Tuple, Callable, Union, Any
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QLineEdit, QCheckBox, QDateEdit, QSpinBox, QPushButton, QDialogButtonBox
 
-from src.datatypes import QuestionParameters, FilterOption
+from src.datatypes import Question, FilterOption
 from src.ui_filter_editor import Ui_FilterEditor
 
 
 class FilterEditor(QDialog, Ui_FilterEditor):
-    def __init__(self, filter_configuration: Dict[str, QuestionParameters],
+    def __init__(self, filter_configuration: Dict[str, Question.QuestionParameters],
                  current_filter: Union[None, Tuple[str, FilterOption, Any]] = None,
                  # dict_key, FilterOption, filter_data
                  parent=None, window_flags=Qt.Dialog):
