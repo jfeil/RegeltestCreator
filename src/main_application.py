@@ -268,6 +268,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if result == MainWindow.RulegroupEditorResult.Success:
             if not self.ruletabs:
                 self.ui.tabWidget.setTabsClosable(True)
+                self.ui.add_filter.setDisabled(False)
                 self.ui.tabWidget.clear()
 
             rulegroup = Rulegroup(id=editor.id, name=editor.name)
@@ -281,6 +282,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _display_setup_screen(self):
         setup_tab = FirstSetupWidget(self)
         self.ui.tabWidget.setTabsClosable(False)
+        self.ui.add_filter.setDisabled(True)
 
         def cleanup():
             self.ui.tabWidget.clear()
@@ -294,6 +296,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self._display_setup_screen()
         else:
             self.ui.tabWidget.setTabsClosable(True)
+            self.ui.add_filter.setDisabled(False)
             for rulegroup in rulegroups:
                 self.create_ruletab(rulegroup)
 
