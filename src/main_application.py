@@ -60,7 +60,7 @@ def save_dataset(parent: QWidget):
     for rulegroup in db.get_rulegroups():
         dataset += rulegroup.export()
     dataset += "</GRUPPEN>\n"
-    for question in db.get_all_questions():
+    for question in db.get_question_multiplechoice():
         question_set = question[0].export()
         dataset += question_set[0]
         if question[1]:
