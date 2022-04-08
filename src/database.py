@@ -5,6 +5,7 @@ from typing import List, Union, Tuple
 
 from alembic import command
 from alembic.config import Config
+from alembic.runtime.migration import MigrationContext
 from appdirs import AppDirs
 from sqlalchemy import create_engine, inspect, func, select
 from sqlalchemy.orm import Session
@@ -26,7 +27,8 @@ class DatabaseConnector:
             self.initialized = False
         elif not os.path.isfile(database_path):
             self.initialized = False
-        self.engine = create_engine(f"sqlite+pysqlite:///{database_path}?check_same_thread=False", future=True)
+        database_path = f"sqlite+pysqlite:///{database_path}"
+        self.engine = create_engine(f"{database_path}?check_same_thread=False", future=True)
         if not inspect(self.engine).has_table(Rulegroup.__tablename__) or \
                 not inspect(self.engine).has_table(Question.__tablename__) or \
                 not inspect(self.engine).has_table(MultipleChoice.__tablename__):
@@ -42,9 +44,13 @@ class DatabaseConnector:
         else:
             base_path = os.path.curdir
         self.alembic_cfg = Config(os.path.join(base_path, 'alembic.ini'))
-        if not command.current(self.alembic_cfg):
-            # no revision
-            command.stamp(self.alembic_cfg, "440180672239")
+        self.alembic_cfg.set_main_option('sqlalchemy.url', database_path)
+        with self.engine.connect() as conn:
+            context = MigrationContext.configure(conn)
+            current_rev = context.get_current_revision()
+            if not current_rev:
+                # no revision available -> created before migration was introduced
+                command.stamp(self.alembic_cfg, "440180672239")
         command.upgrade(self.alembic_cfg, "head")
 
     def _init_database(self):
