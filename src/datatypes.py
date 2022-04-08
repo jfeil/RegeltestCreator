@@ -7,14 +7,14 @@ from enum import Enum, auto
 from typing import List, Tuple, Dict
 
 import bs4
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Table, BLOB
 from sqlalchemy.orm import relationship
 
 from src.basic_config import Base, EagerDefault
 
 default_date = datetime(1970, 1, 1)
 
-regeltest_question_assoc = Table('association', Base.metadata,
+regeltest_question_assoc = Table('regeltest_question_assoc', Base.metadata,
                                  Column('question_signature', ForeignKey('question.signature'), primary_key=True),
                                  Column('regeltest_id', ForeignKey('regeltest.id'), primary_key=True))
 
@@ -23,7 +23,11 @@ class Regeltest(Base):
     __tablename__ = 'regeltest'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String)
+    title = Column(String)
+    description = Column(String)
+    icon = Column(BLOB)
+
+    created = Column(Date, default=date.today)
 
     questions = relationship("Question", secondary=regeltest_question_assoc, back_populates="regeltests")
 
@@ -33,6 +37,10 @@ class Statistics(Base):
 
     question_signature = Column(String, ForeignKey("question.signature"), primary_key=True)
     question = relationship("Question", back_populates="statistics")
+
+    count = Column(Integer, default=0)
+    level = Column(Integer, default=0)
+    last_tested = Column(Date, default=default_date)
 
 
 class Rulegroup(Base):
