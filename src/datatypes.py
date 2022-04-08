@@ -43,23 +43,23 @@ class Statistics(Base):
     last_tested = Column(Date, default=default_date)
 
 
-class Rulegroup(Base):
-    __tablename__ = 'rulegroup'
+class QuestionGroup(Base):
+    __tablename__ = 'question_group'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String)
 
-    children = relationship("Question", back_populates="rulegroup", cascade="all, delete-orphan")
+    children = relationship("Question", back_populates="question_group", cascade="all, delete-orphan")
 
     def export(self):
         return f"<GRUPPENNR>\n{self.id:02d}\n</GRUPPENNR>\n<GRUPPENTEXT>\n{self.name}\n</GRUPPENTEXT>\n"
 
     def __repr__(self):
-        return f"Rulegroup(id={self.id!r}, name={self.name!r})"
+        return f"QuestionGroup(id={self.id!r}, name={self.name!r})"
 
 
 class MultipleChoice(Base):
-    __tablename__ = 'multiplechoice'
+    __tablename__ = 'multiple_choice'
 
     question_signature = Column(String, ForeignKey("question.signature"), primary_key=True)
     index = Column(Integer, primary_key=True)
@@ -103,12 +103,12 @@ class Question(Base):
 
     __tablename__ = 'question'
 
-    rulegroup = relationship("Rulegroup", back_populates="children")
+    question_group = relationship("QuestionGroup", back_populates="children")
     multiple_choice = relationship("MultipleChoice", back_populates="question", cascade="all, delete-orphan")
     regeltests = relationship("Regeltest", secondary=regeltest_question_assoc, back_populates="questions")
     statistics = relationship("Statistics", back_populates="question")
 
-    group_id = Column(Integer, ForeignKey('rulegroup.id'))
+    group_id = Column(Integer, ForeignKey('question_group.id'))
     question_id = Column(Integer, default=-1)
     question = Column(String)
     answer_index = Column(Integer, default=EagerDefault(-1))  # for no multiple choice
@@ -183,13 +183,13 @@ class Question(Base):
                f", question_id={self.group_id!r} {self.question_id!r})"
 
 
-def create_rulegroups(groups: bs4.element.Tag) -> List[Rulegroup]:
+def create_question_groups(groups: bs4.element.Tag) -> List[QuestionGroup]:
     texts = groups.find_all("gruppentext")
     texts = [item.contents[0].strip() for item in texts]
     numbers = groups.find_all("gruppennr")
     numbers = [int(item.contents[0]) for item in numbers]
 
-    return [Rulegroup(id=number, name=text) for text, number in zip(texts, numbers)]
+    return [QuestionGroup(id=number, name=text) for text, number in zip(texts, numbers)]
 
 
 def create_questions_and_mchoice(rules_xml):

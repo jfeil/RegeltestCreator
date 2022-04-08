@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup
 from src import document_builder
 from src.basic_config import app_version, check_for_update, display_name, is_bundled
 from src.database import db
-from src.datatypes import Rulegroup, create_rulegroups, create_questions_and_mchoice
+from src.datatypes import QuestionGroup, create_question_groups, create_questions_and_mchoice
 from src.filter_editor import FilterEditor
 from src.question_table import RulegroupView, RuleDataModel, RuleSortFilterProxyModel
 from src.regeltestcreator import RegeltestSaveDialog, RegeltestSetup
@@ -33,7 +33,7 @@ def load_dataset(parent: QWidget, reset_cursor=True) -> bool:
     def read_in(file_path: str):
         with open(file_path, 'r+', encoding='iso-8859-1') as file:
             soup = BeautifulSoup(file, "lxml")
-        rulegroups = create_rulegroups(soup.find("gruppen"))
+        rulegroups = create_question_groups(soup.find("gruppen"))
         questions, mchoice = create_questions_and_mchoice(soup("regelsatz"))
         return rulegroups, questions, mchoice
 
@@ -156,7 +156,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.filter_list.itemDoubleClicked.connect(self.add_filter)
         self.ui.add_filter.clicked.connect(self.add_filter)
 
-        self.ruletabs = []  # type: List[Tuple[Rulegroup, QSortFilterProxyModel, RuleDataModel]]
+        self.ruletabs = []  # type: List[Tuple[QuestionGroup, QSortFilterProxyModel, RuleDataModel]]
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
 
     def delete_selected_filter(self):
@@ -216,7 +216,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             model.reset()
         QApplication.restoreOverrideCursor()
 
-    def create_ruletab(self, rulegroup: Rulegroup):
+    def create_ruletab(self, rulegroup: QuestionGroup):
         tab = QWidget()
         view = RulegroupView(tab)
         model = RuleDataModel(rulegroup, view)
@@ -233,7 +233,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Invalid = auto()
         Canceled = auto()
 
-    def _rulegroup_editor(self, rulegroup: Union[Rulegroup, None], editor: RulegroupEditor) -> RulegroupEditorResult:
+    def _rulegroup_editor(self, rulegroup: Union[QuestionGroup, None],
+                          editor: RulegroupEditor) -> RulegroupEditorResult:
         if editor.exec() == QDialog.Accepted:
             if rulegroup and rulegroup.id == editor.id:
                 # ID was not changed -> update of title
@@ -271,7 +272,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.ui.add_filter.setDisabled(False)
                 self.ui.tabWidget.clear()
 
-            rulegroup = Rulegroup(id=editor.id, name=editor.name)
+            rulegroup = QuestionGroup(id=editor.id, name=editor.name)
             db.add_rulegroup(rulegroup)
             self.create_ruletab(rulegroup)
 
@@ -291,7 +292,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         setup_tab.action_done.connect(cleanup)
         self.ui.tabWidget.addTab(setup_tab, "Einrichten")
 
-    def create_ruletabs(self, rulegroups: List[Rulegroup]):
+    def create_ruletabs(self, rulegroups: List[QuestionGroup]):
         if not rulegroups:
             self._display_setup_screen()
         else:

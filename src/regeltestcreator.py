@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QListWidget, QVBoxLayout, QDialog, QFileDialog, QW
 from PySide6.QtWidgets import QListWidgetItem
 
 from src.database import db
-from src.datatypes import Question, Rulegroup
+from src.datatypes import Question, QuestionGroup
 from src.ui_regeltest_save import Ui_RegeltestSave
 from src.ui_regeltest_setup import Ui_RegeltestSetup
 from src.ui_regeltest_setup_widget import Ui_RegeltestSetup_Rulegroup
@@ -77,7 +77,7 @@ class RegeltestSaveDialog(QDialog, Ui_RegeltestSave):
 class RegeltestSetupRulegroup(QWidget, Ui_RegeltestSetup_Rulegroup):
     changed = Signal()
 
-    def __init__(self, parent, rulegroup_parameters: Tuple[Rulegroup, int, int]):
+    def __init__(self, parent, rulegroup_parameters: Tuple[QuestionGroup, int, int]):
         super(RegeltestSetupRulegroup, self).__init__(parent)
         self.ui = Ui_RegeltestSetup_Rulegroup()
         self.ui.setupUi(self)
@@ -103,7 +103,7 @@ class RegeltestSetupRulegroup(QWidget, Ui_RegeltestSetup_Rulegroup):
         self.ui.spinBox_textquestion.valueChanged.connect(self.changed)
         self.ui.spinBox_mchoice.valueChanged.connect(self.changed)
 
-    def get_parameters(self) -> Tuple[Rulegroup, int, int]:
+    def get_parameters(self) -> Tuple[QuestionGroup, int, int]:
         return self.rulegroup, self.ui.spinBox_textquestion.value(), self.ui.spinBox_mchoice.value()
 
 
@@ -138,7 +138,7 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
         self.ui.statistics.setText(f"{question_count} Fragen aktuell ausgewählt ({question_count * 2} Punkte)")
 
     # noinspection PyUnresolvedReferences
-    def create_tab(self, title: str, parameters: List[Tuple[Rulegroup, int, int]]):
+    def create_tab(self, title: str, parameters: List[Tuple[QuestionGroup, int, int]]):
         tab_widget = QWidget()
         self.ui.tabWidget.addTab(tab_widget, title)
         layout = QVBoxLayout(tab_widget)
