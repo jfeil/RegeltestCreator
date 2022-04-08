@@ -7,11 +7,11 @@ from alembic import command
 from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
 from appdirs import AppDirs
-from sqlalchemy import create_engine, inspect, func, select
+from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import Session
 
 from src.basic_config import app_name, app_author, database_name, Base, is_bundled
-from src.datatypes import Rulegroup, Question, MultipleChoice
+from src.datatypes import QuestionGroup, Question, MultipleChoice
 
 
 class DatabaseConnector:
@@ -29,22 +29,18 @@ class DatabaseConnector:
             self.initialized = False
         database_path = f"sqlite+pysqlite:///{database_path}"
         self.engine = create_engine(f"{database_path}?check_same_thread=False", future=True)
-        if not inspect(self.engine).has_table(Rulegroup.__tablename__) or \
-                not inspect(self.engine).has_table(Question.__tablename__) or \
-                not inspect(self.engine).has_table(MultipleChoice.__tablename__):
-            self.clear_database()
-
-        if not self.initialized:
-            self.initialized = True
-            self._init_database()
-
-        self.session = Session(self.engine)
         if is_bundled:
             base_path = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
         else:
             base_path = os.path.curdir
         self.alembic_cfg = Config(os.path.join(base_path, 'alembic.ini'))
         self.alembic_cfg.set_main_option('sqlalchemy.url', database_path)
+
+        if not self.initialized:
+            self.initialized = True
+            self._init_database()
+
+        self.session = Session(self.engine)
         with self.engine.connect() as conn:
             context = MigrationContext.configure(conn)
             current_rev = context.get_current_revision()
@@ -77,7 +73,7 @@ class DatabaseConnector:
         self.initialized = False
 
     def get_rulegroups(self):
-        rulegroups = self.session.query(Rulegroup).all()
+        rulegroups = self.session.query(QuestionGroup).all()
         return rulegroups
 
     def add_rulegroup(self, rulegroup):
@@ -102,7 +98,7 @@ class DatabaseConnector:
         return question
 
     def get_rulegroup(self, rulegroup_index: int):
-        rulegroup = self.session.query(Rulegroup).where(Rulegroup.id == rulegroup_index).first()
+        rulegroup = self.session.query(QuestionGroup).where(QuestionGroup.id == rulegroup_index).first()
         return rulegroup
 
     def get_questions_by_foreignkey(self, rulegroup_id: int, mchoice=None, randomize: bool = False):
@@ -121,7 +117,7 @@ class DatabaseConnector:
             MultipleChoice.question_signature == question_signature).all()
         return mchoice
 
-    def fill_database(self, dataset: List[Union[Rulegroup, Question, MultipleChoice]]):
+    def fill_database(self, dataset: List[Union[QuestionGroup, Question, MultipleChoice]]):
         # insert processed values into db
         if not self.initialized:
             self._init_database()
@@ -129,7 +125,7 @@ class DatabaseConnector:
         self.session.add_all(dataset)
         self.session.commit()
 
-    def delete(self, item: Union[Rulegroup, Question]):
+    def delete(self, item: Union[QuestionGroup, Question]):
         self.session.delete(item)
         self.session.commit()
 
@@ -139,7 +135,7 @@ class DatabaseConnector:
         return return_val
 
     def get_new_rulegroup_id(self):
-        stmt = select(Rulegroup.id)
+        stmt = select(QuestionGroup.id)
         values = self.session.execute(stmt).fetchall()
         if values:
             return_val = max(values)[0] + 1
@@ -147,7 +143,7 @@ class DatabaseConnector:
             return_val = 1
         return return_val
 
-    def get_rulegroup_config(self) -> List[Tuple[Rulegroup, int, int]]:
+    def get_rulegroup_config(self) -> List[Tuple[QuestionGroup, int, int]]:
         rulegroups = self.get_rulegroups()
         return [(rulegroup,
                  len(self.get_questions_by_foreignkey(rulegroup_id=rulegroup.id, mchoice=False)),
