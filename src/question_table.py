@@ -30,7 +30,7 @@ class RuleDataModel(QAbstractTableModel):
     # implementation must call beginRemoveColumns() before the columns are removed from the data structure,
     # and it must call endRemoveColumns() immediately afterwards.
 
-    headers = ['rule_id', 'question', 'multiple_choice', 'answer_text', 'last_edited', ]
+    headers = ['question_id', 'question', 'multiple_choice', 'answer_text', 'last_edited', ]
 
     def __init__(self, rulegroup, parent):
         super(RuleDataModel, self).__init__(parent)
@@ -141,7 +141,7 @@ class RuleDataModel(QAbstractTableModel):
                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
         new_question = Question()
         new_question.rulegroup = db.get_rulegroup(self.rulegroup.id)
-        new_question.rule_id = db.get_new_question_id(self.rulegroup.id)
+        new_question.question_id = db.get_new_question_id(self.rulegroup.id)
         editor = QuestionEditor(new_question)
         if editor.exec() == QDialog.Accepted:
             db.update_question_set(editor.question)

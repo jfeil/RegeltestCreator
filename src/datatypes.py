@@ -7,12 +7,32 @@ from enum import Enum, auto
 from typing import List, Tuple, Dict
 
 import bs4
-from sqlalchemy import Column, Integer, String, ForeignKey, Date
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Table
 from sqlalchemy.orm import relationship
 
-from .basic_config import Base, EagerDefault
+from src.basic_config import Base, EagerDefault
 
 default_date = datetime(1970, 1, 1)
+
+regeltest_question_assoc = Table('association', Base.metadata,
+                                 Column('question_signature', ForeignKey('question.signature'), primary_key=True),
+                                 Column('regeltest_id', ForeignKey('regeltest.id'), primary_key=True))
+
+
+class Regeltest(Base):
+    __tablename__ = 'regeltest'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String)
+
+    questions = relationship("Question", secondary=regeltest_question_assoc, back_populates="regeltests")
+
+
+class Statistics(Base):
+    __tablename__ = 'statistics'
+
+    question_signature = Column(String, ForeignKey("question.signature"), primary_key=True)
+    question = relationship("Question", back_populates="statistics")
 
 
 class Rulegroup(Base):
@@ -33,17 +53,17 @@ class Rulegroup(Base):
 class MultipleChoice(Base):
     __tablename__ = 'multiplechoice'
 
-    rule_signature = Column(String, ForeignKey("question.signature"), primary_key=True)
+    question_signature = Column(String, ForeignKey("question.signature"), primary_key=True)
     index = Column(Integer, primary_key=True)
     text = Column(String)
 
-    rule = relationship("Question", back_populates="multiple_choice")
+    question = relationship("Question", back_populates="multiple_choice")
 
     def export(self):
         return f"{'abc'[self.index]} ( ) {self.text}\n"
 
     def __repr__(self):
-        return f"MultipleChoice(rule_signature={self.rule_signature!r}, index={self.index!r}, text={self.text!r})"
+        return f"MultipleChoice(question_signature={self.question_signature!r}, index={self.index!r}, text={self.text!r})"
 
 
 class FilterOption(Enum):
@@ -76,10 +96,12 @@ class Question(Base):
     __tablename__ = 'question'
 
     rulegroup = relationship("Rulegroup", back_populates="children")
-    multiple_choice = relationship("MultipleChoice", back_populates="rule", cascade="all, delete-orphan")
+    multiple_choice = relationship("MultipleChoice", back_populates="question", cascade="all, delete-orphan")
+    regeltests = relationship("Regeltest", secondary=regeltest_question_assoc, back_populates="questions")
+    statistics = relationship("Statistics", back_populates="question")
 
     group_id = Column(Integer, ForeignKey('rulegroup.id'))
-    rule_id = Column(Integer, default=-1)
+    question_id = Column(Integer, default=-1)
     question = Column(String)
     answer_index = Column(Integer, default=EagerDefault(-1))  # for no multiple choice
     answer_text = Column(String)
@@ -89,7 +111,8 @@ class Question(Base):
 
     parameters = {
         'group_id': QuestionParameters(table_header="Regelgruppe", filter_options=None, datatype=int),
-        'rule_id': QuestionParameters(table_header="Regelnummer", filter_options=(FilterOption.equal,), datatype=int),
+        'question_id': QuestionParameters(table_header="Regelnummer", filter_options=(FilterOption.equal,),
+                                          datatype=int),
         'question': QuestionParameters(table_header="Frage",
                                        filter_options=(FilterOption.contains, FilterOption.equal), datatype=str),
         'multiple_choice': QuestionParameters(table_header="Multiple choice", filter_options=(FilterOption.equal,),
@@ -114,8 +137,8 @@ class Question(Base):
         return {
             'group_id': Question.QuestionValues(table_value=self.group_id, table_tooltip=None,
                                                 table_checkbox=None),
-            'rule_id': Question.QuestionValues(table_value=self.rule_id, table_tooltip=None,
-                                               table_checkbox=None),
+            'question_id': Question.QuestionValues(table_value=self.question_id, table_tooltip=None,
+                                                   table_checkbox=None),
             'question': Question.QuestionValues(table_value=self.question, table_tooltip=self.question,
                                                 table_checkbox=None),
             'multiple_choice': Question.QuestionValues(
@@ -140,7 +163,7 @@ class Question(Base):
             answer_text = f"({'abc'[self.answer_index]})  {self.answer_text}"
         else:
             answer_text = self.answer_text
-        return (f"<REGELSATZ>\n<LNR>\n{self.group_id:02d}{self.rule_id:03d}\n</LNR>\n<FRAGE>\n{self.question}\n"
+        return (f"<REGELSATZ>\n<LNR>\n{self.group_id:02d}{self.question_id:03d}\n</LNR>\n<FRAGE>\n{self.question}\n"
                 f"</FRAGE>\n<MCHOICE>\n",
                 f"</MCHOICE>\n<ANTWORT>\n{answer_text}\n</ANTWORT>\n<ERST>\n{self.created.strftime('%d.%m.%Y')}\n"
                 f"</ERST>\n<AEND>\n "
@@ -149,7 +172,7 @@ class Question(Base):
 
     def __repr__(self):
         return f"Question(text={self.question!r}, answer={self.answer_index!r}:{self.answer_text!r}" \
-               f", rule_id={self.group_id!r} {self.rule_id!r})"
+               f", question_id={self.group_id!r} {self.question_id!r})"
 
 
 def create_rulegroups(groups: bs4.element.Tag) -> List[Rulegroup]:
@@ -183,13 +206,13 @@ def create_questions_and_mchoice(rules_xml):
     for rule in rules_xml:
         lnr = rule.find("lnr").contents[0].strip()
         group_id = int(lnr[0:2])
-        rule_id = int(lnr[2:])
+        question_id = int(lnr[2:])
         signature = rule.find("signatur").contents[0].strip()
-        if (group_id, rule_id) in rules_index:
+        if (group_id, question_id) in rules_index:
             # duplicated questions... wtf
             continue
         else:
-            rules_index += [(group_id, rule_id)]
+            rules_index += [(group_id, question_id)]
         if signature in signatures:
             # duplicate question... again
             continue
@@ -197,7 +220,8 @@ def create_questions_and_mchoice(rules_xml):
             signatures += [signature]
         question = rule.find("frage").contents[0].strip()
         mchoice = create_mchoice(rule.find("mchoice").contents[0])
-        mchoice = [MultipleChoice(rule_signature=signature, index=i, text=mchoice) for i, mchoice in enumerate(mchoice)]
+        mchoice = [MultipleChoice(question_signature=signature, index=i, text=mchoice) for i, mchoice in
+                   enumerate(mchoice)]
         answer = rule.find("antwort").contents[0].strip()
         if not mchoice:
             mchoice_index = -1
@@ -227,6 +251,6 @@ def create_questions_and_mchoice(rules_xml):
                 changed = created
         else:
             changed = created
-        rules += [Question(rule_id=rule_id, group_id=group_id, question=question, answer_index=mchoice_index,
+        rules += [Question(question_id=question_id, group_id=group_id, question=question, answer_index=mchoice_index,
                            answer_text=answer, created=created, last_edited=changed, signature=signature)]
     return rules, multiple_choice

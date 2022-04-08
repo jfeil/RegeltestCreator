@@ -1,25 +1,26 @@
 import logging
 import os
+import sys
 from typing import List, Union, Tuple
 
 from appdirs import AppDirs
 from sqlalchemy import create_engine, inspect, func, select
 from sqlalchemy.orm import Session
 
-from src.basic_config import app_name, app_author, database_name, Base
-from src.datatypes import Rulegroup, Question, MultipleChoice
+from src.basic_config import app_name, app_author, database_name, Base, is_bundled
+from src.datatypes import Rulegroup, Question, MultipleChoice, Statistics, Regeltest
 
 
 class DatabaseConnector:
     engine = None
 
     def __init__(self):
-        dirs = AppDirs(appname=app_name, appauthor=app_author)
-        database_path = os.path.join(dirs.user_data_dir, database_name)
-        logging.debug(dirs.user_data_dir)
+        self.dirs = AppDirs(appname=app_name, appauthor=app_author)
+        database_path = os.path.join(self.dirs.user_data_dir, database_name)
+        logging.debug(self.dirs.user_data_dir)
         self.initialized = True
-        if not os.path.isdir(dirs.user_data_dir):
-            os.makedirs(dirs.user_data_dir, )
+        if not os.path.isdir(self.dirs.user_data_dir):
+            os.makedirs(self.dirs.user_data_dir)
             self.initialized = False
         elif not os.path.isfile(database_path):
             self.initialized = False
@@ -29,15 +30,35 @@ class DatabaseConnector:
                 not inspect(self.engine).has_table(MultipleChoice.__tablename__):
             self.clear_database()
 
+        if not inspect(self.engine).has_table(Statistics.__tablename__) or \
+                not inspect(self.engine).has_table(Regeltest.__tablename__):
+            self.initialized = False
+
         if not self.initialized:
             self.initialized = True
             self._init_database()
+        if is_bundled:
+            base_path = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
+        else:
+            base_path = os.path.curdir
+        alembic_cfg = os.path.join(base_path, 'alembic.ini')
+        print(os.path.realpath(alembic_cfg))
+        print(os.path.isfile(os.path.realpath(alembic_cfg)))
 
         self.session = Session(self.engine)
 
     def _init_database(self):
-        # Create database based on basis - need to read docu first lol
+        # Create database based on basis and stamp with alembic for future migrations
         Base.metadata.create_all(self.engine)
+
+        from alembic.config import Config
+        from alembic import command
+        if is_bundled:
+            base_path = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
+        else:
+            base_path = os.path.curdir
+        alembic_cfg = Config(os.path.join(base_path, 'alembic.ini'))
+        command.stamp(alembic_cfg, "head")
 
     def __bool__(self):
         # check if database is empty :)
@@ -67,7 +88,8 @@ class DatabaseConnector:
     def get_question_multiplechoice(self):
         return_dict = []
         for question in self.session.query(Question):
-            return_dict += [(question, self.session.query(MultipleChoice).where(MultipleChoice.rule == question).all())]
+            return_dict += [
+                (question, self.session.query(MultipleChoice).where(MultipleChoice.question == question).all())]
         return return_dict
 
     def update_question_set(self, question: Question):
@@ -96,7 +118,8 @@ class DatabaseConnector:
         return questions.all()
 
     def get_multiplechoice_by_foreignkey(self, question_signature: str):
-        mchoice = self.session.query(MultipleChoice).where(MultipleChoice.rule_signature == question_signature).all()
+        mchoice = self.session.query(MultipleChoice).where(
+            MultipleChoice.question_signature == question_signature).all()
         return mchoice
 
     def fill_database(self, dataset: List[Union[Rulegroup, Question, MultipleChoice]]):
@@ -112,7 +135,7 @@ class DatabaseConnector:
         self.session.commit()
 
     def get_new_question_id(self, rulegroup_index: int):
-        stmt = select(Question.rule_id).where(Question.group_id.like(rulegroup_index))
+        stmt = select(Question.question_id).where(Question.group_id.like(rulegroup_index))
         return_val = max(self.session.execute(stmt))[0] + 1
         return return_val
 
