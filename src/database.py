@@ -3,12 +3,14 @@ import os
 import sys
 from typing import List, Union, Tuple
 
+from alembic import command
+from alembic.config import Config
 from appdirs import AppDirs
 from sqlalchemy import create_engine, inspect, func, select
 from sqlalchemy.orm import Session
 
 from src.basic_config import app_name, app_author, database_name, Base, is_bundled
-from src.datatypes import Rulegroup, Question, MultipleChoice, Statistics, Regeltest
+from src.datatypes import Rulegroup, Question, MultipleChoice
 
 
 class DatabaseConnector:
@@ -30,35 +32,26 @@ class DatabaseConnector:
                 not inspect(self.engine).has_table(MultipleChoice.__tablename__):
             self.clear_database()
 
-        if not inspect(self.engine).has_table(Statistics.__tablename__) or \
-                not inspect(self.engine).has_table(Regeltest.__tablename__):
-            self.initialized = False
-
         if not self.initialized:
             self.initialized = True
             self._init_database()
+
+        self.session = Session(self.engine)
         if is_bundled:
             base_path = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
         else:
             base_path = os.path.curdir
-        alembic_cfg = os.path.join(base_path, 'alembic.ini')
-        print(os.path.realpath(alembic_cfg))
-        print(os.path.isfile(os.path.realpath(alembic_cfg)))
-
-        self.session = Session(self.engine)
+        self.alembic_cfg = Config(os.path.join(base_path, 'alembic.ini'))
+        if not command.current(self.alembic_cfg):
+            # no revision
+            command.stamp(self.alembic_cfg, "440180672239")
+        command.upgrade(self.alembic_cfg, "head")
 
     def _init_database(self):
         # Create database based on basis and stamp with alembic for future migrations
         Base.metadata.create_all(self.engine)
 
-        from alembic.config import Config
-        from alembic import command
-        if is_bundled:
-            base_path = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
-        else:
-            base_path = os.path.curdir
-        alembic_cfg = Config(os.path.join(base_path, 'alembic.ini'))
-        command.stamp(alembic_cfg, "head")
+        command.stamp(self.alembic_cfg, "head")
 
     def __bool__(self):
         # check if database is empty :)
