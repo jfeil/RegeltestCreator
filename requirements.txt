@@ -1,11 +1,13 @@
-SQLAlchemy==1.4.32
+SQLAlchemy==1.4.35
 appdirs~=1.4.4
-beautifulsoup4~=4.10.0
+beautifulsoup4==4.11.0
 PySide6==6.2.4
-Pillow==9.0.1
-reportlab==3.6.8
+Pillow==9.1.0
+reportlab==3.6.9
 packaging~=21.3
 traitlets~=5.1.1
 requests==2.27.1
 markdown2~=2.4.2
 lxml==4.8.0
+Jinja2==3.1.1
+alembic~=1.7.7
