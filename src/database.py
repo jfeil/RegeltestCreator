@@ -35,6 +35,7 @@ class DatabaseConnector:
             base_path = os.path.curdir
         self.alembic_cfg = Config(os.path.join(base_path, 'alembic.ini'))
         self.alembic_cfg.set_main_option('sqlalchemy.url', database_path)
+        self.alembic_cfg.set_main_option('script_location', os.path.join(base_path, 'alembic'))
 
         if not self.initialized:
             self.initialized = True
