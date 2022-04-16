@@ -21,4 +21,4 @@ Remove-Item $Args[0]
 Write-Output "Moving the new executable..."
 Move-Item $Args[2] $Args[0]
 Write-Output "Done! Starting the closed app!"
-$Args[0]
+Start-Process -FilePath $Args[0]
