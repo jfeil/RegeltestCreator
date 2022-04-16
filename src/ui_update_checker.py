@@ -3,15 +3,14 @@
 ################################################################################
 ## Form generated from reading UI file 'update_checker.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.2
+## Created by: Qt User Interface Compiler version 6.2.4
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
 from PySide6.QtCore import (QCoreApplication, QMetaObject, Qt)
 from PySide6.QtWidgets import (QComboBox, QHBoxLayout,
-                               QLabel, QSizePolicy, QVBoxLayout)
-
+                               QLabel, QPushButton, QSizePolicy, QVBoxLayout)
 
 class Ui_UpdateChecker(object):
     def setupUi(self, UpdateChecker):
@@ -47,10 +46,14 @@ class Ui_UpdateChecker(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
+        self.install_update_button = QPushButton(UpdateChecker)
+        self.install_update_button.setObjectName(u"install_update_button")
+
+        self.verticalLayout.addWidget(self.install_update_button)
+
         self.retranslateUi(UpdateChecker)
 
         QMetaObject.connectSlotsByName(UpdateChecker)
-
     # setupUi
 
     def retranslateUi(self, UpdateChecker):
@@ -62,4 +65,7 @@ class Ui_UpdateChecker(object):
         self.comboBox.setItemText(0, QCoreApplication.translate("UpdateChecker", u"Release", None))
         self.comboBox.setItemText(1, QCoreApplication.translate("UpdateChecker", u"Development", None))
 
+        self.install_update_button.setText(
+            QCoreApplication.translate("UpdateChecker", u"Neuste Version installieren", None))
     # retranslateUi
+

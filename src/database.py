@@ -6,11 +6,10 @@ from typing import List, Union, Tuple
 from alembic import command
 from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
-from appdirs import AppDirs
 from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import Session
 
-from src.basic_config import app_name, app_author, database_name, Base, is_bundled
+from src.basic_config import database_name, Base, is_bundled, app_dirs
 from src.datatypes import QuestionGroup, Question, MultipleChoice
 
 
@@ -18,12 +17,11 @@ class DatabaseConnector:
     engine = None
 
     def __init__(self):
-        self.dirs = AppDirs(appname=app_name, appauthor=app_author)
-        database_path = os.path.join(self.dirs.user_data_dir, database_name)
-        logging.debug(self.dirs.user_data_dir)
+        database_path = os.path.join(app_dirs.user_data_dir, database_name)
+        logging.debug(app_dirs.user_data_dir)
         self.initialized = True
-        if not os.path.isdir(self.dirs.user_data_dir):
-            os.makedirs(self.dirs.user_data_dir)
+        if not os.path.isdir(app_dirs.user_data_dir):
+            os.makedirs(app_dirs.user_data_dir)
             self.initialized = False
         elif not os.path.isfile(database_path):
             self.initialized = False
