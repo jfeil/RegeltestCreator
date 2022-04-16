@@ -36,3 +36,8 @@ exe = EXE(pyz,
           target_arch=None,
           codesign_identity=None,
           entitlements_file=None )
+
+app = BUNDLE(exe,
+         name='RegeltestCreator',
+         icon=None,
+         bundle_identifier=de.jfeil.RegeltestCreator)
