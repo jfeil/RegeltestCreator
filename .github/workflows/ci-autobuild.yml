@@ -65,11 +65,9 @@ jobs:
         run: echo __version__=\"${{ steps.version.outputs.version }}\" > src/__version__.py
       - run: pip install -r requirements.txt
       - run: pip install pyinstaller
-      - run: pyinstaller RegeltestCreator.pyw -F ${{ matrix.pyinstaller }}
+      - run: pyinstaller RegeltestCreator.spec -F
       - if: matrix.os == 'macos-latest'
         run: |
-          cat RegeltestCreator.spec
-          zip -r dist/CRASHME
           zip -r dist/RegeltestCreator.app.zip dist/RegeltestCreator.app
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
