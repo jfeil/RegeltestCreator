@@ -413,8 +413,10 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
         self.ui.text.setOpenExternalLinks(True)
 
         self.download_link = None  # type: Union[str, None]
-        self.ui.install_update_button.setDisabled(True)
         self.ui.install_update_button.clicked.connect(self.update)
+        self.ui.install_update_button.setDisabled(True)
+        if not is_bundled:
+            self.ui.install_update_button.setText("Auto-Update ist nur mit der kompilierten Version möglich!")
 
         self.display()
 
@@ -423,17 +425,20 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
         if not release:
             self.ui.text.setText("<h1>Kein Update verfügbar!</h1>Die aktuellste Version ist bereits installiert.")
             self.download_link = None
-            self.ui.install_update_button.setDisabled(True)
+            if is_bundled:
+                self.ui.install_update_button.setDisabled(True)
             return
         if release[3]:
             download_link = f'<a href="{release[3]}">Neueste Version jetzt herunterladen</a>'
             self.download_link = release[3]
-            self.ui.install_update_button.setDisabled(False)
+            if is_bundled:
+                self.ui.install_update_button.setDisabled(False)
         else:
             download_link = 'Noch kein Download für die aktuelle Plattform verfügbar.<br>' \
                             'Bitte versuche es später erneut.'
             self.download_link = None
-            self.ui.install_update_button.setDisabled(True)
+            if is_bundled:
+                self.ui.install_update_button.setDisabled(True)
         release_notes = markdown2.markdown(release[1]).replace("h3>", "h4>").replace("h2>", "h3>").replace("h1>", "h2>")
         self.ui.text.setText(f'<h1>Update <a href="{release[2]}">{release[0]}</a> verfügbar!</h1>'
                              f'{release_notes}{download_link}')
