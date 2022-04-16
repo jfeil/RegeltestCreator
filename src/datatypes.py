@@ -38,8 +38,10 @@ class Statistics(Base):
     question_signature = Column(String, ForeignKey("question.signature"), primary_key=True)
     question = relationship("Question", back_populates="statistics")
 
-    count = Column(Integer, default=0)
+    continous_solved_count = Column(Integer, default=0)
     level = Column(Integer, default=0)
+    correct_solved = Column(Integer, default=0)
+    wrong_solved = Column(Integer, default=0)
     last_tested = Column(Date, default=default_date)
 
 
