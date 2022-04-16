@@ -40,4 +40,4 @@ exe = EXE(pyz,
 app = BUNDLE(exe,
          name='RegeltestCreator',
          icon=None,
-         bundle_identifier=de.jfeil.RegeltestCreator)
+         bundle_identifier='de.jfeil.RegeltestCreator')
