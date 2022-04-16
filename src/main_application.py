@@ -1,9 +1,14 @@
+import os
+import shutil
+import subprocess
+import sys
 import webbrowser
 from enum import Enum, auto
 from typing import List, Dict, Union
 from typing import Tuple
 
 import markdown2
+import requests
 from PySide6.QtCore import QCoreApplication, Qt, Signal
 from PySide6.QtCore import QSortFilterProxyModel
 from PySide6.QtGui import QShortcut, QKeySequence
@@ -12,7 +17,8 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog
 from bs4 import BeautifulSoup
 
 from src import document_builder
-from src.basic_config import app_version, check_for_update, display_name, is_bundled
+from src.basic_config import app_version, check_for_update, display_name, is_bundled, app_dirs, base_path, \
+    current_platform
 from src.database import db
 from src.datatypes import QuestionGroup, create_question_groups, create_questions_and_mchoice
 from src.filter_editor import FilterEditor
@@ -405,18 +411,64 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
         self.ui.text.setTextInteractionFlags(Qt.TextBrowserInteraction)
         self.ui.text.setOpenExternalLinks(True)
 
+        self.download_link = None  # type: Union[str, None]
+        self.ui.install_update_button.setDisabled(True)
+        self.ui.install_update_button.clicked.connect(self.update)
+
         self.display()
 
     def display(self):
         release = self.versions[self.ui.comboBox.currentIndex()]
         if not release:
             self.ui.text.setText("<h1>Kein Update verfügbar!</h1>Die aktuellste Version ist bereits installiert.")
+            self.download_link = None
+            self.ui.install_update_button.setDisabled(True)
             return
         if release[3]:
             download_link = f'<a href="{release[3]}">Neueste Version jetzt herunterladen</a>'
+            self.download_link = release[3]
+            self.ui.install_update_button.setDisabled(False)
         else:
             download_link = 'Noch kein Download für die aktuelle Plattform verfügbar.<br>' \
                             'Bitte versuche es später erneut.'
+            self.download_link = None
+            self.ui.install_update_button.setDisabled(True)
         release_notes = markdown2.markdown(release[1]).replace("h3>", "h4>").replace("h2>", "h3>").replace("h1>", "h2>")
         self.ui.text.setText(f'<h1>Update <a href="{release[2]}">{release[0]}</a> verfügbar!</h1>'
                              f'{release_notes}{download_link}')
+
+    def update(self) -> None:
+        if not self.download_link:
+            return
+
+        if os.path.isdir(app_dirs.user_cache_dir):
+            shutil.rmtree(app_dirs.user_cache_dir, ignore_errors=True)
+        if not os.path.isdir(app_dirs.user_cache_dir):
+            os.makedirs(app_dirs.user_cache_dir)
+
+        updater_script_win = "updater.ps1"
+        os.rename(os.path.join(base_path, updater_script_win),
+                  os.path.join(app_dirs.user_cache_dir, updater_script_win))
+
+        updater_script_unix = "updater.sh"
+        os.rename(os.path.join(base_path, updater_script_unix),
+                  os.path.join(app_dirs.user_cache_dir, updater_script_unix))
+
+        path, executable_name = os.path.split(sys.executable)
+        download_path = os.path.join(app_dirs.user_cache_dir, executable_name)
+        r = requests.get(self.download_link)
+        with open(download_path, 'wb+') as file:
+            file.write(r.content)
+            fileendings = {'Darwin': ['.app', '.zip'],
+                           'Windows': ['.exe'],
+                           'Linux': []}
+
+        if current_platform == 'Windows':
+            subprocess.Popen(["powershell.exe", os.path.join(app_dirs.user_cache_dir, updater_script_win),
+                              sys.executable, str(os.getpid()), download_path],
+                             creationflags=subprocess.CREATE_NEW_CONSOLE)
+        elif current_platform == 'Darwin' or current_platform == 'Linux':
+            subprocess.Popen(" ".join([os.path.join(app_dirs.user_cache_dir, updater_script_unix),
+                                       sys.executable, str(os.getpid()), download_path]), shell=True,
+                             creationflags=subprocess.CREATE_NEW_CONSOLE)
+        sys.exit(0)

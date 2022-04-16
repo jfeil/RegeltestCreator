@@ -1,11 +1,13 @@
 import json
 import logging
+import os
 import pathlib
 import platform
 import sys
 from typing import Any, Tuple, Union
 
 import requests
+from appdirs import AppDirs
 from packaging import version
 from sqlalchemy import inspect
 from sqlalchemy.orm import declarative_base
@@ -18,12 +20,15 @@ VERSION_INFO = Union[None, Tuple[str, str, str, str]]
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     is_bundled = True
+    base_path = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
 else:
     is_bundled = False
+    base_path = os.path.curdir
 
 display_name = "RegeltestCreator"
 app_name = "RegeltestCreator"
 app_author = "jfeil"
+app_dirs = AppDirs(appname=app_name, appauthor=app_author)
 
 app_version = __version__
 if not is_bundled and "dev" not in __version__:
