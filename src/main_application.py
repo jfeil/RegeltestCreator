@@ -10,7 +10,7 @@ from typing import Tuple
 
 import markdown2
 import requests
-from PySide6.QtCore import QCoreApplication, Qt, Signal
+from PySide6.QtCore import QCoreApplication, Qt, Signal, QThread
 from PySide6.QtCore import QSortFilterProxyModel
 from PySide6.QtGui import QShortcut, QKeySequence
 from PySide6.QtWidgets import QMainWindow, QWidget, QTreeWidgetItem, QFileDialog, QApplication, QMessageBox, QDialog, \
@@ -414,7 +414,8 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
 
         self.download_link = None  # type: Union[str, None]
         self.ui.install_update_button.clicked.connect(self.update)
-        self.ui.install_update_button.setDisabled(True)
+        self.ui.install_update_button.setDisabled(False)
+        self.ui.download_progress.setVisible(False)
         if not is_bundled:
             self.ui.install_update_button.setText("Auto-Update ist nur mit der kompilierten Version möglich!")
 
@@ -444,8 +445,37 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
                              f'{release_notes}{download_link}')
 
     def update(self) -> None:
+        def progressbar_tracking(value):
+            self.ui.download_progress.setValue(value)
+            if value != 100:
+                return
+
+            updater_script_win = "updater.ps1"
+            os.rename(os.path.join(base_path, updater_script_win),
+                      os.path.join(app_dirs.user_cache_dir, updater_script_win))
+
+            updater_script_unix = "updater.sh"
+            os.rename(os.path.join(base_path, updater_script_unix),
+                      os.path.join(app_dirs.user_cache_dir, updater_script_unix))
+            if current_platform == 'Darwin' or current_platform == 'Linux':
+                os.chmod(os.path.join(app_dirs.user_cache_dir, updater_script_unix),
+                         stat.S_IXUSR | stat.S_IRUSR)
+                os.chmod(os.path.join(app_dirs.user_cache_dir, executable_name),
+                         stat.S_IXUSR | stat.S_IRUSR)
+
+            if current_platform == 'Windows':
+                subprocess.Popen(["powershell.exe", os.path.join(app_dirs.user_cache_dir, updater_script_win),
+                                  sys.executable, str(os.getpid()), download_path],
+                                 creationflags=subprocess.CREATE_NEW_CONSOLE)
+            elif current_platform == 'Darwin' or current_platform == 'Linux':
+                subprocess.Popen(" ".join([os.path.join(app_dirs.user_cache_dir, updater_script_unix),
+                                           sys.executable, str(os.getpid()), download_path]), shell=True)
+            sys.exit(0)
+
         if not self.download_link:
             return
+
+        self.ui.download_progress.setVisible(True)
 
         if os.path.isdir(app_dirs.user_cache_dir):
             shutil.rmtree(app_dirs.user_cache_dir, ignore_errors=True)
@@ -455,29 +485,45 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
         path, executable_name = os.path.split(sys.executable)
 
         download_path = os.path.join(app_dirs.user_cache_dir, executable_name)
-        r = requests.get(self.download_link)
-        with open(download_path, 'wb+') as file:
-            file.write(r.content)
 
-        updater_script_win = "updater.ps1"
-        os.rename(os.path.join(base_path, updater_script_win),
-                  os.path.join(app_dirs.user_cache_dir, updater_script_win))
+        request = requests.get(self.download_link, stream=True)
+        filesize = request.headers['Content-Length']
+        file_handle = open(download_path, 'wb+')
+        downloadThread = DownloadThread(request, filesize, file_handle, buffer=10240)
+        downloadThread.download_progress.connect(progressbar_tracking)
+        downloadThread.run()
 
-        updater_script_unix = "updater.sh"
-        os.rename(os.path.join(base_path, updater_script_unix),
-                  os.path.join(app_dirs.user_cache_dir, updater_script_unix))
-        if current_platform == 'Darwin' or current_platform == 'Linux':
-            os.chmod(os.path.join(app_dirs.user_cache_dir, updater_script_unix),
-                     stat.S_IXUSR | stat.S_IRUSR)
-            os.chmod(os.path.join(app_dirs.user_cache_dir, executable_name),
-                     stat.S_IXUSR | stat.S_IRUSR)
+        # r = requests.get(self.download_link)
+        # with open(download_path, 'wb+') as file:
+        #     file.write(r.content)
 
-        if current_platform == 'Windows':
-            subprocess.Popen(["powershell.exe", os.path.join(app_dirs.user_cache_dir, updater_script_win),
-                              sys.executable, str(os.getpid()), download_path],
-                             creationflags=subprocess.CREATE_NEW_CONSOLE)
-        elif current_platform == 'Darwin' or current_platform == 'Linux':
-            subprocess.Popen(" ".join([os.path.join(app_dirs.user_cache_dir, updater_script_unix),
-                                       sys.executable, str(os.getpid()), download_path]), shell=True)
-        sys.exit(0)
 
+class DownloadThread(QThread):
+    download_progress = Signal(int)
+
+    def __init__(self, request, filesize, fileobj, buffer):
+        super(DownloadThread, self).__init__()
+        self.request = request
+        self.filesize = filesize
+        self.fileobj = fileobj
+        self.buffer = buffer
+
+    def run(self):
+        try:
+            offset = 0
+            for chunk in self.request.iter_content(chunk_size=self.buffer):
+                if not chunk:
+                    break
+                self.fileobj.seek(offset)
+                self.fileobj.write(chunk)
+                offset = offset + len(chunk)
+                download_progress = offset / int(self.filesize) * 100
+                if download_progress != 100:
+                    self.download_progress.emit(int(download_progress))
+
+            self.fileobj.close()
+            self.download_progress.emit(100)
+            self.exit(0)
+
+        except Exception as e:
+            print(e)

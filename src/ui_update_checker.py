@@ -10,7 +10,8 @@
 
 from PySide6.QtCore import (QCoreApplication, QMetaObject, Qt)
 from PySide6.QtWidgets import (QComboBox, QHBoxLayout,
-                               QLabel, QPushButton, QSizePolicy, QVBoxLayout)
+                               QLabel, QProgressBar, QPushButton, QSizePolicy,
+                               QVBoxLayout)
 
 class Ui_UpdateChecker(object):
     def setupUi(self, UpdateChecker):
@@ -45,6 +46,13 @@ class Ui_UpdateChecker(object):
         self.horizontalLayout.addWidget(self.comboBox)
 
         self.verticalLayout.addLayout(self.horizontalLayout)
+
+        self.download_progress = QProgressBar(UpdateChecker)
+        self.download_progress.setObjectName(u"download_progress")
+        self.download_progress.setEnabled(True)
+        self.download_progress.setValue(24)
+
+        self.verticalLayout.addWidget(self.download_progress)
 
         self.install_update_button = QPushButton(UpdateChecker)
         self.install_update_button.setObjectName(u"install_update_button")
