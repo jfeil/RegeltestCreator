@@ -453,15 +453,14 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
         updater_script_unix = "updater.sh"
         os.rename(os.path.join(base_path, updater_script_unix),
                   os.path.join(app_dirs.user_cache_dir, updater_script_unix))
+        if current_platform == 'Darwin' or current_platform == 'Linux':
+            os.chmod(os.path.join(app_dirs.user_cache_dir, updater_script_unix), 777)
 
         path, executable_name = os.path.split(sys.executable)
         download_path = os.path.join(app_dirs.user_cache_dir, executable_name)
         r = requests.get(self.download_link)
         with open(download_path, 'wb+') as file:
             file.write(r.content)
-            fileendings = {'Darwin': ['.app', '.zip'],
-                           'Windows': ['.exe'],
-                           'Linux': []}
 
         if current_platform == 'Windows':
             subprocess.Popen(["powershell.exe", os.path.join(app_dirs.user_cache_dir, updater_script_win),
@@ -469,6 +468,5 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
                              creationflags=subprocess.CREATE_NEW_CONSOLE)
         elif current_platform == 'Darwin' or current_platform == 'Linux':
             subprocess.Popen(" ".join([os.path.join(app_dirs.user_cache_dir, updater_script_unix),
-                                       sys.executable, str(os.getpid()), download_path]), shell=True,
-                             creationflags=subprocess.CREATE_NEW_CONSOLE)
+                                       sys.executable, str(os.getpid()), download_path]), shell=True)
         sys.exit(0)
