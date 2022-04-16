@@ -455,7 +455,8 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
         os.rename(os.path.join(base_path, updater_script_unix),
                   os.path.join(app_dirs.user_cache_dir, updater_script_unix))
         if current_platform == 'Darwin' or current_platform == 'Linux':
-            os.chmod(os.path.join(app_dirs.user_cache_dir, updater_script_unix), stat.S_IXUSR) 
+            os.chmod(os.path.join(app_dirs.user_cache_dir, updater_script_unix),
+                     stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR)
 
         path, executable_name = os.path.split(sys.executable)
         download_path = os.path.join(app_dirs.user_cache_dir, executable_name)
