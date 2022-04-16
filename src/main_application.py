@@ -1,5 +1,6 @@
 import os
 import shutil
+import stat
 import subprocess
 import sys
 import webbrowser
@@ -454,7 +455,7 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
         os.rename(os.path.join(base_path, updater_script_unix),
                   os.path.join(app_dirs.user_cache_dir, updater_script_unix))
         if current_platform == 'Darwin' or current_platform == 'Linux':
-            os.chmod(os.path.join(app_dirs.user_cache_dir, updater_script_unix), 777)
+            os.chmod(os.path.join(app_dirs.user_cache_dir, updater_script_unix), stat.S_IXUSR) 
 
         path, executable_name = os.path.split(sys.executable)
         download_path = os.path.join(app_dirs.user_cache_dir, executable_name)
@@ -470,3 +471,4 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
             subprocess.Popen(" ".join([os.path.join(app_dirs.user_cache_dir, updater_script_unix),
                                        sys.executable, str(os.getpid()), download_path]), shell=True)
         sys.exit(0)
+
