@@ -22,7 +22,7 @@ def upgrade():
                     sa.Column('title', sa.String(), nullable=True),
                     sa.Column('description', sa.String(), nullable=True),
                     sa.Column('icon', sa.BLOB(), nullable=True),
-                    sa.Column('created', sa.Date(), nullable=True),
+                    sa.Column('created', sa.DateTime(), nullable=True),
                     sa.PrimaryKeyConstraint('id')
                     )
     op.create_table('regeltest_question_assoc',
@@ -38,7 +38,7 @@ def upgrade():
                     sa.Column('level', sa.Integer(), nullable=True),
                     sa.Column('correct_solved', sa.Integer(), nullable=True),
                     sa.Column('wrong_solved', sa.Integer(), nullable=True),
-                    sa.Column('last_tested', sa.Date(), nullable=True),
+                    sa.Column('last_tested', sa.DateTime(), nullable=True),
                     sa.ForeignKeyConstraint(['question_signature'], ['question.signature'], ),
                     sa.PrimaryKeyConstraint('question_signature')
                     )

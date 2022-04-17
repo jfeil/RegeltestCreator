@@ -7,7 +7,7 @@ from enum import Enum, auto
 from typing import List, Tuple, Dict
 
 import bs4
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Table, BLOB
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Table, BLOB, DateTime
 from sqlalchemy.orm import relationship
 
 from src.basic_config import Base, EagerDefault
@@ -27,7 +27,7 @@ class Regeltest(Base):
     description = Column(String)
     icon = Column(BLOB)
 
-    created = Column(Date, default=date.today)
+    created = Column(DateTime, default=datetime.now)
 
     questions = relationship("Question", secondary=regeltest_question_assoc, back_populates="regeltests")
 
@@ -42,7 +42,7 @@ class Statistics(Base):
     level = Column(Integer, default=0)
     correct_solved = Column(Integer, default=0)
     wrong_solved = Column(Integer, default=0)
-    last_tested = Column(Date, default=default_date)
+    last_tested = Column(DateTime, default=datetime.fromtimestamp(0))
 
 
 class QuestionGroup(Base):
