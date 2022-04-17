@@ -64,7 +64,7 @@ jobs:
       - if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
         run: echo __version__=\"${{ steps.version.outputs.version }}\" > src/__version__.py
       - run: pip install -r requirements.txt
-      - run: pip install pyinstaller
+      - run: pip install pyinstaller==4.10
       - run: pyinstaller RegeltestCreator.spec -F
       - if: matrix.os == 'macos-latest'
         run: |
