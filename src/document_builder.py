@@ -1,11 +1,11 @@
 import os.path
 import random
-from typing import List, Tuple
+from typing import List
 
 from PIL import Image
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch, mm
-from reportlab.lib.utils import simpleSplit
+from reportlab.lib.utils import simpleSplit, ImageReader
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import Flowable, SimpleDocTemplate, Spacer, Paragraph
 from reportlab.rl_config import defaultPageSize
@@ -132,7 +132,8 @@ class QuestionFlowable(Flowable):
 class TitleFlowable(Flowable):
     canv: Canvas
 
-    def __init__(self, title_line, title_icon, username="", fontName='Helvetica', image_scalefactor=1, titleSize=14,
+    def __init__(self, title_line, title_icon: Image, username="", fontName='Helvetica', image_scalefactor=1,
+                 titleSize=14,
                  nameSize=10, x=0, y=0, width=4 / 5 * PAGE_WIDTH, max_points=30):
         super().__init__()
         self.x = x
@@ -141,19 +142,18 @@ class TitleFlowable(Flowable):
         self.height = 100
         self.paragraph_style = ParagraphStyle('DefaultStyle', fontName=fontName, fontSize=nameSize, alignment=0)
         self.title_style = ParagraphStyle('DefaultStyle', fontName=fontName, fontSize=titleSize, alignment=1)
-        self.title_icon = title_icon
         self.title_line = title_line
         self.max_points = max_points
         self.username = username
-        if title_icon:
-            self.image_size = Image.open(title_icon).size
-            image_size = Image.open(title_icon).size
-            ratio = image_size[0] / image_size[1]
+        self.title_icon = title_icon
+        if self.title_icon:
+            ratio = title_icon.size[0] / title_icon.size[1]
             self.image_size = (image_scalefactor * base_image_size * ratio, image_scalefactor * base_image_size / ratio)
 
     def draw(self):
         if self.title_icon:
-            self.canv.drawImage(self.title_icon, self.x, 30, width=self.image_size[0], height=self.image_size[1],
+            self.canv.drawImage(ImageReader(self.title_icon), self.x, 30, width=self.image_size[0],
+                                height=self.image_size[1],
                                 mask='auto')
         question = Paragraph(self.title_line, self.title_style)
         question.wrapOn(self.canv, 2 / 3 * self.width, self.height)
@@ -182,7 +182,7 @@ class TitleFlowable(Flowable):
                                              fontSize=self.paragraph_style.fontSize)
 
 
-def create_document(question_set: List[Tuple[Question, List[MultipleChoice]]], filename, title, icon_path=None,
+def create_document(questions: List[Question], filename, title, icon: Image = None,
                     solution_suffix='_LOESUNG', shuffle_mchoice=True, font_name='Helvetica', font_size=9):
     def page_setup(canvas, doc):
         canvas.saveState()
@@ -196,17 +196,18 @@ def create_document(question_set: List[Tuple[Question, List[MultipleChoice]]], f
 
     doc_solution = SimpleDocTemplate(solution_path)
 
-    story_solution = [TitleFlowable(title, icon_path, username="Muster Lösung", max_points=len(question_set) * 2)]
-    story_question = [TitleFlowable(title, icon_path, max_points=len(question_set) * 2)]
+    story_solution = [TitleFlowable(title, icon, username="Muster Lösung", max_points=len(questions) * 2)]
+    story_question = [TitleFlowable(title, icon, max_points=len(questions) * 2)]
 
-    for i, (question, mchoice) in enumerate(question_set):
+    for i, question in enumerate(questions):
         random_state = random.getstate()
-        question_flow = QuestionFlowable(i + 1, question, mchoice, font_name, font_size, solution=False,
+        question_flow = QuestionFlowable(i + 1, question, question.multiple_choice, font_name, font_size,
+                                         solution=False,
                                          shuffle_mchoice=shuffle_mchoice, width=doc_question.width)
         story_question.append(question_flow)
         story_question.append(Spacer(1, 0.1 * inch))
         random.setstate(random_state)
-        question_flow = QuestionFlowable(i + 1, question, mchoice, font_name, font_size, solution=True,
+        question_flow = QuestionFlowable(i + 1, question, question.multiple_choice, font_name, font_size, solution=True,
                                          shuffle_mchoice=shuffle_mchoice, width=doc_solution.width)
         story_solution.append(question_flow)
         story_solution.append(Spacer(1, 0.1 * inch))

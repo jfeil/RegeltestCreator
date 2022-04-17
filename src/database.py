@@ -71,13 +71,17 @@ class DatabaseConnector:
         Base.metadata.drop_all(self.engine)
         self.initialized = False
 
-    def get_rulegroups(self):
+    def add_object(self, datatype_object: Base):
+        self.session.add(datatype_object)
+        self.session.commit()
+
+    def get_all_rulegroups(self):
         rulegroups = self.session.query(QuestionGroup).all()
         return rulegroups
 
-    def add_rulegroup(self, rulegroup):
-        self.session.add(rulegroup)
-        self.session.commit()
+    def get_rulegroup(self, rulegroup_index: int):
+        rulegroup = self.session.query(QuestionGroup).where(QuestionGroup.id == rulegroup_index).first()
+        return rulegroup
 
     def get_question_multiplechoice(self):
         return_dict = []
@@ -86,19 +90,9 @@ class DatabaseConnector:
                 (question, self.session.query(MultipleChoice).where(MultipleChoice.question == question).all())]
         return return_dict
 
-    def update_question_set(self, question: Question):
-        self.session.add(question)
-        self.session.commit()
-        signature = question.signature
-        return signature
-
     def get_question(self, signature: str):
         question = self.session.query(Question).where(Question.signature == signature).first()
         return question
-
-    def get_rulegroup(self, rulegroup_index: int):
-        rulegroup = self.session.query(QuestionGroup).where(QuestionGroup.id == rulegroup_index).first()
-        return rulegroup
 
     def get_questions_by_foreignkey(self, rulegroup_id: int, mchoice=None, randomize: bool = False):
         questions = self.session.query(Question).where(Question.group_id == rulegroup_id)
@@ -143,7 +137,7 @@ class DatabaseConnector:
         return return_val
 
     def get_rulegroup_config(self) -> List[Tuple[QuestionGroup, int, int]]:
-        rulegroups = self.get_rulegroups()
+        rulegroups = self.get_all_rulegroups()
         return [(rulegroup,
                  len(self.get_questions_by_foreignkey(rulegroup_id=rulegroup.id, mchoice=False)),
                  len(self.get_questions_by_foreignkey(rulegroup_id=rulegroup.id, mchoice=True))) for rulegroup in

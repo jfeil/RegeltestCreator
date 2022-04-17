@@ -15,7 +15,7 @@ logging.getLogger().setLevel(log_level)
 def run():
     app = QApplication(sys.argv)
     main_window = MainWindow()
-    main_window.create_ruletabs(db.get_rulegroups())
+    main_window.create_ruletabs(db.get_all_rulegroups())
     main_window.show()
     exit_code = app.exec()
     db.close_connection()

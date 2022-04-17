@@ -94,7 +94,7 @@ class RuleDataModel(QAbstractTableModel):
     def setData(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex], value: Any,
                 role: int = ...) -> bool:
         if role == Qt.UserRole:
-            db.update_question_set(value)
+            db.add_object(value)
             self.questions[index.row()] = value
             return True
         return False
@@ -144,7 +144,7 @@ class RuleDataModel(QAbstractTableModel):
         new_question.question_id = db.get_new_question_id(self.rulegroup.id)
         editor = QuestionEditor(new_question)
         if editor.exec() == QDialog.Accepted:
-            db.update_question_set(editor.question)
+            db.add_object(editor.question)
             self.questions.insert(row, editor.question)
             return True
         else:

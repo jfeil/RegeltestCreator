@@ -10,6 +10,7 @@ from typing import Tuple
 
 import markdown2
 import requests
+from PIL import Image
 from PySide6.QtCore import QCoreApplication, Qt, Signal, QThread
 from PySide6.QtCore import QSortFilterProxyModel
 from PySide6.QtGui import QShortcut, QKeySequence
@@ -21,7 +22,7 @@ from src import document_builder
 from src.basic_config import app_version, check_for_update, display_name, is_bundled, app_dirs, base_path, \
     current_platform
 from src.database import db
-from src.datatypes import QuestionGroup, create_question_groups, create_questions_and_mchoice
+from src.datatypes import QuestionGroup, create_question_groups, create_questions_and_mchoice, Regeltest
 from src.filter_editor import FilterEditor
 from src.question_table import RulegroupView, RuleDataModel, RuleSortFilterProxyModel
 from src.regeltestcreator import RegeltestSaveDialog, RegeltestSetup
@@ -64,7 +65,7 @@ def save_dataset(parent: QWidget):
     QApplication.setOverrideCursor(Qt.WaitCursor)
     dataset = "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?>\n\
 <REGELTEST>\n<GRUPPEN>\n"
-    for rulegroup in db.get_rulegroups():
+    for rulegroup in db.get_all_rulegroups():
         dataset += rulegroup.export()
     dataset += "</GRUPPEN>\n"
     for question in db.get_question_multiplechoice():
@@ -280,7 +281,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.ui.tabWidget.clear()
 
             rulegroup = QuestionGroup(id=editor.id, name=editor.name)
-            db.add_rulegroup(rulegroup)
+            db.add_object(rulegroup)
             self.create_ruletab(rulegroup)
 
     def _update_tabtitle(self, index):
@@ -294,7 +295,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         def cleanup():
             self.ui.tabWidget.clear()
-            self.create_ruletabs(db.get_rulegroups())
+            self.create_ruletabs(db.get_all_rulegroups())
 
         setup_tab.action_done.connect(cleanup)
         self.ui.tabWidget.addTab(setup_tab, "Einrichten")
@@ -363,18 +364,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             filter_model.invalidateFilter()
 
     def create_regeltest(self):
-        question_set = []
+        questions = []
         for signature in self.ui.regeltest_list.questions:
-            question_set += [
-                (db.get_question(signature), db.get_multiplechoice_by_foreignkey(signature))]
+            questions += [db.get_question(signature)]
         settings = RegeltestSaveDialog(self)
         settings.ui.title_edit.setFocus()
         result = settings.exec()
         output_path = settings.ui.output_edit.text()
-        if result:
+        if result == QDialog.Accepted:
             QApplication.setOverrideCursor(Qt.WaitCursor)
-            document_builder.create_document(question_set, output_path, settings.ui.title_edit.text(),
-                                             icon_path=settings.ui.icon_path_edit.text())
+            if settings.ui.icon_path_edit.text():
+                icon = Image.open(settings.ui.icon_path_edit.text())
+            else:
+                icon = None
+            db.add_object(Regeltest(title=settings.ui.title_edit.text(), description="", icon=icon.tobytes(),
+                                    questions=questions))
+            document_builder.create_document(questions, output_path, settings.ui.title_edit.text(),
+                                             icon=icon)
             QApplication.restoreOverrideCursor()
             webbrowser.open_new(output_path)
 
