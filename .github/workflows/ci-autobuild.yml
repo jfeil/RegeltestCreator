@@ -68,7 +68,7 @@ jobs:
       - run: pyinstaller RegeltestCreator.spec -F
       - if: matrix.os == 'macos-latest'
         run: |
-          zip -r dist/RegeltestCreator.app.zip dist/RegeltestCreator.app
+          zip --junk-paths -r dist/RegeltestCreator.app.zip dist/RegeltestCreator.app
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
         if: matrix.os == 'macos-latest'

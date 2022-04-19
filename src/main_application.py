@@ -420,10 +420,12 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
 
         self.download_link = None  # type: Union[str, None]
         self.ui.install_update_button.clicked.connect(self.update)
-        self.ui.install_update_button.setDisabled(False)
+        self.ui.install_update_button.setDisabled(True)
         self.ui.download_progress.setVisible(False)
         if not is_bundled:
             self.ui.install_update_button.setText("Auto-Update ist nur mit der kompilierten Version möglich!")
+        if current_platform == 'Darwin':
+            self.ui.install_update_button.setVisible(False)
 
         self.display()
 
