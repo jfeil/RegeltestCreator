@@ -1,17 +1,14 @@
-import webbrowser
 from enum import Enum, auto, IntEnum
 
-from PIL import Image
 from PySide6.QtCore import QCoreApplication, Qt
-from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QApplication, QMessageBox, QDialog
+from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QApplication, QMessageBox
 from bs4 import BeautifulSoup
 
-from src import document_builder
-from src.MainWidgets import FirstSetupWidget, QuestionOverviewWidget
 from src.basic_config import app_version, check_for_update, display_name, is_bundled
 from src.database import db
-from src.datatypes import create_question_groups, create_questions_and_mchoice, Regeltest
-from src.regeltestcreator import RegeltestSaveDialog, RegeltestSetup
+from src.datatypes import create_question_groups, create_questions_and_mchoice
+from src.dock_widgets import RegeltestCreatorDockwidget, SelfTestDockWidget
+from src.main_widgets import FirstSetupWidget, QuestionOverviewWidget, SelfTestWidget
 from src.ui_mainwindow import Ui_MainWindow
 from src.updater import UpdateChecker
 
@@ -103,6 +100,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.question_overview = QuestionOverviewWidget(self)
         self.ui.stackedWidget.addWidget(self.question_overview)
 
+        self.self_test = SelfTestWidget(self)
+        self.ui.stackedWidget.addWidget(self.self_test)
+
+        # DockWidgets
+        self.ui.stacked_widget_dock.addWidget(QWidget())
+
+        self.question_overview_dock = RegeltestCreatorDockwidget(self)
+        self.ui.stacked_widget_dock.addWidget(self.question_overview_dock)
+
+        self.self_test_dock = SelfTestDockWidget(self)
+        self.ui.stacked_widget_dock.addWidget(self.self_test_dock)
+
         # noinspection PyTypeChecker
         self.setWindowTitle(QCoreApplication.translate("MainWindow", f"{display_name} - {app_version}", None))
         self.ui.actionRegeldatensatz_einladen.triggered.connect(self.load_dataset)
@@ -114,18 +123,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # self.ui.actionNeue_Kategorie_erstellen.setEnabled(False)
         self.ui.actionRegeltest_l_schen.setEnabled(False)
 
-        self.ui.regeltest_list.setAcceptDrops(True)
         self.ui.actionAnsicht_zur_cksetzen.triggered.connect(self.reset_ui)
         self.ui.actionRegeldatensatz_exportieren.triggered.connect(lambda: save_dataset(self))
         self.ui.actionNeue_Kategorie_erstellen.triggered.connect(self.add_question_group)
-
-        self.ui.regeltest_list.model().rowsInserted.connect(self.regeltest_list_updated)
-        self.ui.regeltest_list.model().rowsRemoved.connect(self.regeltest_list_updated)
-
-        self.ui.add_questionlist.clicked.connect(self.setup_regeltest)
-        self.ui.clear_questionlist.clicked.connect(self.clear_questionlist)
-
-        self.ui.create_regeltest.clicked.connect(self.create_regeltest)
 
     def show(self) -> None:
         super(MainWindow, self).show()
@@ -164,49 +164,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
         self.ui.stackedWidget.setCurrentIndex(int(mode))
+        self.ui.stacked_widget_dock.setCurrentIndex(int(mode))
 
         if mode == ApplicationMode.initial_setup:
+            self.ui.actionSelftest.setVisible(False)
             self.ui.actionAnsicht_zur_cksetzen.setDisabled(True)
+            self.ui.main_window_dockwidget.close()
         else:
             self.ui.actionAnsicht_zur_cksetzen.setDisabled(False)
 
         if mode == ApplicationMode.question_overview:
-            self.ui.regeltest_creator.show()
-        else:
-            self.ui.regeltest_creator.close()
+            self.ui.actionSelftest.setVisible(True)
+            self.ui.actionSelftest.setText("Selbsttest")
+            self.ui.actionSelftest.triggered.disconnect()
+            self.ui.actionSelftest.triggered.connect(lambda: self.set_mode(ApplicationMode.self_test))
+            self.ui.main_window_dockwidget.setWindowTitle("Selbsttest-Einstellungen")
+            self.ui.main_window_dockwidget.show()
 
-    def clear_questionlist(self):
-        self.ui.regeltest_list.clear()
-        self.ui.regeltest_list.questions.clear()
-        self.regeltest_list_updated()
-
-    def regeltest_list_updated(self):
-        self.ui.regeltest_stats.setText(
-            f"{self.ui.regeltest_list.count()} Fragen selektiert ({self.ui.regeltest_list.count() * 2} Punkte)")
-
-    def setup_regeltest(self):
-        regeltest_setup = RegeltestSetup(self)
-        if regeltest_setup.exec():
-            for question in regeltest_setup.collect_questions():
-                self.ui.regeltest_list.add_question(question)
-
-    def create_regeltest(self):
-        questions = []
-        for signature in self.ui.regeltest_list.questions:
-            questions += [db.get_question(signature)]
-        settings = RegeltestSaveDialog(self)
-        settings.ui.title_edit.setFocus()
-        result = settings.exec()
-        output_path = settings.ui.output_edit.text()
-        if result == QDialog.Accepted:
-            QApplication.setOverrideCursor(Qt.WaitCursor)
-            if settings.ui.icon_path_edit.text():
-                icon = Image.open(settings.ui.icon_path_edit.text())
-            else:
-                icon = None
-            db.add_object(Regeltest(title=settings.ui.title_edit.text(), description="", icon=icon.tobytes(),
-                                    questions=questions))
-            document_builder.create_document(questions, output_path, settings.ui.title_edit.text(),
-                                             icon=icon)
-            QApplication.restoreOverrideCursor()
-            webbrowser.open_new(output_path)
+        if mode == ApplicationMode.self_test:
+            self.ui.actionSelftest.setVisible(True)
+            self.ui.actionSelftest.setText("Fragenverwaltung")
+            self.ui.actionSelftest.triggered.disconnect()
+            self.ui.actionSelftest.triggered.connect(lambda: self.set_mode(ApplicationMode.question_overview))
+            self.ui.main_window_dockwidget.setWindowTitle("Regeltest-Creator")
+            self.ui.main_window_dockwidget.show()

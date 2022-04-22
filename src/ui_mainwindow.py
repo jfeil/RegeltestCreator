@@ -11,13 +11,9 @@
 from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect,
                             Qt)
 from PySide6.QtGui import (QAction)
-from PySide6.QtWidgets import (QDockWidget, QFrame, QGridLayout,
-                               QLabel, QMenu,
-                               QMenuBar, QPushButton, QStackedWidget,
-                               QToolBar, QVBoxLayout, QWidget)
-
-from .regeltestcreator import RegeltestCreator
-
+from PySide6.QtWidgets import (QDockWidget, QMenu,
+                               QMenuBar, QStackedWidget, QToolBar,
+                               QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -40,6 +36,8 @@ class Ui_MainWindow(object):
         self.actionAuf_Updates_pr_fen.setObjectName(u"actionAuf_Updates_pr_fen")
         self.action_ber = QAction(MainWindow)
         self.action_ber.setObjectName(u"action_ber")
+        self.actionSelftest = QAction(MainWindow)
+        self.actionSelftest.setObjectName(u"actionSelftest")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setEnabled(True)
@@ -63,53 +61,19 @@ class Ui_MainWindow(object):
         self.menu_ber = QMenu(self.menubar)
         self.menu_ber.setObjectName(u"menu_ber")
         MainWindow.setMenuBar(self.menubar)
-        self.regeltest_creator = QDockWidget(MainWindow)
-        self.regeltest_creator.setObjectName(u"regeltest_creator")
+        self.main_window_dockwidget = QDockWidget(MainWindow)
+        self.main_window_dockwidget.setObjectName(u"main_window_dockwidget")
         self.dockWidgetContents = QWidget()
         self.dockWidgetContents.setObjectName(u"dockWidgetContents")
         self.verticalLayout_3 = QVBoxLayout(self.dockWidgetContents)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.regeltest_list = RegeltestCreator(self.dockWidgetContents)
-        self.regeltest_list.setObjectName(u"regeltest_list")
+        self.stacked_widget_dock = QStackedWidget(self.dockWidgetContents)
+        self.stacked_widget_dock.setObjectName(u"stacked_widget_dock")
 
-        self.verticalLayout_3.addWidget(self.regeltest_list)
+        self.verticalLayout_3.addWidget(self.stacked_widget_dock)
 
-        self.widget = QWidget(self.dockWidgetContents)
-        self.widget.setObjectName(u"widget")
-        self.gridLayout = QGridLayout(self.widget)
-        self.gridLayout.setObjectName(u"gridLayout")
-        self.add_questionlist = QPushButton(self.widget)
-        self.add_questionlist.setObjectName(u"add_questionlist")
-
-        self.gridLayout.addWidget(self.add_questionlist, 0, 0, 1, 1)
-
-        self.clear_questionlist = QPushButton(self.widget)
-        self.clear_questionlist.setObjectName(u"clear_questionlist")
-
-        self.gridLayout.addWidget(self.clear_questionlist, 0, 1, 1, 1)
-
-
-        self.verticalLayout_3.addWidget(self.widget)
-
-        self.line = QFrame(self.dockWidgetContents)
-        self.line.setObjectName(u"line")
-        self.line.setFrameShape(QFrame.HLine)
-        self.line.setFrameShadow(QFrame.Sunken)
-
-        self.verticalLayout_3.addWidget(self.line)
-
-        self.regeltest_stats = QLabel(self.dockWidgetContents)
-        self.regeltest_stats.setObjectName(u"regeltest_stats")
-
-        self.verticalLayout_3.addWidget(self.regeltest_stats)
-
-        self.create_regeltest = QPushButton(self.dockWidgetContents)
-        self.create_regeltest.setObjectName(u"create_regeltest")
-
-        self.verticalLayout_3.addWidget(self.create_regeltest)
-
-        self.regeltest_creator.setWidget(self.dockWidgetContents)
-        MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.regeltest_creator)
+        self.main_window_dockwidget.setWidget(self.dockWidgetContents)
+        MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.main_window_dockwidget)
         self.toolBar = QToolBar(MainWindow)
         self.toolBar.setObjectName(u"toolBar")
         MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
@@ -126,6 +90,7 @@ class Ui_MainWindow(object):
         self.menuBearbeiten.addAction(self.actionRegeltest_l_schen)
         self.menu_ber.addAction(self.actionAuf_Updates_pr_fen)
         self.menu_ber.addAction(self.action_ber)
+        self.toolBar.addAction(self.actionSelftest)
 
         self.retranslateUi(MainWindow)
 
@@ -150,15 +115,12 @@ class Ui_MainWindow(object):
         self.actionAuf_Updates_pr_fen.setText(
             QCoreApplication.translate("MainWindow", u"Auf Updates pr\u00fcfen", None))
         self.action_ber.setText(QCoreApplication.translate("MainWindow", u"\u00dcber", None))
+        self.actionSelftest.setText(QCoreApplication.translate("MainWindow", u"Selbsttest", None))
         self.menuDatei.setTitle(QCoreApplication.translate("MainWindow", u"Datei", None))
         self.menuAnsicht.setTitle(QCoreApplication.translate("MainWindow", u"Ansicht", None))
         self.menuBearbeiten.setTitle(QCoreApplication.translate("MainWindow", u"Bearbeiten", None))
         self.menu_ber.setTitle(QCoreApplication.translate("MainWindow", u"Hilfe", None))
-        self.regeltest_creator.setWindowTitle(QCoreApplication.translate("MainWindow", u"Regeltest-Creator", None))
-        self.add_questionlist.setText(QCoreApplication.translate("MainWindow", u"Einrichten", None))
-        self.clear_questionlist.setText(QCoreApplication.translate("MainWindow", u"Zur\u00fccksetzen", None))
-        self.regeltest_stats.setText(QCoreApplication.translate("MainWindow", u"0 Fragen ausgew\u00e4hlt (0 Punkte)", None))
-        self.create_regeltest.setText(QCoreApplication.translate("MainWindow", u"Regeltest erstellen", None))
+        self.main_window_dockwidget.setWindowTitle("")
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
     # retranslateUi
 

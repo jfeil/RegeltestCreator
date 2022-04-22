@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+    <class>regeltest_creator_dockwidget</class>
+    <widget class="QWidget" name="regeltest_creator_dockwidget">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>400</width>
+                <height>300</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>Form</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+                <widget class="RegeltestCreator" name="regeltest_list"/>
+            </item>
+            <item>
+                <widget class="QWidget" name="widget" native="true">
+                    <layout class="QGridLayout" name="gridLayout">
+                        <item row="0" column="0">
+                            <widget class="QPushButton" name="add_questionlist">
+                                <property name="text">
+                                    <string>Einrichten</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item row="0" column="1">
+                            <widget class="QPushButton" name="clear_questionlist">
+                                <property name="text">
+                                    <string>Zurücksetzen</string>
+                                </property>
+                            </widget>
+                        </item>
+                    </layout>
+                </widget>
+            </item>
+            <item>
+                <widget class="Line" name="line">
+                    <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <widget class="QLabel" name="regeltest_stats">
+                    <property name="text">
+                        <string>0 Fragen ausgewählt (0 Punkte)</string>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <widget class="QPushButton" name="create_regeltest">
+                    <property name="text">
+                        <string>Regeltest erstellen</string>
+                    </property>
+                </widget>
+            </item>
+        </layout>
+    </widget>
+    <customwidgets>
+        <customwidget>
+            <class>RegeltestCreator</class>
+            <extends>QListWidget</extends>
+            <header>.regeltestcreator.h</header>
+        </customwidget>
+    </customwidgets>
+    <resources/>
+    <connections/>
+</ui>

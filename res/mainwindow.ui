@@ -14,18 +14,18 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-      <property name="enabled">
-          <bool>true</bool>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QStackedWidget" name="stackedWidget">
+      <property name="currentIndex">
+       <number>-1</number>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-          <item>
-              <widget class="QStackedWidget" name="stackedWidget">
-                  <property name="currentIndex">
-                      <number>-1</number>
-                  </property>
-              </widget>
-          </item>
-      </layout>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -69,9 +69,9 @@
    <addaction name="menuAnsicht"/>
    <addaction name="menu_ber"/>
   </widget>
-  <widget class="QDockWidget" name="regeltest_creator">
+  <widget class="QDockWidget" name="main_window_dockwidget">
    <property name="windowTitle">
-    <string>Regeltest-Creator</string>
+    <string/>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -79,72 +79,32 @@
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <widget class="RegeltestCreator" name="regeltest_list"/>
+      <widget class="QStackedWidget" name="stacked_widget_dock"/>
      </item>
-     <item>
-      <widget class="QWidget" name="widget" native="true">
-       <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
-         <widget class="QPushButton" name="add_questionlist">
-          <property name="text">
-           <string>Einrichten</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QPushButton" name="clear_questionlist">
-          <property name="text">
-           <string>Zurücksetzen</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="Line" name="line">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="regeltest_stats">
-       <property name="text">
-        <string>0 Fragen ausgewählt (0 Punkte)</string>
-       </property>
-      </widget>
-     </item>
-        <item>
-            <widget class="QPushButton" name="create_regeltest">
-                <property name="text">
-                    <string>Regeltest erstellen</string>
-                </property>
-            </widget>
-        </item>
     </layout>
    </widget>
   </widget>
-     <widget class="QToolBar" name="toolBar">
-         <property name="windowTitle">
-             <string>toolBar</string>
-         </property>
-         <attribute name="toolBarArea">
-             <enum>TopToolBarArea</enum>
-         </attribute>
-         <attribute name="toolBarBreak">
-             <bool>false</bool>
-         </attribute>
-     </widget>
-     <action name="actionNeue_Kategorie_erstellen">
-         <property name="text">
-             <string>Neue Kategorie erstellen</string>
-         </property>
-     </action>
-     <action name="actionAnsicht_zur_cksetzen">
-         <property name="text">
-             <string>Ansicht zurücksetzen</string>
-         </property>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionSelftest"/>
+  </widget>
+  <action name="actionNeue_Kategorie_erstellen">
+   <property name="text">
+    <string>Neue Kategorie erstellen</string>
+   </property>
+  </action>
+  <action name="actionAnsicht_zur_cksetzen">
+   <property name="text">
+    <string>Ansicht zurücksetzen</string>
+   </property>
   </action>
   <action name="actionRegeltest_l_schen">
    <property name="text">
@@ -176,14 +136,12 @@
     <string>Über</string>
    </property>
   </action>
+  <action name="actionSelftest">
+   <property name="text">
+    <string>Selbsttest</string>
+   </property>
+  </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>RegeltestCreator</class>
-   <extends>QListWidget</extends>
-   <header>.regeltestcreator.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>
