@@ -13,9 +13,9 @@ from src.question_editor import QuestionEditor
 dict_key = str
 
 
-class RuleDataModel(QAbstractTableModel):
+class QuestionGroupDataModel(QAbstractTableModel):
     # When subclassing QAbstractTableModel, you must implement rowCount(), columnCount(), and data(). Default
-    # implementations of the index() and parent() functions are provided by QAbstractTableModel. Well-behaved models
+    # implementations of the index() and main_window() functions are provided by QAbstractTableModel. Well-behaved models
     # will also implement headerData().
 
     # Models that provide interfaces to resizable data structures can provide implementations of insertRows(),
@@ -32,14 +32,14 @@ class RuleDataModel(QAbstractTableModel):
 
     headers = ['question_id', 'question', 'multiple_choice', 'answer_text', 'last_edited', ]
 
-    def __init__(self, rulegroup, parent):
-        super(RuleDataModel, self).__init__(parent)
-        self.rulegroup = rulegroup
+    def __init__(self, question_group, parent):
+        super(QuestionGroupDataModel, self).__init__(parent)
+        self.question_group = question_group
         self.questions = []  # type: List[Question]
         self.read_data()
 
     def read_data(self):
-        self.questions = db.get_questions_by_foreignkey(self.rulegroup.id)
+        self.questions = db.get_questions_by_foreignkey(self.question_group.id)
 
     def reset(self) -> None:
         self.beginResetModel()
@@ -140,8 +140,8 @@ class RuleDataModel(QAbstractTableModel):
     def insertRow(self, row: int,
                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
         new_question = Question()
-        new_question.rulegroup = db.get_rulegroup(self.rulegroup.id)
-        new_question.question_id = db.get_new_question_id(self.rulegroup.id)
+        new_question.rulegroup = db.get_question_group(self.question_group.id)
+        new_question.question_id = db.get_new_question_id(self.question_group.id)
         editor = QuestionEditor(new_question)
         if editor.exec() == QDialog.Accepted:
             db.add_object(editor.question)
@@ -174,9 +174,9 @@ class RuleDelegate(QStyledItemDelegate):
         return editor
 
 
-class RulegroupView(QTableView):
+class QuestionGroupTableView(QTableView):
     def __init__(self, parent):
-        super(RulegroupView, self).__init__(parent)
+        super(QuestionGroupTableView, self).__init__(parent)
         self.setSelectionMode(QTreeWidget.ExtendedSelection)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.prepare_menu)
@@ -253,7 +253,7 @@ class RulegroupView(QTableView):
         menu.exec(self.mapToGlobal(pos))
 
     def startDrag(self, supportedActions: Qt.DropActions) -> None:
-        super(RulegroupView, self).startDrag(supportedActions)
+        super(QuestionGroupTableView, self).startDrag(supportedActions)
         rows = self.selectionModel().selectedRows()
         if not rows:
             return

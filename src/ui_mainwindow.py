@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'mainwindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.2
+## Created by: Qt User Interface Compiler version 6.2.4
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -12,11 +12,9 @@ from PySide6.QtCore import (QCoreApplication, QMetaObject, QRect,
                             Qt)
 from PySide6.QtGui import (QAction)
 from PySide6.QtWidgets import (QDockWidget, QFrame, QGridLayout,
-                               QHBoxLayout, QLabel, QListView,
-                               QListWidget, QMenu,
-                               QMenuBar, QPushButton, QSizePolicy, QStatusBar,
-                               QTabWidget, QTreeWidget, QTreeWidgetItem, QVBoxLayout,
-                               QWidget)
+                               QLabel, QMenu,
+                               QMenuBar, QPushButton, QStackedWidget,
+                               QToolBar, QVBoxLayout, QWidget)
 
 from .regeltestcreator import RegeltestCreator
 
@@ -44,73 +42,13 @@ class Ui_MainWindow(object):
         self.action_ber.setObjectName(u"action_ber")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
+        self.centralwidget.setEnabled(True)
         self.verticalLayout = QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.widget_2 = QWidget(self.centralwidget)
-        self.widget_2.setObjectName(u"widget_2")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.widget_2.sizePolicy().hasHeightForWidth())
-        self.widget_2.setSizePolicy(sizePolicy)
-        self.horizontalLayout_2 = QHBoxLayout(self.widget_2)
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.filter_list = QListWidget(self.widget_2)
-        self.filter_list.setObjectName(u"filter_list")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Ignored)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.filter_list.sizePolicy().hasHeightForWidth())
-        self.filter_list.setSizePolicy(sizePolicy1)
-        self.filter_list.setFrameShape(QFrame.StyledPanel)
-        self.filter_list.setFrameShadow(QFrame.Sunken)
-        self.filter_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.filter_list.setMovement(QListView.Free)
-        self.filter_list.setFlow(QListView.LeftToRight)
-        self.filter_list.setLayoutMode(QListView.SinglePass)
-        self.filter_list.setSpacing(2)
-        self.filter_list.setViewMode(QListView.IconMode)
-        self.filter_list.setUniformItemSizes(False)
-        self.filter_list.setWordWrap(False)
+        self.stackedWidget = QStackedWidget(self.centralwidget)
+        self.stackedWidget.setObjectName(u"stackedWidget")
 
-        self.horizontalLayout_2.addWidget(self.filter_list)
-
-        self.widget_3 = QWidget(self.widget_2)
-        self.widget_3.setObjectName(u"widget_3")
-        self.verticalLayout_4 = QVBoxLayout(self.widget_3)
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.add_filter = QPushButton(self.widget_3)
-        self.add_filter.setObjectName(u"add_filter")
-
-        self.verticalLayout_4.addWidget(self.add_filter)
-
-        self.horizontalLayout_2.addWidget(self.widget_3)
-
-        self.verticalLayout.addWidget(self.widget_2)
-
-        self.tabWidget = QTabWidget(self.centralwidget)
-        self.tabWidget.setObjectName(u"tabWidget")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.tabWidget.sizePolicy().hasHeightForWidth())
-        self.tabWidget.setSizePolicy(sizePolicy2)
-        self.Test = QWidget()
-        self.Test.setObjectName(u"Test")
-        self.verticalLayout_2 = QVBoxLayout(self.Test)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.treeWidget = QTreeWidget(self.Test)
-        QTreeWidgetItem(self.treeWidget)
-        self.treeWidget.setObjectName(u"treeWidget")
-
-        self.verticalLayout_2.addWidget(self.treeWidget)
-
-        self.tabWidget.addTab(self.Test, "")
-        self.tab_2 = QWidget()
-        self.tab_2.setObjectName(u"tab_2")
-        self.tabWidget.addTab(self.tab_2, "")
-
-        self.verticalLayout.addWidget(self.tabWidget)
+        self.verticalLayout.addWidget(self.stackedWidget)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -125,9 +63,6 @@ class Ui_MainWindow(object):
         self.menu_ber = QMenu(self.menubar)
         self.menu_ber.setObjectName(u"menu_ber")
         MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QStatusBar(MainWindow)
-        self.statusbar.setObjectName(u"statusbar")
-        MainWindow.setStatusBar(self.statusbar)
         self.regeltest_creator = QDockWidget(MainWindow)
         self.regeltest_creator.setObjectName(u"regeltest_creator")
         self.dockWidgetContents = QWidget()
@@ -175,6 +110,9 @@ class Ui_MainWindow(object):
 
         self.regeltest_creator.setWidget(self.dockWidgetContents)
         MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.regeltest_creator)
+        self.toolBar = QToolBar(MainWindow)
+        self.toolBar.setObjectName(u"toolBar")
+        MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
 
         self.menubar.addAction(self.menuDatei.menuAction())
         self.menubar.addAction(self.menuBearbeiten.menuAction())
@@ -191,8 +129,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.filter_list.setCurrentRow(-1)
-        self.tabWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(-1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -213,29 +150,6 @@ class Ui_MainWindow(object):
         self.actionAuf_Updates_pr_fen.setText(
             QCoreApplication.translate("MainWindow", u"Auf Updates pr\u00fcfen", None))
         self.action_ber.setText(QCoreApplication.translate("MainWindow", u"\u00dcber", None))
-        self.add_filter.setText(QCoreApplication.translate("MainWindow", u"Neuer Filter", None))
-        ___qtreewidgetitem = self.treeWidget.headerItem()
-        ___qtreewidgetitem.setText(4, QCoreApplication.translate("MainWindow", u"\u00c4nderungsdatum", None));
-        ___qtreewidgetitem.setText(3, QCoreApplication.translate("MainWindow", u"Antwort", None));
-        ___qtreewidgetitem.setText(2, QCoreApplication.translate("MainWindow", u"Multiple choice?", None));
-        ___qtreewidgetitem.setText(1, QCoreApplication.translate("MainWindow", u"Frage", None));
-        ___qtreewidgetitem.setText(0, QCoreApplication.translate("MainWindow", u"Regelnummer", None));
-
-        __sortingEnabled = self.treeWidget.isSortingEnabled()
-        self.treeWidget.setSortingEnabled(False)
-        ___qtreewidgetitem1 = self.treeWidget.topLevelItem(0)
-        ___qtreewidgetitem1.setText(4, QCoreApplication.translate("MainWindow", u"2020-06-22", None));
-        ___qtreewidgetitem1.setText(3, QCoreApplication.translate("MainWindow", u"Ja. Alle Hilfsflaggen m\u00fcssen 1m au\u00dferhalb der Seitenlinie stehen.", None));
-        ___qtreewidgetitem1.setText(2, QCoreApplication.translate("MainWindow", u"Ja", None));
-        ___qtreewidgetitem1.setText(1, QCoreApplication.translate("MainWindow", u"Die Hilfsflaggen werden vom Platzwart auf die Seitenlinie gesteckt. Hat der SR Grund zur Beanstandung?", None));
-        ___qtreewidgetitem1.setText(0, QCoreApplication.translate("MainWindow", u"01", None));
-#if QT_CONFIG(tooltip)
-        ___qtreewidgetitem1.setToolTip(1, QCoreApplication.translate("MainWindow", u"Die Hilfsflaggen werden vom Platzwart auf die Seitenlinie gesteckt. Hat der SR Grund zur Beanstandung?", None));
-#endif // QT_CONFIG(tooltip)
-        self.treeWidget.setSortingEnabled(__sortingEnabled)
-
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Test), QCoreApplication.translate("MainWindow", u"01 Das Spielfeld", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"02 Der Ball", None))
         self.menuDatei.setTitle(QCoreApplication.translate("MainWindow", u"Datei", None))
         self.menuAnsicht.setTitle(QCoreApplication.translate("MainWindow", u"Ansicht", None))
         self.menuBearbeiten.setTitle(QCoreApplication.translate("MainWindow", u"Bearbeiten", None))
@@ -245,5 +159,6 @@ class Ui_MainWindow(object):
         self.clear_questionlist.setText(QCoreApplication.translate("MainWindow", u"Zur\u00fccksetzen", None))
         self.regeltest_stats.setText(QCoreApplication.translate("MainWindow", u"0 Fragen ausgew\u00e4hlt (0 Punkte)", None))
         self.create_regeltest.setText(QCoreApplication.translate("MainWindow", u"Regeltest erstellen", None))
+        self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
     # retranslateUi
 

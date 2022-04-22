@@ -116,7 +116,7 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
 
         self.rulegroup_widgets = []  # type: List[RegeltestSetupRulegroup]
 
-        parameters = db.get_rulegroup_config()
+        parameters = db.get_question_group_config()
         divisor = 5
         for i in range(len(parameters) // divisor):
             self.create_tab(f"{parameters[i * divisor + 1][0].id:02d} - {parameters[(i + 1) * divisor - 1][0].id:02d}",

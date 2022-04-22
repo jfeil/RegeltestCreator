@@ -75,13 +75,13 @@ class DatabaseConnector:
         self.session.add(datatype_object)
         self.session.commit()
 
-    def get_all_rulegroups(self):
-        rulegroups = self.session.query(QuestionGroup).all()
-        return rulegroups
+    def get_all_question_groups(self) -> List[QuestionGroup]:
+        question_groups = self.session.query(QuestionGroup).all()
+        return question_groups
 
-    def get_rulegroup(self, rulegroup_index: int):
-        rulegroup = self.session.query(QuestionGroup).where(QuestionGroup.id == rulegroup_index).first()
-        return rulegroup
+    def get_question_group(self, question_group_index: int):
+        question_group = self.session.query(QuestionGroup).where(QuestionGroup.id == question_group_index).first()
+        return question_group
 
     def get_question_multiplechoice(self):
         return_dict = []
@@ -94,8 +94,8 @@ class DatabaseConnector:
         question = self.session.query(Question).where(Question.signature == signature).first()
         return question
 
-    def get_questions_by_foreignkey(self, rulegroup_id: int, mchoice=None, randomize: bool = False):
-        questions = self.session.query(Question).where(Question.group_id == rulegroup_id)
+    def get_questions_by_foreignkey(self, question_group_id: int, mchoice=None, randomize: bool = False):
+        questions = self.session.query(Question).where(Question.group_id == question_group_id)
         if mchoice is not None:
             if mchoice:
                 questions = questions.where(Question.answer_index != -1)
@@ -122,12 +122,12 @@ class DatabaseConnector:
         self.session.delete(item)
         self.session.commit()
 
-    def get_new_question_id(self, rulegroup_index: int):
-        stmt = select(Question.question_id).where(Question.group_id.like(rulegroup_index))
+    def get_new_question_id(self, question_group_index: int):
+        stmt = select(Question.question_id).where(Question.group_id.like(question_group_index))
         return_val = max(self.session.execute(stmt))[0] + 1
         return return_val
 
-    def get_new_rulegroup_id(self):
+    def get_new_question_group_id(self):
         stmt = select(QuestionGroup.id)
         values = self.session.execute(stmt).fetchall()
         if values:
@@ -136,12 +136,13 @@ class DatabaseConnector:
             return_val = 1
         return return_val
 
-    def get_rulegroup_config(self) -> List[Tuple[QuestionGroup, int, int]]:
-        rulegroups = self.get_all_rulegroups()
-        return [(rulegroup,
-                 len(self.get_questions_by_foreignkey(rulegroup_id=rulegroup.id, mchoice=False)),
-                 len(self.get_questions_by_foreignkey(rulegroup_id=rulegroup.id, mchoice=True))) for rulegroup in
-                rulegroups]
+    def get_question_group_config(self) -> List[Tuple[QuestionGroup, int, int]]:
+        question_groups = self.get_all_question_groups()
+        return [(question_group,
+                 len(self.get_questions_by_foreignkey(question_group_id=question_group.id, mchoice=False)),
+                 len(self.get_questions_by_foreignkey(question_group_id=question_group.id, mchoice=True))) for
+                question_group in
+                question_groups]
 
 
 db = DatabaseConnector()

@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (QAbstractSpinBox, QDialogButtonBox, QGridLayout, 
 class Ui_RulegroupEditor(object):
     def setupUi(self, RulegroupEditor):
         if not RulegroupEditor.objectName():
-            RulegroupEditor.setObjectName(u"RulegroupEditor")
+            RulegroupEditor.setObjectName(u"QuestionGroupEditor")
         RulegroupEditor.resize(293, 69)
         self.gridLayout = QGridLayout(RulegroupEditor)
         self.gridLayout.setObjectName(u"gridLayout")
@@ -54,5 +54,5 @@ class Ui_RulegroupEditor(object):
     # setupUi
 
     def retranslateUi(self, RulegroupEditor):
-        RulegroupEditor.setWindowTitle(QCoreApplication.translate("RulegroupEditor", u"Regelgruppe", None))
+        RulegroupEditor.setWindowTitle(QCoreApplication.translate("QuestionGroupEditor", u"Regelgruppe", None))
     # retranslateUi

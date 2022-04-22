@@ -8,16 +8,10 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-    QFont, QFontDatabase, QGradient, QIcon,
-    QImage, QKeySequence, QLinearGradient, QPainter,
-    QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog,
-    QDialogButtonBox, QLabel, QSizePolicy, QSpacerItem,
-    QTabWidget, QVBoxLayout, QWidget)
+from PySide6.QtCore import (QCoreApplication, QMetaObject, Qt)
+from PySide6.QtWidgets import (QCheckBox, QDialogButtonBox, QLabel, QSizePolicy, QSpacerItem,
+                               QTabWidget, QVBoxLayout, QWidget)
+
 
 class Ui_RegeltestSetup(object):
     def setupUi(self, RegeltestSetup):
@@ -82,6 +76,8 @@ class Ui_RegeltestSetup(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("RegeltestSetup", u"Tab 2", None))
         self.statistics.setText("")
         self.checkbox_rulegroups.setText(QCoreApplication.translate("RegeltestSetup", u"Shuffle rulegroups", None))
-        self.checkbox_textmchoice.setText(QCoreApplication.translate("RegeltestSetup", u"Mix multiple choice and text questions within rulegroup", None))
+        self.checkbox_textmchoice.setText(QCoreApplication.translate("RegeltestSetup",
+                                                                     u"Mix multiple choice and text questions within question_group",
+                                                                     None))
     # retranslateUi
 
