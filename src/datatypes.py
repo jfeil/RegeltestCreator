@@ -120,7 +120,7 @@ class Question(Base):
     signature = Column(String, default=(lambda: uuid.uuid4().hex), primary_key=True)
 
     parameters = {
-        'group_id': QuestionParameters(table_header="Regelgruppe", filter_options=None, datatype=int),
+        'group_id': QuestionParameters(table_header="Fragengruppe", filter_options=None, datatype=int),
         'question_id': QuestionParameters(table_header="Regelnummer", filter_options=(FilterOption.equal,),
                                           datatype=int),
         'question': QuestionParameters(table_header="Frage",

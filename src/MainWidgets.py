@@ -91,9 +91,9 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
 
     def delete_question_group(self, index_tabwidget: int):
         msgBox = QMessageBox()
-        msgBox.setWindowTitle("Regelgruppe löschen.")
-        msgBox.setText("Regelgruppe löschen.<br>"
-                       "Möchtest du wirklich diese Fragengruppe löschen? Dies lässt sich nicht umkehren!")
+        msgBox.setWindowTitle("Fragengruppe löschen.")
+        msgBox.setText("Möchtest du diese Fragengruppe wirklich löschen?<br>"
+                       "Dies lässt sich nicht umkehren!")
         msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         msgBox.setDefaultButton(QMessageBox.Cancel)
         ret = msgBox.exec()
@@ -125,7 +125,7 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
                 # ID was not changed -> update of title
                 return EditorResult.Success
             if db.get_question_group(editor.id):
-                QMessageBox(QMessageBox.Icon.Critical, "Fehler", "Regelgruppennummer existiert bereits!",
+                QMessageBox(QMessageBox.Icon.Critical, "Fehler", "Fragengruppennummer existiert bereits!",
                             parent=self, ).exec()
                 return EditorResult.Invalid
             return EditorResult.Success
