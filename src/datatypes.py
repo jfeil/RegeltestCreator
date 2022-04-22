@@ -186,9 +186,9 @@ class Question(Base):
 
 
 def create_question_groups(groups: bs4.element.Tag) -> List[QuestionGroup]:
-    texts = groups.find_all("gruppentext")
+    texts = groups.find_all("GRUPPENTEXT")
     texts = [item.contents[0].strip() for item in texts]
-    numbers = groups.find_all("gruppennr")
+    numbers = groups.find_all("GRUPPENNR")
     numbers = [int(item.contents[0]) for item in numbers]
 
     return [QuestionGroup(id=number, name=text) for text, number in zip(texts, numbers)]
@@ -214,10 +214,10 @@ def create_questions_and_mchoice(rules_xml):
     rules = []
     multiple_choice = []
     for rule in rules_xml:
-        lnr = rule.find("lnr").contents[0].strip()
+        lnr = rule.find("LNR").contents[0].strip()
         group_id = int(lnr[0:2])
         question_id = int(lnr[2:])
-        signature = rule.find("signatur").contents[0].strip()
+        signature = rule.find("SIGNATUR").contents[0].strip()
         if (group_id, question_id) in rules_index:
             # duplicated questions... wtf
             continue
@@ -228,11 +228,11 @@ def create_questions_and_mchoice(rules_xml):
             continue
         else:
             signatures += [signature]
-        question = rule.find("frage").contents[0].strip()
-        mchoice = create_mchoice(rule.find("mchoice").contents[0])
+        question = rule.find("FRAGE").contents[0].strip()
+        mchoice = create_mchoice(rule.find("MCHOICE").contents[0])
         mchoice = [MultipleChoice(question_signature=signature, index=i, text=mchoice) for i, mchoice in
                    enumerate(mchoice)]
-        answer = rule.find("antwort").contents[0].strip()
+        answer = rule.find("ANTWORT").contents[0].strip()
         if not mchoice:
             mchoice_index = -1
         else:
@@ -249,14 +249,14 @@ def create_questions_and_mchoice(rules_xml):
         multiple_choice += mchoice
         if mchoice_index >= 0:
             answer = re.sub(r"^ *\(*[abc] *\)* *", "", answer)
-        created = rule.find("erst").contents[0].strip()
-        changed = rule.find("aend").contents[0].strip()
+        created = rule.find("ERST").contents[0].strip()
+        changed = rule.find("AEND").contents[0].strip()
         if created:
-            created = datetime.strptime(rule.find("erst").contents[0].strip(), "%d.%m.%Y")
+            created = datetime.strptime(rule.find("ERST").contents[0].strip(), "%d.%m.%Y")
         else:
             created = default_date
         if changed:
-            changed = datetime.strptime(rule.find("aend").contents[0].strip(), "%d.%m.%Y")
+            changed = datetime.strptime(rule.find("AEND").contents[0].strip(), "%d.%m.%Y")
             if changed < created:
                 changed = created
         else:

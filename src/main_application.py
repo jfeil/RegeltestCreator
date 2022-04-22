@@ -30,10 +30,10 @@ class ApplicationMode(IntEnum):
 
 def load_dataset(parent: QWidget, reset_cursor=True) -> bool:
     def read_in(file_path: str):
-        with open(file_path, 'r+', encoding='iso-8859-1') as file:
-            soup = BeautifulSoup(file, "lxml")
-        question_groups = create_question_groups(soup.find("gruppen"))
-        questions, mchoice = create_questions_and_mchoice(soup("regelsatz"))
+        with open(file_path, 'rb') as file:
+            soup = BeautifulSoup(file, "lxml-xml")
+        question_groups = create_question_groups(soup.find("GRUPPEN"))
+        questions, mchoice = create_questions_and_mchoice(soup("REGELSATZ"))
         return question_groups, questions, mchoice
 
     file_name = QFileDialog.getOpenFileName(parent, caption="Fragendatei öffnen", filter="DFB Regeldaten (*.xml)")
