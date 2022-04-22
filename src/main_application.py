@@ -41,9 +41,9 @@ def load_dataset(parent: QWidget, reset_cursor=True) -> bool:
     def read_in(file_path: str):
         with open(file_path, 'r+', encoding='iso-8859-1') as file:
             soup = BeautifulSoup(file, "lxml")
-        rulegroups = create_question_groups(soup.find("gruppen"))
+        question_groups = create_question_groups(soup.find("gruppen"))
         questions, mchoice = create_questions_and_mchoice(soup("regelsatz"))
-        return rulegroups, questions, mchoice
+        return question_groups, questions, mchoice
 
     file_name = QFileDialog.getOpenFileName(parent, caption="Fragendatei öffnen", filter="DFB Regeldaten (*.xml)")
     if len(file_name) == 0 or file_name[0] == "":
@@ -65,8 +65,8 @@ def save_dataset(parent: QWidget):
     QApplication.setOverrideCursor(Qt.WaitCursor)
     dataset = "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?>\n\
 <REGELTEST>\n<GRUPPEN>\n"
-    for rulegroup in db.get_all_question_groups():
-        dataset += rulegroup.export()
+    for question_group in db.get_all_question_groups():
+        dataset += question_group.export()
     dataset += "</GRUPPEN>\n"
     for question in db.get_question_multiplechoice():
         question_set = question[0].export()

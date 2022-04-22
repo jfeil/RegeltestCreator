@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'regeltest_setup.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.2
+## Created by: Qt User Interface Compiler version 6.2.4
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -12,12 +12,11 @@ from PySide6.QtCore import (QCoreApplication, QMetaObject, Qt)
 from PySide6.QtWidgets import (QCheckBox, QDialogButtonBox, QLabel, QSizePolicy, QSpacerItem,
                                QTabWidget, QVBoxLayout, QWidget)
 
-
 class Ui_RegeltestSetup(object):
     def setupUi(self, RegeltestSetup):
         if not RegeltestSetup.objectName():
             RegeltestSetup.setObjectName(u"RegeltestSetup")
-        RegeltestSetup.resize(400, 525)
+        RegeltestSetup.resize(370, 525)
         self.verticalLayout = QVBoxLayout(RegeltestSetup)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.tabWidget = QTabWidget(RegeltestSetup)
@@ -39,10 +38,10 @@ class Ui_RegeltestSetup(object):
 
         self.verticalLayout.addWidget(self.statistics)
 
-        self.checkbox_rulegroups = QCheckBox(RegeltestSetup)
-        self.checkbox_rulegroups.setObjectName(u"checkbox_rulegroups")
+        self.checkbox_question_groups = QCheckBox(RegeltestSetup)
+        self.checkbox_question_groups.setObjectName(u"checkbox_question_groups")
 
-        self.verticalLayout.addWidget(self.checkbox_rulegroups)
+        self.verticalLayout.addWidget(self.checkbox_question_groups)
 
         self.checkbox_textmchoice = QCheckBox(RegeltestSetup)
         self.checkbox_textmchoice.setObjectName(u"checkbox_textmchoice")
@@ -73,11 +72,13 @@ class Ui_RegeltestSetup(object):
 
     def retranslateUi(self, RegeltestSetup):
         RegeltestSetup.setWindowTitle(QCoreApplication.translate("RegeltestSetup", u"Setup Regeltest", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("RegeltestSetup", u"Tab 2", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2),
+                                  QCoreApplication.translate("RegeltestSetup", u"Tab 2", None))
         self.statistics.setText("")
-        self.checkbox_rulegroups.setText(QCoreApplication.translate("RegeltestSetup", u"Shuffle rulegroups", None))
-        self.checkbox_textmchoice.setText(QCoreApplication.translate("RegeltestSetup",
-                                                                     u"Mix multiple choice and text questions within question_group",
-                                                                     None))
+        self.checkbox_question_groups.setText(
+            QCoreApplication.translate("RegeltestSetup", u"Fragegruppen vermischen", None))
+        self.checkbox_textmchoice.setText(
+            QCoreApplication.translate("RegeltestSetup", u"Multiple choice und Textfragen \n"
+                                                         "innerhalb einer Fragengruppe mischen", None))
     # retranslateUi
 

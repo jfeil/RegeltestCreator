@@ -140,7 +140,7 @@ class QuestionGroupDataModel(QAbstractTableModel):
     def insertRow(self, row: int,
                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
         new_question = Question()
-        new_question.rulegroup = db.get_question_group(self.question_group.id)
+        new_question.question_group = db.get_question_group(self.question_group.id)
         new_question.question_id = db.get_new_question_id(self.question_group.id)
         editor = QuestionEditor(new_question)
         if editor.exec() == QDialog.Accepted:

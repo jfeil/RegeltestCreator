@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'regeltest_setup_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.2
+## Created by: Qt User Interface Compiler version 6.2.4
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -14,19 +14,19 @@ from PySide6.QtWidgets import (QFrame, QHBoxLayout, QLabel,
                                QWidget)
 
 
-class Ui_RegeltestSetup_Rulegroup(object):
-    def setupUi(self, RegeltestSetup_Rulegroup):
-        if not RegeltestSetup_Rulegroup.objectName():
-            RegeltestSetup_Rulegroup.setObjectName(u"RegeltestSetup_Rulegroup")
-        RegeltestSetup_Rulegroup.resize(400, 88)
-        self.verticalLayout = QVBoxLayout(RegeltestSetup_Rulegroup)
+class Ui_RegeltestSetup_QuestionGroup(object):
+    def setupUi(self, RegeltestSetup_QuestionGroup):
+        if not RegeltestSetup_QuestionGroup.objectName():
+            RegeltestSetup_QuestionGroup.setObjectName(u"RegeltestSetup_QuestionGroup")
+        RegeltestSetup_QuestionGroup.resize(400, 88)
+        self.verticalLayout = QVBoxLayout(RegeltestSetup_QuestionGroup)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.label_rulegroup = QLabel(RegeltestSetup_Rulegroup)
-        self.label_rulegroup.setObjectName(u"label_rulegroup")
+        self.label_question_group = QLabel(RegeltestSetup_QuestionGroup)
+        self.label_question_group.setObjectName(u"label_question_group")
 
-        self.verticalLayout.addWidget(self.label_rulegroup)
+        self.verticalLayout.addWidget(self.label_question_group)
 
-        self.widget_2 = QWidget(RegeltestSetup_Rulegroup)
+        self.widget_2 = QWidget(RegeltestSetup_QuestionGroup)
         self.widget_2.setObjectName(u"widget_2")
         self.horizontalLayout = QHBoxLayout(self.widget_2)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -61,26 +61,27 @@ class Ui_RegeltestSetup_Rulegroup(object):
 
         self.verticalLayout.addWidget(self.widget_2)
 
-        self.line = QFrame(RegeltestSetup_Rulegroup)
+        self.line = QFrame(RegeltestSetup_QuestionGroup)
         self.line.setObjectName(u"line")
         self.line.setFrameShape(QFrame.HLine)
         self.line.setFrameShadow(QFrame.Sunken)
 
         self.verticalLayout.addWidget(self.line)
 
+        self.retranslateUi(RegeltestSetup_QuestionGroup)
 
-        self.retranslateUi(RegeltestSetup_Rulegroup)
+        QMetaObject.connectSlotsByName(RegeltestSetup_QuestionGroup)
 
-        QMetaObject.connectSlotsByName(RegeltestSetup_Rulegroup)
     # setupUi
 
-    def retranslateUi(self, RegeltestSetup_Rulegroup):
-        RegeltestSetup_Rulegroup.setWindowTitle(QCoreApplication.translate("RegeltestSetup_Rulegroup", u"Form", None))
-        self.label_rulegroup.setText(
-            QCoreApplication.translate("RegeltestSetup_Rulegroup", u"01 - Das Spielfeld", None))
-        self.label_2.setText(QCoreApplication.translate("RegeltestSetup_Rulegroup", u"Textfragen", None))
-        self.spinBox_textquestion.setSuffix(QCoreApplication.translate("RegeltestSetup_Rulegroup", u" out of 32", None))
-        self.label_3.setText(QCoreApplication.translate("RegeltestSetup_Rulegroup", u"Multiple choice", None))
-        self.spinBox_mchoice.setSuffix(QCoreApplication.translate("RegeltestSetup_Rulegroup", u" out of 8", None))
+    def retranslateUi(self, RegeltestSetup_QuestionGroup):
+        RegeltestSetup_QuestionGroup.setWindowTitle(
+            QCoreApplication.translate("RegeltestSetup_QuestionGroup", u"Form", None))
+        self.label_question_group.setText(
+            QCoreApplication.translate("RegeltestSetup_QuestionGroup", u"01 - Das Spielfeld", None))
+        self.label_2.setText(QCoreApplication.translate("RegeltestSetup_QuestionGroup", u"Textfragen", None))
+        self.spinBox_textquestion.setSuffix(
+            QCoreApplication.translate("RegeltestSetup_QuestionGroup", u" out of 32", None))
+        self.label_3.setText(QCoreApplication.translate("RegeltestSetup_QuestionGroup", u"Multiple choice", None))
+        self.spinBox_mchoice.setSuffix(QCoreApplication.translate("RegeltestSetup_QuestionGroup", u" out of 8", None))
     # retranslateUi
-

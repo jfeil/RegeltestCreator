@@ -15,7 +15,7 @@
         </property>
         <layout class="QGridLayout" name="gridLayout">
             <item row="1" column="1">
-                <widget class="QLineEdit" name="rulegroup_name"/>
+                <widget class="QLineEdit" name="question_group_name"/>
             </item>
             <item row="2" column="1">
                 <widget class="QDialogButtonBox" name="buttonBox">
@@ -28,7 +28,7 @@
                 </widget>
             </item>
             <item row="1" column="0">
-                <widget class="QSpinBox" name="rulegroup_id">
+                <widget class="QSpinBox" name="question_group_id">
                     <property name="sizePolicy">
                         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                             <horstretch>0</horstretch>

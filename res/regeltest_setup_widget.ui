@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>RegeltestSetup_Rulegroup</class>
- <widget class="QWidget" name="RegeltestSetup_Rulegroup">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>400</width>
-    <height>88</height>
-   </rect>
-  </property>
-  <property name="windowTitle">
-   <string>Form</string>
+    <class>RegeltestSetup_QuestionGroup</class>
+    <widget class="QWidget" name="RegeltestSetup_QuestionGroup">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>400</width>
+                <height>88</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="label_rulegroup">
-     <property name="text">
-      <string>01 - Das Spielfeld</string>
-     </property>
-    </widget>
+       <widget class="QLabel" name="label_question_group">
+           <property name="text">
+               <string>01 - Das Spielfeld</string>
+           </property>
+       </widget>
    </item>
    <item>
     <widget class="QWidget" name="widget_2" native="true">

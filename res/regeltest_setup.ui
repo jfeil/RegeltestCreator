@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>370</width>
     <height>525</height>
    </rect>
   </property>
@@ -46,17 +46,19 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="checkbox_rulegroups">
-     <property name="text">
-      <string>Shuffle rulegroups</string>
-     </property>
-    </widget>
+       <widget class="QCheckBox" name="checkbox_question_groups">
+           <property name="text">
+               <string>Fragegruppen vermischen</string>
+           </property>
+       </widget>
    </item>
    <item>
     <widget class="QCheckBox" name="checkbox_textmchoice">
-     <property name="text">
-      <string>Mix multiple choice and text questions within rulegroup</string>
-     </property>
+        <property name="text">
+            <string>Multiple choice und Textfragen
+                innerhalb einer Fragengruppe mischen
+            </string>
+        </property>
     </widget>
    </item>
    <item>

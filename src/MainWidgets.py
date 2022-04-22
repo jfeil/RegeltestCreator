@@ -15,8 +15,8 @@ from src.datatypes import QuestionGroup
 from src.filter_editor import FilterEditor
 from src.question_table import RuleSortFilterProxyModel, QuestionGroupTableView, QuestionGroupDataModel
 from src.ui_first_setup_widget import Ui_FirstSetupWidget
+from src.ui_question_group_editor import Ui_QuestionGroupEditor
 from src.ui_question_overview_widget import Ui_QuestionOverviewWidget
-from src.ui_rulegroup_editor import Ui_RulegroupEditor
 
 if TYPE_CHECKING:
     from src.main_application import MainWindow
@@ -28,29 +28,29 @@ class EditorResult(Enum):
     Canceled = auto()
 
 
-class QuestionGroupEditor(QDialog, Ui_RulegroupEditor):
+class QuestionGroupEditor(QDialog, Ui_QuestionGroupEditor):
     def __init__(self, id: int = 1, name: str = "", parent=None):
         super(QuestionGroupEditor, self).__init__(parent=parent)
-        self.ui = Ui_RulegroupEditor()
+        self.ui = Ui_QuestionGroupEditor()
         self.ui.setupUi(self)
         self.id = id
         self.name = name
 
     @property
     def id(self):
-        return self.ui.rulegroup_id.value()
+        return self.ui.question_group_id.value()
 
     @id.setter
     def id(self, value):
-        self.ui.rulegroup_id.setValue(value)
+        self.ui.question_group_id.setValue(value)
 
     @property
     def name(self):
-        return self.ui.rulegroup_name.text()
+        return self.ui.question_group_name.text()
 
     @name.setter
     def name(self, value):
-        self.ui.rulegroup_name.setText(value)
+        self.ui.question_group_name.setText(value)
 
 
 class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
@@ -63,7 +63,7 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
         self.ui.tabWidget.clear()
         self.ui.tabWidget.setTabsClosable(True)
         self.ui.tabWidget.tabCloseRequested.connect(self.delete_question_group)
-        self.ui.tabWidget.tabBarDoubleClicked.connect(self.rename_rulegroup)
+        self.ui.tabWidget.tabBarDoubleClicked.connect(self.rename_question_group)
 
         self.ui.filter_list.clear()
         delete_shortcut = QShortcut(QKeySequence(Qt.Key_Delete), self.ui.filter_list, None, None, Qt.WidgetShortcut)
@@ -72,7 +72,7 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
         self.ui.filter_list.itemDoubleClicked.connect(self.add_filter)
         self.ui.add_filter.clicked.connect(self.add_filter)
 
-        self.ruletabs = []  # type: List[Tuple[QuestionGroup, QSortFilterProxyModel, QuestionGroupDataModel]]
+        self.question_group_tabs = []  # type: List[Tuple[QuestionGroup, QSortFilterProxyModel, QuestionGroupDataModel]]
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
 
     def delete_selected_filter(self):
@@ -98,28 +98,28 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
         msgBox.setDefaultButton(QMessageBox.Cancel)
         ret = msgBox.exec()
         if ret == QMessageBox.Yes:
-            rulegroup, _, _ = self.ruletabs[index_tabwidget]
-            self.ruletabs.pop(index_tabwidget)
-            db.delete(rulegroup)
+            question_group, _, _ = self.question_group_tabs[index_tabwidget]
+            self.question_group_tabs.pop(index_tabwidget)
+            db.delete(question_group)
             self.ui.tabWidget.removeTab(index_tabwidget)
 
-        if not self.ruletabs:
+        if not self.question_group_tabs:
             self.main_window.initialize()
 
-    def create_question_group_tab(self, rulegroup: QuestionGroup):
+    def create_question_group_tab(self, question_group: QuestionGroup):
         tab = QWidget()
         view = QuestionGroupTableView(tab)
-        model = QuestionGroupDataModel(rulegroup, view)
+        model = QuestionGroupDataModel(question_group, view)
         filter_model = RuleSortFilterProxyModel()
         filter_model.setSourceModel(model)
         view.setModel(filter_model)
         view.sortByColumn(0, Qt.AscendingOrder)
-        self.ruletabs.append((rulegroup, filter_model, model))
+        self.question_group_tabs.append((question_group, filter_model, model))
         self.ui.tabWidget.addTab(tab, "")
         self._update_tabtitle(self.ui.tabWidget.indexOf(tab))
 
-    def _rulegroup_editor(self, question_group: Union[QuestionGroup, None],
-                          editor: QuestionGroupEditor) -> EditorResult:
+    def _question_group_editor(self, question_group: Union[QuestionGroup, None],
+                               editor: QuestionGroupEditor) -> EditorResult:
         if editor.exec() == QDialog.Accepted:
             if question_group and question_group.id == editor.id:
                 # ID was not changed -> update of title
@@ -132,27 +132,27 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
         else:
             return EditorResult.Canceled
 
-    def rename_rulegroup(self, index):
-        if not self.ruletabs:
+    def rename_question_group(self, index):
+        if not self.question_group_tabs:
             return
-        rulegroup, _, _ = self.ruletabs[index]
-        editor = QuestionGroupEditor(id=rulegroup.id, name=rulegroup.name)
-        result = self._rulegroup_editor(rulegroup, editor)
+        question_group, _, _ = self.question_group_tabs[index]
+        editor = QuestionGroupEditor(id=question_group.id, name=question_group.name)
+        result = self._question_group_editor(question_group, editor)
         while result == EditorResult.Invalid:
-            result = self._rulegroup_editor(rulegroup, editor)
+            result = self._question_group_editor(question_group, editor)
         if result == EditorResult.Success:
-            rulegroup.id = editor.id
-            rulegroup.name = editor.name
+            question_group.id = editor.id
+            question_group.name = editor.name
             self._update_tabtitle(index)
             db.commit()
 
     def add_question_group(self):
         editor = QuestionGroupEditor(id=db.get_new_question_group_id())
-        result = self._rulegroup_editor(None, editor)
+        result = self._question_group_editor(None, editor)
         while result == EditorResult.Invalid:
-            result = self._rulegroup_editor(None, editor)
+            result = self._question_group_editor(None, editor)
         if result == EditorResult.Success:
-            if not self.ruletabs:
+            if not self.question_group_tabs:
                 self.ui.tabWidget.setTabsClosable(True)
                 self.ui.add_filter.setDisabled(False)
                 self.ui.tabWidget.clear()
@@ -162,8 +162,8 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
             self.create_question_group_tab(question_group)
 
     def _update_tabtitle(self, index):
-        rulegroup, _, _ = self.ruletabs[index]
-        self.ui.tabWidget.setTabText(index, f"{rulegroup.id:02d} {rulegroup.name}")
+        question_group, _, _ = self.question_group_tabs[index]
+        self.ui.tabWidget.setTabText(index, f"{question_group.id:02d} {question_group.name}")
 
     def add_filter(self, list_entry: Union[QListWidgetItem, bool] = False):
         if not list_entry or type(list_entry) == bool:
@@ -175,7 +175,7 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
             index = self.ui.filter_list.indexFromItem(list_entry).row()
             current_configuration = RuleSortFilterProxyModel.filters[index][1]
             edit_mode = True
-        first_ruletab = self.ruletabs[0][2]
+        first_ruletab = self.question_group_tabs[0][2]
         properties = {}
         for i in range(first_ruletab.columnCount()):
             properties.update(first_ruletab.headerData(i, Qt.Horizontal, Qt.UserRole))
@@ -209,18 +209,18 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
         self.refresh_column_filter()
 
     def refresh_column_filter(self):
-        for (_, filter_model, _) in self.ruletabs:
+        for (_, filter_model, _) in self.question_group_tabs:
             filter_model = filter_model  # type: RuleSortFilterProxyModel
             filter_model.invalidateFilter()
 
-    def create_ruletabs(self, rulegroups: List[QuestionGroup]):
+    def create_ruletabs(self, question_groups: List[QuestionGroup]):
         self.ui.tabWidget.setTabsClosable(True)
         self.ui.add_filter.setDisabled(False)
-        for rulegroup in rulegroups:
-            self.create_question_group_tab(rulegroup)
+        for question_group in question_groups:
+            self.create_question_group_tab(question_group)
 
     def reset(self):
-        for (_, _, model) in self.ruletabs:
+        for (_, _, model) in self.question_group_tabs:
             model.reset()
 
 

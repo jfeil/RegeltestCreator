@@ -11,7 +11,7 @@ from src.database import db
 from src.datatypes import Question, QuestionGroup
 from src.ui_regeltest_save import Ui_RegeltestSave
 from src.ui_regeltest_setup import Ui_RegeltestSetup
-from src.ui_regeltest_setup_widget import Ui_RegeltestSetup_Rulegroup
+from src.ui_regeltest_setup_widget import Ui_RegeltestSetup_QuestionGroup
 
 
 class RegeltestCreator(QListWidget):
@@ -74,37 +74,38 @@ class RegeltestSaveDialog(QDialog, Ui_RegeltestSave):
         self.ui.output_edit.setText(file_name[0])
 
 
-class RegeltestSetupRulegroup(QWidget, Ui_RegeltestSetup_Rulegroup):
+class RegeltestSetupQuestionGroup(QWidget, Ui_RegeltestSetup_QuestionGroup):
     changed = Signal()
 
-    def __init__(self, parent, rulegroup_parameters: Tuple[QuestionGroup, int, int]):
-        super(RegeltestSetupRulegroup, self).__init__(parent)
-        self.ui = Ui_RegeltestSetup_Rulegroup()
+    def __init__(self, parent, question_group_parameters: Tuple[QuestionGroup, int, int]):
+        super(RegeltestSetupQuestionGroup, self).__init__(parent)
+        self.ui = Ui_RegeltestSetup_QuestionGroup()
         self.ui.setupUi(self)
 
         suffix = " von %d"
-        self.rulegroup = rulegroup_parameters[0]
-        self.ui.label_rulegroup.setText(f"{rulegroup_parameters[0].id:02d} - {rulegroup_parameters[0].name}")
-        if rulegroup_parameters[1] == 0:
+        self.question_group = question_group_parameters[0]
+        self.ui.label_question_group.setText(
+            f"{question_group_parameters[0].id:02d} - {question_group_parameters[0].name}")
+        if question_group_parameters[1] == 0:
             # No Textquestion
             self.ui.spinBox_textquestion.setHidden(True)
             self.ui.label_2.setHidden(True)
             self.ui.horizontalLayout.removeItem(self.ui.right_spacer)
-        self.ui.spinBox_textquestion.setRange(0, rulegroup_parameters[1])
-        self.ui.spinBox_textquestion.setSuffix(suffix % rulegroup_parameters[1])
-        if rulegroup_parameters[2] == 0:
+        self.ui.spinBox_textquestion.setRange(0, question_group_parameters[1])
+        self.ui.spinBox_textquestion.setSuffix(suffix % question_group_parameters[1])
+        if question_group_parameters[2] == 0:
             # No mchoice question
             self.ui.spinBox_mchoice.setHidden(True)
             self.ui.label_3.setHidden(True)
             self.ui.horizontalLayout.removeItem(self.ui.left_spacer)
-        self.ui.spinBox_mchoice.setRange(0, rulegroup_parameters[2])
-        self.ui.spinBox_mchoice.setSuffix(suffix % rulegroup_parameters[2])
+        self.ui.spinBox_mchoice.setRange(0, question_group_parameters[2])
+        self.ui.spinBox_mchoice.setSuffix(suffix % question_group_parameters[2])
 
         self.ui.spinBox_textquestion.valueChanged.connect(self.changed)
         self.ui.spinBox_mchoice.valueChanged.connect(self.changed)
 
     def get_parameters(self) -> Tuple[QuestionGroup, int, int]:
-        return self.rulegroup, self.ui.spinBox_textquestion.value(), self.ui.spinBox_mchoice.value()
+        return self.question_group, self.ui.spinBox_textquestion.value(), self.ui.spinBox_mchoice.value()
 
 
 class RegeltestSetup(QDialog, Ui_RegeltestSetup):
@@ -114,7 +115,7 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
         self.ui.setupUi(self)
         self.ui.tabWidget.clear()
 
-        self.rulegroup_widgets = []  # type: List[RegeltestSetupRulegroup]
+        self.question_group_widgets = []  # type: List[RegeltestSetupQuestionGroup]
 
         parameters = db.get_question_group_config()
         divisor = 5
@@ -132,8 +133,8 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
 
     def updated(self):
         question_count = 0
-        for rulegroup_widget in self.rulegroup_widgets:
-            _, text, mchoice = rulegroup_widget.get_parameters()
+        for question_group_widget in self.question_group_widgets:
+            _, text, mchoice = question_group_widget.get_parameters()
             question_count += text + mchoice
         self.ui.statistics.setText(f"{question_count} Fragen aktuell ausgewählt ({question_count * 2} Punkte)")
 
@@ -143,30 +144,30 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
         self.ui.tabWidget.addTab(tab_widget, title)
         layout = QVBoxLayout(tab_widget)
         for parameter in parameters:
-            rulegroup = RegeltestSetupRulegroup(tab_widget, parameter)
-            rulegroup.changed.connect(self.updated)
-            layout.addWidget(rulegroup)
-            self.rulegroup_widgets += [rulegroup]
+            question_group = RegeltestSetupQuestionGroup(tab_widget, parameter)
+            question_group.changed.connect(self.updated)
+            layout.addWidget(question_group)
+            self.question_group_widgets += [question_group]
         layout.addItem(QSpacerItem(20, 257, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
     def collect_questions(self):
         questions = []
-        for rulegroup_widget in self.rulegroup_widgets:
-            rulegroup, text, mchoice = rulegroup_widget.get_parameters()
+        for question_group_widget in self.question_group_widgets:
+            question_group, text, mchoice = question_group_widget.get_parameters()
             text_questions = []
             mchoice_questions = []
             if text:
-                text_questions = db.get_questions_by_foreignkey(rulegroup.id, mchoice=False,
+                text_questions = db.get_questions_by_foreignkey(question_group.id, mchoice=False,
                                                                 randomize=True)[
                                  0:text]
             if mchoice:
-                mchoice_questions = db.get_questions_by_foreignkey(rulegroup.id, mchoice=True,
+                mchoice_questions = db.get_questions_by_foreignkey(question_group.id, mchoice=True,
                                                                    randomize=True)[
                                     0:mchoice]
             text_questions += mchoice_questions
             if self.ui.checkbox_textmchoice.isChecked():
                 random.shuffle(text_questions)
             questions += text_questions
-        if self.ui.checkbox_rulegroups.isChecked():
+        if self.ui.checkbox_question_groups.isChecked():
             random.shuffle(questions)
         return questions
