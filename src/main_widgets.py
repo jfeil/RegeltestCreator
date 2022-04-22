@@ -17,6 +17,7 @@ from src.question_table import RuleSortFilterProxyModel, QuestionGroupTableView,
 from src.ui_first_setup_widget import Ui_FirstSetupWidget
 from src.ui_question_group_editor import Ui_QuestionGroupEditor
 from src.ui_question_overview_widget import Ui_QuestionOverviewWidget
+from src.ui_self_test_widget import Ui_SelfTestWidget
 
 if TYPE_CHECKING:
     from src.main_application import MainWindow
@@ -238,3 +239,12 @@ class FirstSetupWidget(QWidget, Ui_FirstSetupWidget):
     def load_dataset(self):
         main_application.load_dataset(self.parent())
         self.action_done.emit()
+
+
+class SelfTestWidget(QWidget, Ui_SelfTestWidget):
+    def __init__(self, main_window: MainWindow):
+        super(SelfTestWidget, self).__init__(main_window)
+        self.ui = Ui_SelfTestWidget()
+        self.ui.setupUi(self)
+
+        self.main_window = main_window
