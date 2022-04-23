@@ -7,29 +7,90 @@ from enum import Enum, auto
 from typing import List, Tuple, Dict
 
 import bs4
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Table, BLOB, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, BLOB, DateTime, Boolean
 from sqlalchemy.orm import relationship
 
 from src.basic_config import Base, EagerDefault
 
 default_date = datetime(1970, 1, 1)
 
-regeltest_question_assoc = Table('regeltest_question_assoc', Base.metadata,
-                                 Column('question_signature', ForeignKey('question.signature'), primary_key=True),
-                                 Column('regeltest_id', ForeignKey('regeltest.id'), primary_key=True))
+
+class Position(Base):
+    __tablename__ = 'position'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    x = Column(Integer)
+    y = Column(Integer)
+    width = Column(Integer)
+
+
+class RegeltestDesign(Base):
+    __tablename__ = 'regeltest_design'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String)
+
+    icon_position_id = Column(Integer, ForeignKey('position.id'))
+    icon_position = relationship("Position", foreign_keys=[icon_position_id],
+                                 single_parent=True, cascade="all, delete-orphan")
+
+    title_position_id = Column(Integer, ForeignKey('position.id'))
+    title_position = relationship("Position", foreign_keys=[title_position_id],
+                                  single_parent=True, cascade="all, delete-orphan")
+    title_fontsize = Column(Integer)
+
+    description_position_id = Column(Integer, ForeignKey('position.id'))
+    description_position = relationship("Position", foreign_keys=[description_position_id],
+                                        single_parent=True, cascade="all, delete-orphan")
+    description_fontsize = Column(Integer)
+
+    namefield_position_id = Column(Integer, ForeignKey('position.id'))
+    namefield_position = relationship("Position", foreign_keys=[namefield_position_id],
+                                      single_parent=True, cascade="all, delete-orphan")
+    namefield_fontsize = Column(Integer)
+
+    question_fontsize = Column(Integer)
+    question_points_fontsize = Column(Integer)
+
+    regeltests = relationship("Regeltest", back_populates="design")
+
+
+class RegeltestQuestion(Base):
+    __tablename__ = 'regeltest_question'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    regeltest_id = Column(String, ForeignKey('regeltest.id'))
+    regeltest = relationship("Regeltest", back_populates="selected_questions")
+    question_id = Column(Integer, ForeignKey('question.signature'))
+    question = relationship("Question", back_populates="regeltest_questions")
+
+    available_points = Column(Integer)
+    is_multiple_choice = Column(Boolean)
+
+
+class RegeltestIcon(Base):
+    __tablename__ = 'regeltest_icon'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    icon = Column(BLOB, unique=True)
+    regeltests = relationship("Regeltest", back_populates="icon")
 
 
 class Regeltest(Base):
     __tablename__ = 'regeltest'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    uuid = Column(String, default=(lambda: uuid.uuid4().hex))
     title = Column(String)
     description = Column(String)
-    icon = Column(BLOB)
+
+    icon_id = Column(Integer, ForeignKey('regeltest_icon.id'))
+    icon = relationship("RegeltestIcon", back_populates="regeltests")
+
+    design_id = Column(Integer, ForeignKey('regeltest_design.id'))
+    design = relationship("RegeltestDesign", back_populates="regeltests")
+
+    selected_questions = relationship("RegeltestQuestion", back_populates='regeltest')
 
     created = Column(DateTime, default=datetime.now)
-
-    questions = relationship("Question", secondary=regeltest_question_assoc, back_populates="regeltests")
 
 
 class Statistics(Base):
@@ -100,14 +161,14 @@ class FilterOption(Enum):
 
 
 class Question(Base):
+    __tablename__ = 'question'
+
     QuestionValues = namedtuple('QuestionValues', ['table_value', 'table_tooltip', 'table_checkbox'])
     QuestionParameters = namedtuple('QuestionParameters', ['table_header', 'filter_options', 'datatype'])
 
-    __tablename__ = 'question'
-
     question_group = relationship("QuestionGroup", back_populates="children")
     multiple_choice = relationship("MultipleChoice", back_populates="question", cascade="all, delete-orphan")
-    regeltests = relationship("Regeltest", secondary=regeltest_question_assoc, back_populates="questions")
+    regeltest_questions = relationship("RegeltestQuestion", back_populates="question")
     statistics = relationship("Statistics", back_populates="question")
 
     group_id = Column(Integer, ForeignKey('question_group.id'))

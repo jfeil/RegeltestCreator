@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QWidget, QDialog, QApplication
 
 from src import document_builder
 from src.database import db
-from src.datatypes import Regeltest
+from src.datatypes import Regeltest, RegeltestIcon, RegeltestQuestion
 from src.regeltestcreator import RegeltestSetup, RegeltestSaveDialog
 from src.ui_regeltest_creator_dockwidget import Ui_regeltest_creator_dockwidget
 from src.ui_self_test_dockwidget import Ui_self_test_dockwidget
@@ -62,8 +62,14 @@ class RegeltestCreatorDockwidget(QWidget, Ui_regeltest_creator_dockwidget):
                 icon = Image.open(settings.ui.icon_path_edit.text())
             else:
                 icon = None
-            db.add_object(Regeltest(title=settings.ui.title_edit.text(), description="", icon=icon.tobytes(),
-                                    questions=questions))
+            icon_db = db.get_or_create(RegeltestIcon, icon=icon.tobytes())
+            regeltest_questions = [RegeltestQuestion(available_points=2,
+                                                     question=question,
+                                                     is_multiple_choice=(question.answer_index != -1))
+                                   for question in questions]
+            regeltest = Regeltest(title=settings.ui.title_edit.text(), icon=icon_db,
+                                  selected_questions=regeltest_questions)
+            db.add_object(regeltest)
             document_builder.create_document(questions, output_path, settings.ui.title_edit.text(),
                                              icon=icon)
             QApplication.restoreOverrideCursor()

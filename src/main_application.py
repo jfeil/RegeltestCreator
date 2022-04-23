@@ -178,7 +178,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ui.actionSelftest.setText("Selbsttest")
             self.ui.actionSelftest.triggered.disconnect()
             self.ui.actionSelftest.triggered.connect(lambda: self.set_mode(ApplicationMode.self_test))
-            self.ui.main_window_dockwidget.setWindowTitle("Selbsttest-Einstellungen")
+            self.ui.main_window_dockwidget.setWindowTitle("Regeltest-Creator")
             self.ui.main_window_dockwidget.show()
 
         if mode == ApplicationMode.self_test:
@@ -186,5 +186,5 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ui.actionSelftest.setText("Fragenverwaltung")
             self.ui.actionSelftest.triggered.disconnect()
             self.ui.actionSelftest.triggered.connect(lambda: self.set_mode(ApplicationMode.question_overview))
-            self.ui.main_window_dockwidget.setWindowTitle("Regeltest-Creator")
+            self.ui.main_window_dockwidget.setWindowTitle("Selbsttest-Einstellungen")
             self.ui.main_window_dockwidget.show()

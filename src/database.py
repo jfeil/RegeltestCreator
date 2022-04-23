@@ -58,6 +58,16 @@ class DatabaseConnector:
         # check if database is empty :)
         return self.initialized
 
+    def get_or_create(self, model, **kwargs):
+        instance = self.session.query(model).filter_by(**kwargs).first()
+        if instance:
+            return instance
+        else:
+            instance = model(**kwargs)
+            self.session.add(instance)
+            self.session.commit()
+            return instance
+
     def abort(self):
         self.session.rollback()
 
