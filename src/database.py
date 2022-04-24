@@ -104,8 +104,11 @@ class DatabaseConnector:
         question = self.session.query(Question).where(Question.signature == signature).first()
         return question
 
-    def get_questions_by_foreignkey(self, question_group: QuestionGroup, mchoice=None, randomize: bool = False):
-        questions = self.session.query(Question).where(Question.question_group == question_group)
+    def get_questions_by_foreignkey(self, question_groups: List[QuestionGroup], mchoice=None, randomize: bool = False):
+        question_groups_ids = [question_group.id for question_group in question_groups]
+        questions = self.session.query(Question)
+        # noinspection PyNoneFunctionAssignment
+        questions = questions.filter(Question.group_id.in_(question_groups_ids))
         if mchoice is not None:
             if mchoice:
                 questions = questions.where(Question.answer_index != -1)
@@ -149,8 +152,8 @@ class DatabaseConnector:
     def get_question_group_config(self) -> List[Tuple[QuestionGroup, int, int]]:
         question_groups = self.get_all_question_groups()
         return [(question_group,
-                 len(self.get_questions_by_foreignkey(question_group=question_group, mchoice=False)),
-                 len(self.get_questions_by_foreignkey(question_group=question_group, mchoice=True))) for
+                 len(self.get_questions_by_foreignkey(question_groups=[question_group], mchoice=False)),
+                 len(self.get_questions_by_foreignkey(question_groups=[question_group], mchoice=True))) for
                 question_group in
                 question_groups]
 

@@ -39,7 +39,7 @@ class QuestionGroupDataModel(QAbstractTableModel):
         self.read_data()
 
     def read_data(self):
-        self.questions = db.get_questions_by_foreignkey(self.question_group)
+        self.questions = db.get_questions_by_foreignkey([self.question_group])
 
     def reset(self) -> None:
         self.beginResetModel()
