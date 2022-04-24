@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from PIL import Image
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QDialog, QApplication
+from PySide6.QtWidgets import QWidget, QDialog, QApplication, QListWidgetItem, QListWidget
 
 from src import document_builder
 from src.database import db
@@ -81,3 +81,23 @@ class SelfTestDockWidget(QWidget, Ui_self_test_dockwidget):
         super(SelfTestDockWidget, self).__init__(main_window)
         self.ui = Ui_self_test_dockwidget()
         self.ui.setupUi(self)
+
+        self.ui.self_test_question_groups.clear()
+        self.ui.self_test_question_groups.setSelectionMode(QListWidget.ExtendedSelection)
+        self.question_groups = db.get_all_question_groups()
+        for question in self.question_groups:
+            item = QListWidgetItem(f"{question.id:02d} - {question.name}")
+            item.setCheckState(Qt.Checked)
+            self.ui.self_test_question_groups.addItem(item)
+
+        self.ui.self_test_question_groups.itemChanged.connect(self._checkbox_changed)
+
+    def _checkbox_changed(self, item: QListWidgetItem):
+        signal_state = self.ui.self_test_question_groups.blockSignals(True)
+        new_state = item.checkState()
+        selected_items = self.ui.self_test_question_groups.selectedItems()
+        if item in selected_items:
+            # otherwise just change the clicked item
+            for item in selected_items:
+                item.setCheckState(new_state)
+        self.ui.self_test_question_groups.blockSignals(signal_state)
