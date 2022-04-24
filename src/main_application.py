@@ -93,16 +93,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.setupUi(self)
 
         # 1. Setup, 2. QuestionGroupList, 3. Self-Testing, 4. Regeltest-Setup
-        self.first_setup = FirstSetupWidget(self)
-        self.first_setup.action_done.connect(self.initialize)
-        self.ui.stackedWidget.addWidget(self.first_setup)
-
-        self.question_overview = QuestionOverviewWidget(self)
-        self.ui.stackedWidget.addWidget(self.question_overview)
-
-        self.self_test = SelfTestWidget(self)
-        self.ui.stackedWidget.addWidget(self.self_test)
-
         # DockWidgets
         self.ui.stacked_widget_dock.addWidget(QWidget())
 
@@ -111,6 +101,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.self_test_dock = SelfTestDockWidget(self)
         self.ui.stacked_widget_dock.addWidget(self.self_test_dock)
+
+        # MainWidgets
+        self.first_setup = FirstSetupWidget(self)
+        self.first_setup.action_done.connect(self.initialize)
+        self.ui.stackedWidget.addWidget(self.first_setup)
+
+        self.question_overview = QuestionOverviewWidget(self)
+        self.ui.stackedWidget.addWidget(self.question_overview)
+
+        self.self_test = SelfTestWidget(self, self.self_test_dock)
+        self.ui.stackedWidget.addWidget(self.self_test)
 
         # noinspection PyTypeChecker
         self.setWindowTitle(QCoreApplication.translate("MainWindow", f"{display_name} - {app_version}", None))

@@ -4,7 +4,7 @@ import webbrowser
 from typing import TYPE_CHECKING
 
 from PIL import Image
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QWidget, QDialog, QApplication, QListWidgetItem, QListWidget
 
 from src import document_builder
@@ -77,6 +77,8 @@ class RegeltestCreatorDockwidget(QWidget, Ui_regeltest_creator_dockwidget):
 
 
 class SelfTestDockWidget(QWidget, Ui_self_test_dockwidget):
+    changed = Signal()
+
     def __init__(self, main_window: MainWindow):
         super(SelfTestDockWidget, self).__init__(main_window)
         self.ui = Ui_self_test_dockwidget()
@@ -84,13 +86,21 @@ class SelfTestDockWidget(QWidget, Ui_self_test_dockwidget):
 
         self.ui.self_test_question_groups.clear()
         self.ui.self_test_question_groups.setSelectionMode(QListWidget.ExtendedSelection)
-        self.question_groups = db.get_all_question_groups()
-        for question in self.question_groups:
+
+        self._question_groups = db.get_all_question_groups()
+        for question in self._question_groups:
             item = QListWidgetItem(f"{question.id:02d} - {question.name}")
-            item.setCheckState(Qt.Checked)
+            item.setCheckState(Qt.Unchecked)
             self.ui.self_test_question_groups.addItem(item)
 
         self.ui.self_test_question_groups.itemChanged.connect(self._checkbox_changed)
+
+    def get_question_groups(self):
+        question_groups = []
+        for i, group in enumerate(self._question_groups):
+            if self.ui.self_test_question_groups.item(i).checkState() == Qt.Checked:
+                question_groups += [group]
+        return question_groups
 
     def _checkbox_changed(self, item: QListWidgetItem):
         signal_state = self.ui.self_test_question_groups.blockSignals(True)
@@ -100,4 +110,5 @@ class SelfTestDockWidget(QWidget, Ui_self_test_dockwidget):
             # otherwise just change the clicked item
             for item in selected_items:
                 item.setCheckState(new_state)
+        self.changed.emit()
         self.ui.self_test_question_groups.blockSignals(signal_state)

@@ -11,7 +11,9 @@ from PySide6.QtWidgets import QWidget, QListView, QMessageBox, QDialog, QDialogB
 
 from src import main_application
 from src.database import db
+from src.datatypes import Question
 from src.datatypes import QuestionGroup
+from src.dock_widgets import SelfTestDockWidget
 from src.filter_editor import FilterEditor
 from src.question_table import RuleSortFilterProxyModel, QuestionGroupTableView, QuestionGroupDataModel
 from src.ui_first_setup_widget import Ui_FirstSetupWidget
@@ -242,9 +244,96 @@ class FirstSetupWidget(QWidget, Ui_FirstSetupWidget):
 
 
 class SelfTestWidget(QWidget, Ui_SelfTestWidget):
-    def __init__(self, main_window: MainWindow):
+    def __init__(self, main_window: MainWindow, dock_widget: SelfTestDockWidget):
         super(SelfTestWidget, self).__init__(main_window)
         self.ui = Ui_SelfTestWidget()
         self.ui.setupUi(self)
 
         self.main_window = main_window
+        self.dock_widget = dock_widget
+        self.ui.stackedWidget.setCurrentIndex(0)
+
+        self._next_questions = []  # type: List[Question]
+        self._previous_questions = []  # type: List[Question]
+        self._current_question = None  # type: Union[Question, None]
+
+        self.current_question = None  # type: Union[Question, None]
+
+        self.next_questions = []
+        self.dock_widget.changed.connect(self.selected_groups_changed)
+
+        self.ui.next_button.pressed.connect(self.next_question)
+        self.ui.previous_button.pressed.connect(self.previous_question)
+        self.ui.switch_eval_button.pressed.connect(self.evaluate_question)
+        self.ui.correct_button.pressed.connect(self.correct_answered)
+        self.ui.incorrect_button.pressed.connect(self.incorrect_answered)
+
+    @property
+    def current_question(self):
+        return self._current_question
+
+    @current_question.setter
+    def current_question(self, value):
+        self._current_question = value
+        if not value:
+            self.ui.question_label_test.setText("Keine Frage verfügbar.")
+        else:
+            self.ui.question_label_test.setText(self._current_question.question)
+
+    @property
+    def previous_questions(self):
+        return self._previous_questions
+
+    @previous_questions.setter
+    def previous_questions(self, value):
+        self.ui.previous_button.setDisabled(not value)
+        self._previous_questions = value
+
+    @property
+    def next_questions(self):
+        return self._next_questions
+
+    @next_questions.setter
+    def next_questions(self, value):
+        self._next_questions = value
+        self.ui.switch_eval_button.setDisabled(not self.current_question)
+        self.ui.user_answer_test.setDisabled(not self.current_question)
+
+        self.ui.next_button.setDisabled(not self._next_questions)
+        self.ui.user_answer_test.setText("")
+
+    def next_question(self):
+        if not self.next_questions:
+            return
+        if self.current_question:
+            self.previous_questions += [self.current_question]
+        self.current_question = self.next_questions[0]
+        self.next_questions = self.next_questions[1:]
+
+    def previous_question(self):
+        if not self.previous_questions:
+            return
+        if self.current_question:
+            self.next_questions = [self.current_question] + self.next_questions
+        self.current_question = self.previous_questions[-1]
+        self.previous_questions = self.previous_questions[:-1]
+
+    def evaluate_question(self):
+        self.ui.question_label_eval.setText(self.current_question.question)
+        self.ui.correct_answer_eval.setText(self.current_question.answer_text)
+        self.ui.user_answer_eval.setText(self.ui.user_answer_test.toPlainText())
+        self.ui.stackedWidget.setCurrentIndex(1)
+
+    def correct_answered(self):
+        self.next_question()
+        self.ui.stackedWidget.setCurrentIndex(0)
+
+    def incorrect_answered(self):
+        self.next_question()
+        self.ui.stackedWidget.setCurrentIndex(0)
+
+    def selected_groups_changed(self):
+        questions = db.get_questions_by_foreignkey(self.dock_widget.get_question_groups())
+        self.current_question = questions[0]
+        self.next_questions = questions[1:]
+        self.previous_questions = []
