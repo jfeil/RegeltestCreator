@@ -157,11 +157,11 @@ class RegeltestSetup(QDialog, Ui_RegeltestSetup):
             text_questions = []
             mchoice_questions = []
             if text:
-                text_questions = db.get_questions_by_foreignkey(question_group.id, mchoice=False,
+                text_questions = db.get_questions_by_foreignkey(question_group, mchoice=False,
                                                                 randomize=True)[
                                  0:text]
             if mchoice:
-                mchoice_questions = db.get_questions_by_foreignkey(question_group.id, mchoice=True,
+                mchoice_questions = db.get_questions_by_foreignkey(question_group, mchoice=True,
                                                                    randomize=True)[
                                     0:mchoice]
             text_questions += mchoice_questions

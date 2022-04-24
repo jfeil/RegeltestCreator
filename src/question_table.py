@@ -39,7 +39,7 @@ class QuestionGroupDataModel(QAbstractTableModel):
         self.read_data()
 
     def read_data(self):
-        self.questions = db.get_questions_by_foreignkey(self.question_group.id)
+        self.questions = db.get_questions_by_foreignkey(self.question_group)
 
     def reset(self) -> None:
         self.beginResetModel()
@@ -140,8 +140,8 @@ class QuestionGroupDataModel(QAbstractTableModel):
     def insertRow(self, row: int,
                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
         new_question = Question()
-        new_question.question_group = db.get_question_group(self.question_group.id)
-        new_question.question_id = db.get_new_question_id(self.question_group.id)
+        new_question.question_group = self.question_group
+        new_question.question_id = db.get_new_question_id(self.question_group)
         editor = QuestionEditor(new_question)
         if editor.exec() == QDialog.Accepted:
             db.add_object(editor.question)

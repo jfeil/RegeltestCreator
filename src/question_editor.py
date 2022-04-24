@@ -33,7 +33,7 @@ class QuestionEditor(QDialog, Ui_QuestionDialog):
             index = 0
         else:
             mchoice = True
-            multiple_choice = db.get_multiplechoice_by_foreignkey(question.signature)
+            multiple_choice = db.get_multiplechoice_by_foreignkey(question)
             for mchoice_option in multiple_choice:
                 if mchoice_option.index == 0:
                     self.ui.option_1_edit.setText(mchoice_option.text)

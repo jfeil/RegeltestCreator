@@ -104,8 +104,8 @@ class DatabaseConnector:
         question = self.session.query(Question).where(Question.signature == signature).first()
         return question
 
-    def get_questions_by_foreignkey(self, question_group_id: int, mchoice=None, randomize: bool = False):
-        questions = self.session.query(Question).where(Question.group_id == question_group_id)
+    def get_questions_by_foreignkey(self, question_group: QuestionGroup, mchoice=None, randomize: bool = False):
+        questions = self.session.query(Question).where(Question.question_group == question_group)
         if mchoice is not None:
             if mchoice:
                 questions = questions.where(Question.answer_index != -1)
@@ -115,9 +115,9 @@ class DatabaseConnector:
             questions = questions.order_by(func.random())
         return questions.all()
 
-    def get_multiplechoice_by_foreignkey(self, question_signature: str):
+    def get_multiplechoice_by_foreignkey(self, question: Question):
         mchoice = self.session.query(MultipleChoice).where(
-            MultipleChoice.question_signature == question_signature).all()
+            MultipleChoice.question == question).all()
         return mchoice
 
     def fill_database(self, dataset: List[Union[QuestionGroup, Question, MultipleChoice]]):
@@ -132,8 +132,8 @@ class DatabaseConnector:
         self.session.delete(item)
         self.session.commit()
 
-    def get_new_question_id(self, question_group_index: int):
-        stmt = select(Question.question_id).where(Question.group_id.like(question_group_index))
+    def get_new_question_id(self, question_group: QuestionGroup):
+        stmt = select(Question.question_id).where(Question.question_group == question_group)
         return_val = max(self.session.execute(stmt))[0] + 1
         return return_val
 
@@ -149,8 +149,8 @@ class DatabaseConnector:
     def get_question_group_config(self) -> List[Tuple[QuestionGroup, int, int]]:
         question_groups = self.get_all_question_groups()
         return [(question_group,
-                 len(self.get_questions_by_foreignkey(question_group_id=question_group.id, mchoice=False)),
-                 len(self.get_questions_by_foreignkey(question_group_id=question_group.id, mchoice=True))) for
+                 len(self.get_questions_by_foreignkey(question_group=question_group, mchoice=False)),
+                 len(self.get_questions_by_foreignkey(question_group=question_group, mchoice=True))) for
                 question_group in
                 question_groups]
 
