@@ -69,6 +69,14 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
         self.ui.tabWidget.tabBarDoubleClicked.connect(self.rename_question_group)
 
         self.ui.filter_list.clear()
+        left_shortcut = QShortcut(QKeySequence(QKeySequence.MoveToPreviousChar), self, None, None,
+                                  Qt.WidgetWithChildrenShortcut)
+        left_shortcut.activated.connect(self.last_question_group)
+
+        right_shortcut = QShortcut(QKeySequence(QKeySequence.MoveToNextChar), self, None, None,
+                                   Qt.WidgetWithChildrenShortcut)
+        right_shortcut.activated.connect(self.next_question_group)
+
         delete_shortcut = QShortcut(QKeySequence(Qt.Key_Delete), self.ui.filter_list, None, None, Qt.WidgetShortcut)
         delete_shortcut.activated.connect(self.delete_selected_filter)
         self.ui.filter_list.setSelectionMode(QListView.ExtendedSelection)
@@ -77,6 +85,14 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
 
         self.question_group_tabs = []  # type: List[Tuple[QuestionGroup, QSortFilterProxyModel, QuestionGroupDataModel]]
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
+
+    def next_question_group(self):
+        if self.ui.tabWidget.currentIndex() < self.ui.tabWidget.count() - 1:
+            self.ui.tabWidget.setCurrentIndex(self.ui.tabWidget.currentIndex() + 1)
+
+    def last_question_group(self):
+        if self.ui.tabWidget.currentIndex() > 0:
+            self.ui.tabWidget.setCurrentIndex(self.ui.tabWidget.currentIndex() - 1)
 
     def delete_selected_filter(self):
         selection_model = self.ui.filter_list.selectionModel()
