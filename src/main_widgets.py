@@ -274,7 +274,7 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self._current_question = None  # type: Union[Question, None]
 
         self.current_question = None  # type: Union[Question, None]
-
+        self.previous_questions = []
         self.next_questions = []
         self.dock_widget.changed.connect(self.selected_groups_changed)
 
@@ -291,6 +291,8 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
     @current_question.setter
     def current_question(self, value):
         self._current_question = value
+        self.ui.switch_eval_button.setDisabled(not value)
+        self.ui.user_answer_test.setDisabled(not value)
         if not value:
             self.ui.question_label_test.setText("Keine Frage verfügbar.")
         else:
@@ -312,15 +314,16 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
     @next_questions.setter
     def next_questions(self, value):
         self._next_questions = value
-        self.ui.switch_eval_button.setDisabled(not self.current_question)
-        self.ui.user_answer_test.setDisabled(not self.current_question)
-
         self.ui.next_button.setDisabled(not self._next_questions)
         self.ui.user_answer_test.setText("")
 
     def next_question(self):
         if not self.next_questions:
-            return
+            if not self.previous_questions:
+                return
+            else:
+                self.previous_question()
+                return
         if self.current_question:
             self.previous_questions += [self.current_question]
         self.current_question = self.next_questions[0]
@@ -328,7 +331,11 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
 
     def previous_question(self):
         if not self.previous_questions:
-            return
+            if not self.next_questions:
+                return
+            else:
+                self.next_question()
+                return
         if self.current_question:
             self.next_questions = [self.current_question] + self.next_questions
         self.current_question = self.previous_questions[-1]
@@ -341,15 +348,24 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.ui.stackedWidget.setCurrentIndex(1)
 
     def correct_answered(self):
+        # remove correct question from stack
+        self.current_question = None
         self.next_question()
         self.ui.stackedWidget.setCurrentIndex(0)
 
     def incorrect_answered(self):
+        # move wrong question to the end
+        self.next_questions += [self.current_question]
+        self.current_question = None
         self.next_question()
         self.ui.stackedWidget.setCurrentIndex(0)
 
     def selected_groups_changed(self):
         questions = db.get_questions_by_foreignkey(self.dock_widget.get_question_groups())
-        self.current_question = questions[0]
-        self.next_questions = questions[1:]
         self.previous_questions = []
+        if not questions:
+            self.current_question = None
+            self.next_questions = []
+        else:
+            self.current_question = questions[0]
+            self.next_questions = questions[1:]
