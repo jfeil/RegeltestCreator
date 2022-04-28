@@ -285,5 +285,5 @@ class RuleSortFilterProxyModel(QSortFilterProxyModel):
         cur_question = self.sourceModel().data(source_row, Qt.UserRole)
         answer = True
         for ((target, filter_function), _) in RuleSortFilterProxyModel.filters:
-            answer = answer & filter_function(cur_question.__dict__[target])
+            answer = answer & filter_function(cur_question.values(target).table_value)
         return answer
