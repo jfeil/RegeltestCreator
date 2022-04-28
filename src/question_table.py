@@ -85,10 +85,10 @@ class QuestionGroupDataModel(QAbstractTableModel):
             checkbox = self.questions[row].values(self.headers[col]).table_checkbox
             return checkbox
         elif role == Qt.DisplayRole:
-            value = self.questions[row].values(self.headers[col]).table_value
+            value = str(self.questions[row].values(self.headers[col]).table_value)
             return value
         elif role == Qt.ToolTipRole:
-            tooltip = self.questions[row].values(self.headers[col]).table_tooltip
+            tooltip = str(self.questions[row].values(self.headers[col]).table_tooltip)
             return tooltip
 
     def setData(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex], value: Any,

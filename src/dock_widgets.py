@@ -60,9 +60,10 @@ class RegeltestCreatorDockwidget(QWidget, Ui_regeltest_creator_dockwidget):
             QApplication.setOverrideCursor(Qt.WaitCursor)
             if settings.ui.icon_path_edit.text():
                 icon = Image.open(settings.ui.icon_path_edit.text())
+                icon_db = db.get_or_create(RegeltestIcon, icon=icon.tobytes())
             else:
                 icon = None
-            icon_db = db.get_or_create(RegeltestIcon, icon=icon.tobytes())
+                icon_db = None
             regeltest_questions = [RegeltestQuestion(available_points=2,
                                                      question=question,
                                                      is_multiple_choice=(question.answer_index != -1))

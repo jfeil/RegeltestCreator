@@ -40,6 +40,14 @@ class DatabaseConnector:
             self._init_database()
 
         self.session = Session(self.engine)
+        self._upgrade_database()
+
+    def _init_database(self):
+        # Create database based on basis and stamp with alembic for future migrations
+        Base.metadata.create_all(self.engine)
+        command.stamp(self.alembic_cfg, "head")
+
+    def _upgrade_database(self):
         with self.engine.connect() as conn:
             context = MigrationContext.configure(conn)
             current_rev = context.get_current_revision()
@@ -47,12 +55,6 @@ class DatabaseConnector:
                 # no revision available -> created before migration was introduced
                 command.stamp(self.alembic_cfg, "440180672239")
         command.upgrade(self.alembic_cfg, "head")
-
-    def _init_database(self):
-        # Create database based on basis and stamp with alembic for future migrations
-        Base.metadata.create_all(self.engine)
-
-        command.stamp(self.alembic_cfg, "head")
 
     def __bool__(self):
         # check if database is empty :)
@@ -104,7 +106,8 @@ class DatabaseConnector:
         question = self.session.query(Question).where(Question.signature == signature).first()
         return question
 
-    def get_questions_by_foreignkey(self, question_groups: List[QuestionGroup], mchoice=None, randomize: bool = False):
+    def get_questions_by_foreignkey(self, question_groups: List[QuestionGroup], mchoice=None, randomize: bool = False,
+                                    as_query: bool = False):
         question_groups_ids = [question_group.id for question_group in question_groups]
         questions = self.session.query(Question)
         # noinspection PyNoneFunctionAssignment
@@ -116,7 +119,10 @@ class DatabaseConnector:
                 questions = questions.where(Question.answer_index == -1)
         if randomize:
             questions = questions.order_by(func.random())
-        return questions.all()
+        if as_query:
+            return questions
+        else:
+            return questions.all()
 
     def get_multiplechoice_by_foreignkey(self, question: Question):
         mchoice = self.session.query(MultipleChoice).where(

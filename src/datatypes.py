@@ -31,21 +31,21 @@ class RegeltestDesign(Base):
 
     icon_position_id = Column(Integer, ForeignKey('position.id'))
     icon_position = relationship("Position", foreign_keys=[icon_position_id],
-                                 single_parent=True, cascade="all, delete-orphan")
+                                 single_parent=True, cascade="all, delete-orphan", uselist=False)
 
     title_position_id = Column(Integer, ForeignKey('position.id'))
     title_position = relationship("Position", foreign_keys=[title_position_id],
-                                  single_parent=True, cascade="all, delete-orphan")
+                                  single_parent=True, cascade="all, delete-orphan", uselist=False)
     title_fontsize = Column(Integer)
 
     description_position_id = Column(Integer, ForeignKey('position.id'))
     description_position = relationship("Position", foreign_keys=[description_position_id],
-                                        single_parent=True, cascade="all, delete-orphan")
+                                        single_parent=True, cascade="all, delete-orphan", uselist=False)
     description_fontsize = Column(Integer)
 
     namefield_position_id = Column(Integer, ForeignKey('position.id'))
     namefield_position = relationship("Position", foreign_keys=[namefield_position_id],
-                                      single_parent=True, cascade="all, delete-orphan")
+                                      single_parent=True, cascade="all, delete-orphan", uselist=False)
     namefield_fontsize = Column(Integer)
 
     question_fontsize = Column(Integer)
@@ -99,11 +99,12 @@ class Statistics(Base):
     question_signature = Column(String, ForeignKey("question.signature"), primary_key=True)
     question = relationship("Question", back_populates="statistics")
 
+    # more like consecutive_solved_count...
     continous_solved_count = Column(Integer, default=0)
     level = Column(Integer, default=0)
     correct_solved = Column(Integer, default=0)
     wrong_solved = Column(Integer, default=0)
-    last_tested = Column(DateTime, default=datetime.fromtimestamp(0))
+    last_tested = Column(DateTime, default=None)
 
 
 class QuestionGroup(Base):
@@ -163,13 +164,14 @@ class FilterOption(Enum):
 class Question(Base):
     __tablename__ = 'question'
 
-    QuestionValues = namedtuple('QuestionValues', ['table_value', 'table_tooltip', 'table_checkbox'])
+    QuestionValues = namedtuple('QuestionValues', ['table_value', 'table_tooltip', 'table_checkbox'],
+                                defaults=[None, None])
     QuestionParameters = namedtuple('QuestionParameters', ['table_header', 'filter_options', 'datatype'])
 
     question_group = relationship("QuestionGroup", back_populates="children")
     multiple_choice = relationship("MultipleChoice", back_populates="question", cascade="all, delete-orphan")
     regeltest_questions = relationship("RegeltestQuestion", back_populates="question")
-    statistics = relationship("Statistics", back_populates="question")
+    statistics = relationship("Statistics", back_populates="question", cascade="all, delete-orphan", uselist=False)
 
     group_id = Column(Integer, ForeignKey('question_group.id'))
     question_id = Column(Integer, default=-1)
@@ -202,32 +204,68 @@ class Question(Base):
                                           datatype=datetime),
         'signature': QuestionParameters(table_header="Signatur",
                                         filter_options=(FilterOption.contains, FilterOption.equal), datatype=str),
+        'last_tested': QuestionParameters(table_header="Zuletzt getestet",
+                                          filter_options=(FilterOption.smaller_equal, FilterOption.smaller,
+                                                          FilterOption.larger, FilterOption.larger_equal),
+                                          datatype=datetime),
+        'positive_tests': QuestionParameters(table_header="Korrekt beantwortet",
+                                             filter_options=(FilterOption.smaller_equal, FilterOption.smaller,
+                                                             FilterOption.larger, FilterOption.larger_equal),
+                                             datatype=int),
+        'negative_tests': QuestionParameters(table_header="Inkorrekt beantwortet",
+                                             filter_options=(FilterOption.smaller_equal, FilterOption.smaller,
+                                                             FilterOption.larger, FilterOption.larger_equal),
+                                             datatype=int),
+        'streak': QuestionParameters(table_header="In Folge korrekt beantwortet",
+                                     filter_options=(FilterOption.smaller_equal, FilterOption.smaller,
+                                                     FilterOption.larger, FilterOption.larger_equal),
+                                     datatype=int),
+
+        'regeltest_count': QuestionParameters(table_header="Regeltestverwendungen",
+                                              filter_options=(FilterOption.smaller_equal, FilterOption.smaller,
+                                                              FilterOption.larger, FilterOption.larger_equal,
+                                                              FilterOption.equal), datatype=int),
     }  # type: Dict[str, QuestionParameters]
 
+    def __init__(self):
+        self.statistics = Statistics()
+
+    # noinspection PyArgumentList
     def values(self, key) -> QuestionValues:
         return {
-            'group_id': Question.QuestionValues(table_value=self.group_id, table_tooltip=None,
-                                                table_checkbox=None),
-            'question_id': Question.QuestionValues(table_value=self.question_id, table_tooltip=None,
-                                                   table_checkbox=None),
-            'question': Question.QuestionValues(table_value=self.question, table_tooltip=self.question,
-                                                table_checkbox=None),
+            'group_id': Question.QuestionValues(table_value=self.group_id),
+            'question_id': Question.QuestionValues(table_value=self.question_id),
+            'question': Question.QuestionValues(table_value=self.question, table_tooltip=self.question),
             'multiple_choice': Question.QuestionValues(
                 table_value={-1: None, 0: 'A', 1: 'B', 2: 'C'}[self.answer_index],
                 table_tooltip=None,
                 table_checkbox=2 * (self.answer_index != -1)),
-            'answer_index': Question.QuestionValues(table_value=self.answer_index,
-                                                    table_tooltip=None,
-                                                    table_checkbox=None),
-            'answer_text': Question.QuestionValues(table_value=self.answer_text, table_tooltip=self.answer_text,
-                                                   table_checkbox=None),
-            'created': Question.QuestionValues(table_value=str(self.created), table_tooltip=None,
-                                               table_checkbox=None),
-            'last_edited': Question.QuestionValues(table_value=str(self.last_edited), table_tooltip=None,
-                                                   table_checkbox=None),
-            'signature': Question.QuestionValues(table_value=self.signature, table_tooltip=None,
-                                                 table_checkbox=None),
+            'answer_index': Question.QuestionValues(table_value=self.answer_index),
+            'answer_text': Question.QuestionValues(table_value=self.answer_text, table_tooltip=self.answer_text),
+            'created': Question.QuestionValues(table_value=self.created),
+            'last_edited': Question.QuestionValues(table_value=self.last_edited),
+            'signature': Question.QuestionValues(table_value=self.signature),
+            'last_tested': Question.QuestionValues(table_value=self._statistics('last_tested')),
+            'positive_tests': Question.QuestionValues(table_value=self._statistics('positive_tests')),
+            'negative_tests': Question.QuestionValues(table_value=self._statistics('negative_tests')),
+            'streak': Question.QuestionValues(table_value=self._statistics('streak')),
+            'regeltest_count': Question.QuestionValues(table_value=len(self.regeltest_questions))
         }[key]
+
+    def _statistics(self, key):
+        if not self.statistics:
+            if key == 'last_tested':
+                return None
+            else:
+                return 0
+        if key == 'last_tested':
+            return self.statistics.last_tested
+        elif key == 'positive_tests':
+            return self.statistics.correct_solved
+        elif key == 'negative_tests':
+            return self.statistics.wrong_solved
+        elif key == 'streak':
+            return self.statistics.continous_solved_count
 
     def export(self) -> Tuple[str, str]:
         if self.answer_index != -1:

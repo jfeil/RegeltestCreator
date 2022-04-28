@@ -75,7 +75,7 @@ class FilterEditor(QDialog, Ui_FilterEditor):
         elif parameters.datatype == bool:
             value = self.filter.isChecked()
         elif parameters.datatype == datetime:
-            value = self.filter.date()
+            value = self.filter.date().toPython()
         elif parameters.datatype == int:
             value = self.filter.value()
         else:
