@@ -227,9 +227,6 @@ class Question(Base):
                                                               FilterOption.equal), datatype=int),
     }  # type: Dict[str, QuestionParameters]
 
-    def __init__(self):
-        self.statistics = Statistics()
-
     # noinspection PyArgumentList
     def values(self, key) -> QuestionValues:
         return {
