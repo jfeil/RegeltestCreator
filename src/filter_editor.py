@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Dict, Tuple, Callable, Union, Any
 
 from PySide6.QtCore import Qt
@@ -60,7 +60,7 @@ class FilterEditor(QDialog, Ui_FilterEditor):
             self.filter.setText(data)
         elif parameters.datatype == bool:
             self.filter.setCheckState(data * 2)
-        elif parameters.datatype == datetime:
+        elif parameters.datatype == datetime or parameters.datatype == date:
             self.filter.setDate(data)
         elif parameters.datatype == int:
             self.filter.setValue(data)
@@ -74,8 +74,10 @@ class FilterEditor(QDialog, Ui_FilterEditor):
             value = self.filter.text()
         elif parameters.datatype == bool:
             value = self.filter.isChecked()
-        elif parameters.datatype == datetime:
+        elif parameters.datatype == date:
             value = self.filter.date().toPython()
+        elif parameters.datatype == datetime:
+            value = self.filter.dateTime().toPython()
         elif parameters.datatype == int:
             value = self.filter.value()
         else:
@@ -98,7 +100,7 @@ class FilterEditor(QDialog, Ui_FilterEditor):
             self.filter = QLineEdit()
         elif current_params.datatype == bool:
             self.filter = QCheckBox()
-        elif current_params.datatype == datetime:
+        elif current_params.datatype == datetime or current_params.datatype == date:
             self.filter = QDateEdit()
             cur_date = datetime.today()
             if cur_date.month < 6:
@@ -131,7 +133,6 @@ class FilterEditor(QDialog, Ui_FilterEditor):
         dict_key, parameters, filter_option = self.__current_selection_state()
 
         value = self.__get_filter_data()
-
         if filter_option == FilterOption.smaller_equal:
             def filter_callable(x):
                 return value >= x
@@ -153,4 +154,9 @@ class FilterEditor(QDialog, Ui_FilterEditor):
         else:
             raise ValueError('Invalid FilterOption!')
 
-        return dict_key, filter_callable
+        def extended_filter(x):
+            if not x:
+                return False
+            return filter_callable(x)
+
+        return dict_key, extended_filter

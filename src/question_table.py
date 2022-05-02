@@ -1,3 +1,4 @@
+import datetime
 from typing import Union, Any, List
 
 import PySide6
@@ -85,7 +86,9 @@ class QuestionGroupDataModel(QAbstractTableModel):
             checkbox = self.questions[row].values(self.headers[col]).table_checkbox
             return checkbox
         elif role == Qt.DisplayRole:
-            value = str(self.questions[row].values(self.headers[col]).table_value)
+            value = self.questions[row].values(self.headers[col]).table_value
+            if type(value) == datetime.date or type(value) == datetime.datetime:
+                value = str(value)
             return value
         elif role == Qt.ToolTipRole:
             tooltip = str(self.questions[row].values(self.headers[col]).table_tooltip)
