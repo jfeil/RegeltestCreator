@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 from typing import Union, List, Tuple, Dict
@@ -11,7 +12,7 @@ from PySide6.QtWidgets import QWidget, QListView, QMessageBox, QDialog, QDialogB
 
 from src import main_application
 from src.database import db
-from src.datatypes import Question
+from src.datatypes import Question, Statistics
 from src.datatypes import QuestionGroup
 from src.dock_widgets import SelfTestDockWidget
 from src.filter_editor import FilterEditor
@@ -348,12 +349,28 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.ui.stackedWidget.setCurrentIndex(1)
 
     def correct_answered(self):
+        if not self.current_question.statistics:
+            self.current_question.statistics = Statistics()
+            db.commit()
+        self.current_question.statistics.correct_solved += 1
+        self.current_question.statistics.continous_solved_count += 1
+        self.current_question.statistics.last_tested = datetime.datetime.now()
+        db.commit()
+
         # remove correct question from stack
         self.current_question = None
         self.next_question()
         self.ui.stackedWidget.setCurrentIndex(0)
 
     def incorrect_answered(self):
+        if not self.current_question.statistics:
+            self.current_question.statistics = Statistics()
+            db.commit()
+        self.current_question.statistics.wrong_solved += 1
+        self.current_question.statistics.continous_solved_count = 0
+        self.current_question.statistics.last_tested = datetime.datetime.now()
+        db.commit()
+
         # move wrong question to the end
         self.next_questions += [self.current_question]
         self.current_question = None
