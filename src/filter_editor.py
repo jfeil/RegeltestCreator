@@ -91,29 +91,31 @@ class FilterEditor(QDialog, Ui_FilterEditor):
         current_params = list(self.filter_configuration.values())[index]
         self.ui.combobox_filteroption.addItems([str(options) for options in current_params.filter_options])
 
-        if self.filter:
-            self.ui.gridLayout.removeWidget(self.filter)
-            self.filter.deleteLater()
-            self.filter = None
-
         if current_params.datatype == str:
-            self.filter = QLineEdit()
+            new_filter = QLineEdit()
         elif current_params.datatype == bool:
-            self.filter = QCheckBox()
+            new_filter = QCheckBox()
         elif current_params.datatype == datetime or current_params.datatype == date:
-            self.filter = QDateEdit()
+            new_filter = QDateEdit()
             cur_date = datetime.today()
             if cur_date.month < 6:
                 year = cur_date.year - 1
             else:
                 year = cur_date.year
             cur_date = cur_date.replace(day=1, month=6, year=year)
-            self.filter.setDate(cur_date)
+            new_filter.setDate(cur_date)
         elif current_params.datatype == int:
-            self.filter = QSpinBox()
-            self.filter.setValue(1)
+            new_filter = QSpinBox()
+            new_filter.setValue(1)
         else:
             raise ValueError('Invalid FilterOption!')
+
+        if self.filter and type(self.filter) != type(new_filter):
+            self.ui.gridLayout.removeWidget(self.filter)
+            self.filter.deleteLater()
+            self.filter = new_filter
+        elif not self.filter:
+            self.filter = new_filter
 
         self.ui.gridLayout.addWidget(self.filter, 2, 1, 1, 1)
 
