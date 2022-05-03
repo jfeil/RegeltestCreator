@@ -79,7 +79,7 @@ class RegeltestCreatorDockwidget(QWidget, Ui_regeltest_creator_dockwidget):
 
 class SelfTestDockWidget(QWidget, Ui_self_test_dockwidget):
     changed = Signal()
-    mode = SelfTestMode.random  # type: SelfTestMode
+    mode = SelfTestMode(0)  # type: SelfTestMode
 
     def __init__(self, main_window: MainWindow):
         super(SelfTestDockWidget, self).__init__(main_window)

@@ -139,9 +139,9 @@ class MultipleChoice(Base):
 
 
 class SelfTestMode(IntEnum):
-    random = 1
-    level = 2
-    prioritize_new = 3
+    random = 0
+    level = 1
+    prioritize_new = 2
 
     def __str__(self):
         if self == SelfTestMode.random:

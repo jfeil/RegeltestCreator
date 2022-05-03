@@ -12,7 +12,7 @@ from PySide6.QtWidgets import QWidget, QListView, QMessageBox, QDialog, QDialogB
 
 from src import main_application
 from src.database import db
-from src.datatypes import Question, Statistics
+from src.datatypes import Question, Statistics, SelfTestMode
 from src.datatypes import QuestionGroup
 from src.dock_widgets import SelfTestDockWidget
 from src.filter_editor import FilterEditor
@@ -380,6 +380,16 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
 
     def selected_groups_changed(self):
         questions = db.get_questions_by_foreignkey(self.dock_widget.get_question_groups())
+
+        if self.dock_widget.mode == SelfTestMode.random:
+            questions = self.prepare_random_mode(questions)
+        elif self.dock_widget.mode == SelfTestMode.level:
+            questions = self.prepare_level_mode(questions)
+        elif self.dock_widget.mode == SelfTestMode.prioritize_new:
+            questions = self.prepare_prioritize_new(questions)
+        else:
+            raise ValueError("Not supported mode.")
+
         self.previous_questions = []
         if not questions:
             self.current_question = None
@@ -387,3 +397,15 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         else:
             self.current_question = questions[0]
             self.next_questions = questions[1:]
+
+    @staticmethod
+    def prepare_random_mode(dataset) -> List[Question]:
+        return dataset
+
+    @staticmethod
+    def prepare_level_mode(dataset) -> List[Question]:
+        return dataset
+
+    @staticmethod
+    def prepare_prioritize_new(dataset) -> List[Question]:
+        return dataset
