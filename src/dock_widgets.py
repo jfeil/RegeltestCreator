@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QWidget, QDialog, QApplication, QListWidgetItem, Q
 
 from src import document_builder
 from src.database import db
-from src.datatypes import Regeltest, RegeltestIcon, RegeltestQuestion
+from src.datatypes import Regeltest, RegeltestIcon, RegeltestQuestion, SelfTestMode
 from src.regeltestcreator import RegeltestSetup, RegeltestSaveDialog
 from src.ui_regeltest_creator_dockwidget import Ui_regeltest_creator_dockwidget
 from src.ui_self_test_dockwidget import Ui_self_test_dockwidget
@@ -79,6 +79,7 @@ class RegeltestCreatorDockwidget(QWidget, Ui_regeltest_creator_dockwidget):
 
 class SelfTestDockWidget(QWidget, Ui_self_test_dockwidget):
     changed = Signal()
+    mode = SelfTestMode.random  # type: SelfTestMode
 
     def __init__(self, main_window: MainWindow):
         super(SelfTestDockWidget, self).__init__(main_window)
@@ -95,6 +96,11 @@ class SelfTestDockWidget(QWidget, Ui_self_test_dockwidget):
             self.ui.self_test_question_groups.addItem(item)
 
         self.ui.self_test_question_groups.itemChanged.connect(self._checkbox_changed)
+
+        for mode in SelfTestMode:
+            self.ui.mode_comboBox.addItem(str(mode))
+
+        self.ui.mode_comboBox.currentIndexChanged.connect(self._combobox_changed)
 
     def get_question_groups(self):
         question_groups = []
@@ -113,3 +119,7 @@ class SelfTestDockWidget(QWidget, Ui_self_test_dockwidget):
                 item.setCheckState(new_state)
         self.changed.emit()
         self.ui.self_test_question_groups.blockSignals(signal_state)
+
+    def _combobox_changed(self, value: int):
+        self.mode = SelfTestMode(value)
+        self.changed.emit()

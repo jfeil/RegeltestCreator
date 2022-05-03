@@ -9,8 +9,9 @@
 ################################################################################
 
 from PySide6.QtCore import (QCoreApplication, QMetaObject, Qt)
-from PySide6.QtWidgets import (QListWidget, QListWidgetItem, QVBoxLayout)
-
+from PySide6.QtWidgets import (QComboBox, QGridLayout, QLabel,
+                               QListWidget, QListWidgetItem, QVBoxLayout,
+                               QWidget)
 
 class Ui_self_test_dockwidget(object):
     def setupUi(self, self_test_dockwidget):
@@ -29,10 +30,25 @@ class Ui_self_test_dockwidget(object):
 
         self.verticalLayout.addWidget(self.self_test_question_groups)
 
+        self.widget = QWidget(self_test_dockwidget)
+        self.widget.setObjectName(u"widget")
+        self.gridLayout = QGridLayout(self.widget)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.label = QLabel(self.widget)
+        self.label.setObjectName(u"label")
+
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+
+        self.mode_comboBox = QComboBox(self.widget)
+        self.mode_comboBox.setObjectName(u"mode_comboBox")
+
+        self.gridLayout.addWidget(self.mode_comboBox, 0, 1, 1, 1)
+
+        self.verticalLayout.addWidget(self.widget)
+
         self.retranslateUi(self_test_dockwidget)
 
         QMetaObject.connectSlotsByName(self_test_dockwidget)
-
     # setupUi
 
     def retranslateUi(self, self_test_dockwidget):
@@ -47,4 +63,6 @@ class Ui_self_test_dockwidget(object):
             QCoreApplication.translate("self_test_dockwidget", u"2: M\u00f6gliche Antwort", None));
         self.self_test_question_groups.setSortingEnabled(__sortingEnabled)
 
+        self.label.setText(QCoreApplication.translate("self_test_dockwidget", u"Modus", None))
     # retranslateUi
+

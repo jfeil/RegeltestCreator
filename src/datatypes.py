@@ -3,7 +3,7 @@ import re
 import uuid
 from collections import namedtuple
 from datetime import datetime, date
-from enum import Enum, auto
+from enum import Enum, auto, IntEnum
 from typing import List, Tuple, Dict
 
 import bs4
@@ -136,6 +136,22 @@ class MultipleChoice(Base):
 
     def __repr__(self):
         return f"MultipleChoice(question_signature={self.question_signature!r}, index={self.index!r}, text={self.text!r})"
+
+
+class SelfTestMode(IntEnum):
+    random = 1
+    level = 2
+    prioritize_new = 3
+
+    def __str__(self):
+        if self == SelfTestMode.random:
+            return "Zufällig"
+        elif self == SelfTestMode.level:
+            return "6-Level"
+        elif self == SelfTestMode.prioritize_new:
+            return "Seltener gefragte Fragen priorisieren"
+        else:
+            raise ValueError("Invalid Mode")
 
 
 class FilterOption(Enum):
