@@ -6,7 +6,7 @@ from typing import List, Union, Tuple
 from alembic import command
 from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
-from sqlalchemy import create_engine, func, select
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import Session
 
 from src.basic_config import database_name, Base, is_bundled, app_dirs
@@ -142,13 +142,12 @@ class DatabaseConnector:
         self.session.commit()
 
     def get_new_question_id(self, question_group: QuestionGroup):
-        stmt = select(Question.question_id).where(Question.question_group == question_group)
+        stmt = self.session.query(Question.question_id).where(Question.question_group == question_group)
         return_val = max(self.session.execute(stmt))[0] + 1
         return return_val
 
     def get_new_question_group_id(self):
-        stmt = select(QuestionGroup.id)
-        values = self.session.execute(stmt).fetchall()
+        values = self.session.query(QuestionGroup.id).all()
         if values:
             return_val = max(values)[0] + 1
         else:
