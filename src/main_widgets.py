@@ -195,10 +195,11 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
             index = self.ui.filter_list.indexFromItem(list_entry).row()
             current_configuration = RuleSortFilterProxyModel.filters[index][1]
             edit_mode = True
-        first_ruletab = self.question_group_tabs[0][2]
         properties = {}
-        for i in range(first_ruletab.columnCount()):
-            properties.update(first_ruletab.headerData(i, Qt.Horizontal, Qt.UserRole))
+        for name, visible in QuestionGroupDataModel.headers:
+            if not visible:
+                continue
+            properties.update({name: Question.parameters[name]})
         editor = FilterEditor(filter_configuration=properties, current_filter=current_configuration)
         editor.exec()
         if editor.result == QDialogButtonBox.ButtonRole.DestructiveRole:

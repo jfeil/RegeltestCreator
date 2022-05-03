@@ -16,8 +16,8 @@ dict_key = str
 
 class QuestionGroupDataModel(QAbstractTableModel):
     # When subclassing QAbstractTableModel, you must implement rowCount(), columnCount(), and data(). Default
-    # implementations of the index() and main_window() functions are provided by QAbstractTableModel. Well-behaved models
-    # will also implement headerData().
+    # implementations of the index() and main_window() functions are provided by QAbstractTableModel. Well-behaved
+    # models will also implement headerData().
 
     # Models that provide interfaces to resizable data structures can provide implementations of insertRows(),
     # removeRows(), insertColumns(), and removeColumns(). When implementing these functions, it is important to call
@@ -31,7 +31,17 @@ class QuestionGroupDataModel(QAbstractTableModel):
     # implementation must call beginRemoveColumns() before the columns are removed from the data structure,
     # and it must call endRemoveColumns() immediately afterwards.
 
-    headers = ['question_id', 'question', 'multiple_choice', 'answer_text', 'last_edited', ]
+    headers = [('question_id', True),
+               ('question', True),
+               ('multiple_choice', True),
+               ('answer_text', True),
+               ('last_edited', True),
+               ('regeltest_count', False),
+               ('last_tested', False),
+               ('positive_tests', False),
+               ('negative_tests', False),
+               ('streak', False)]
+    activated_headers = [question for (question, question_bool) in headers if question_bool]
 
     def __init__(self, question_group, parent):
         super(QuestionGroupDataModel, self).__init__(parent)
@@ -51,20 +61,52 @@ class QuestionGroupDataModel(QAbstractTableModel):
         return len(self.questions)
 
     def columnCount(self, parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> int:
-        return len(self.headers)
+        return len(QuestionGroupDataModel.activated_headers)
 
     def insertColumns(self, column: int, count: int,
                       parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
-        # Todo
-        self.beginInsertColumns(parent, column, self.columnCount())
+        changed_columns = -1
+        for i in range(column, column + count):
+            if self.insertColumn(i):
+                changed_columns += 1
+        if changed_columns == -1:
+            return False
+        self.beginInsertColumns(parent, column, column + changed_columns)
         self.endInsertColumns()
         return True
 
     def removeColumns(self, column: int, count: int,
                       parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
-        # Todo
-        self.beginRemoveColumns(parent, column, self.columnCount())
+        changed_columns = -1
+        for i in range(column, column + count):
+            if self.removeColumn(i):
+                changed_columns += 1
+        if changed_columns == -1:
+            return False
+        self.beginRemoveColumns(parent, column, column + changed_columns)
         self.endRemoveColumns()
+        return True
+
+    @staticmethod
+    def toggle_column(column: int):
+        name, bool_ = QuestionGroupDataModel.headers[column]
+        QuestionGroupDataModel.headers[column] = (name, not bool_)
+        new_activated_headers = [question for (question, question_bool) in QuestionGroupDataModel.headers if
+                                 question_bool]
+        QuestionGroupDataModel.activated_headers = new_activated_headers
+
+    def insertColumn(self, column: int,
+                     parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+        if QuestionGroupDataModel.headers[column][1]:
+            return False
+        self.toggle_column(column)
+        return True
+
+    def removeColumn(self, column: int,
+                     parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+        if not QuestionGroupDataModel.headers[column][1]:
+            return False
+        self.toggle_column(column)
         return True
 
     def data(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex, int],
@@ -83,15 +125,15 @@ class QuestionGroupDataModel(QAbstractTableModel):
             return None
 
         if role == Qt.CheckStateRole:
-            checkbox = self.questions[row].values(self.headers[col]).table_checkbox
+            checkbox = self.questions[row].values(QuestionGroupDataModel.activated_headers[col]).table_checkbox
             return checkbox
         elif role == Qt.DisplayRole:
-            value = self.questions[row].values(self.headers[col]).table_value
+            value = self.questions[row].values(QuestionGroupDataModel.activated_headers[col]).table_value
             if type(value) == datetime.date or type(value) == datetime.datetime:
                 value = str(value)
             return value
         elif role == Qt.ToolTipRole:
-            tooltip = str(self.questions[row].values(self.headers[col]).table_tooltip)
+            tooltip = str(self.questions[row].values(QuestionGroupDataModel.activated_headers[col]).table_tooltip)
             return tooltip
 
     def setData(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex], value: Any,
@@ -106,9 +148,10 @@ class QuestionGroupDataModel(QAbstractTableModel):
         if orientation == Qt.Vertical:
             return None
         if role == Qt.DisplayRole:
-            return Question.parameters[self.headers[section]].table_header
+            return Question.parameters[QuestionGroupDataModel.activated_headers[section]].table_header
         if role == Qt.UserRole:
-            return {self.headers[section]: Question.parameters[self.headers[section]]}
+            return {QuestionGroupDataModel.activated_headers[section]:
+                        Question.parameters[QuestionGroupDataModel.activated_headers[section]]}
 
     def insertRows(self, row: int, count: int,
                    parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
