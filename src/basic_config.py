@@ -4,7 +4,7 @@ import os
 import pathlib
 import platform
 import sys
-from typing import Any, Tuple, Union
+from typing import Any, Tuple, Optional
 
 import requests
 from appdirs import AppDirs
@@ -16,7 +16,7 @@ from .__version__ import __version__
 
 log_level = logging.WARN
 current_platform = platform.system()
-VERSION_INFO = Union[None, Tuple[str, str, str, str]]
+VERSION_INFO = Optional[Tuple[str, str, str, str]]
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     is_bundled = True

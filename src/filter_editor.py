@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from typing import Dict, Tuple, Callable, Union, Any
+from typing import Dict, Tuple, Callable, Any, Optional
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QLineEdit, QCheckBox, QDateEdit, QSpinBox, QPushButton, QDialogButtonBox
@@ -10,7 +10,7 @@ from src.ui_filter_editor import Ui_FilterEditor
 
 class FilterEditor(QDialog, Ui_FilterEditor):
     def __init__(self, filter_configuration: Dict[str, Question.QuestionParameters],
-                 current_filter: Union[None, Tuple[str, FilterOption, Any]] = None,
+                 current_filter: Optional[Tuple[str, FilterOption, Any]] = None,
                  # dict_key, FilterOption, filter_data
                  parent=None, window_flags=Qt.Dialog):
         super(FilterEditor, self).__init__(parent, window_flags)

@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import datetime
-from typing import Union, Any, List
+from typing import Any, List
 
 import PySide6
 from PySide6.QtCore import Qt, QPoint, QAbstractTableModel, QSortFilterProxyModel
@@ -57,14 +59,14 @@ class QuestionGroupDataModel(QAbstractTableModel):
         self.read_data()
         self.endResetModel()
 
-    def rowCount(self, parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> int:
+    def rowCount(self, parent: PySide6.QtCore.QModelIndex | PySide6.QtCore.QPersistentModelIndex = ...) -> int:
         return len(self.questions)
 
-    def columnCount(self, parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> int:
+    def columnCount(self, parent: PySide6.QtCore.QModelIndex | PySide6.QtCore.QPersistentModelIndex = ...) -> int:
         return len(QuestionGroupDataModel.activated_headers)
 
     def insertColumns(self, column: int, count: int,
-                      parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+                      parent: PySide6.QtCore.QModelIndex | PySide6.QtCore.QPersistentModelIndex = ...) -> bool:
         changed_columns = -1
         for i in range(column, column + count):
             if self.insertColumn(i):
@@ -76,7 +78,7 @@ class QuestionGroupDataModel(QAbstractTableModel):
         return True
 
     def removeColumns(self, column: int, count: int,
-                      parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+                      parent: PySide6.QtCore.QModelIndex | PySide6.QtCore.QPersistentModelIndex = ...) -> bool:
         changed_columns = -1
         for i in range(column, column + count):
             if self.removeColumn(i):
@@ -96,20 +98,20 @@ class QuestionGroupDataModel(QAbstractTableModel):
         QuestionGroupDataModel.activated_headers = new_activated_headers
 
     def insertColumn(self, column: int,
-                     parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+                     parent: PySide6.QtCore.QModelIndex | PySide6.QtCore.QPersistentModelIndex = ...) -> bool:
         if QuestionGroupDataModel.headers[column][1]:
             return False
         self.toggle_column(column)
         return True
 
     def removeColumn(self, column: int,
-                     parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+                     parent: PySide6.QtCore.QModelIndex | PySide6.QtCore.QPersistentModelIndex = ...) -> bool:
         if not QuestionGroupDataModel.headers[column][1]:
             return False
         self.toggle_column(column)
         return True
 
-    def data(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex, int],
+    def data(self, index: PySide6.QtCore.QModelIndex | PySide6.QtCore.QPersistentModelIndex | int,
              role: int = ...) -> Any:
         if type(index) == int:
             row = index
@@ -136,7 +138,7 @@ class QuestionGroupDataModel(QAbstractTableModel):
             tooltip = str(self.questions[row].values(QuestionGroupDataModel.activated_headers[col]).table_tooltip)
             return tooltip
 
-    def setData(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex], value: Any,
+    def setData(self, index: PySide6.QtCore.QModelIndex | PySide6.QtCore.QPersistentModelIndex, value: Any,
                 role: int = ...) -> bool:
         if role == Qt.UserRole:
             db.add_object(value)
@@ -154,7 +156,7 @@ class QuestionGroupDataModel(QAbstractTableModel):
                         Question.parameters[QuestionGroupDataModel.activated_headers[section]]}
 
     def insertRows(self, row: int, count: int,
-                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+                   parent: PySide6.QtCore.QModelIndex | PySide6.QtCore.QPersistentModelIndex = ...) -> bool:
         inserted_count = -1
         for i in range(count):
             if self.insertRow(row + i):
@@ -166,7 +168,7 @@ class QuestionGroupDataModel(QAbstractTableModel):
         return True
 
     def removeRows(self, row: int, count: int,
-                   parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+                   parent: PySide6.QtCore.QModelIndex | PySide6.QtCore.QPersistentModelIndex = ...) -> bool:
         removed_count = -1
         for i in range(count):
             if self.removeRow(row + i):
@@ -178,13 +180,13 @@ class QuestionGroupDataModel(QAbstractTableModel):
         return True
 
     def removeRow(self, row: int,
-                  parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+                  parent: PySide6.QtCore.QModelIndex | PySide6.QtCore.QPersistentModelIndex = ...) -> bool:
         db.delete(self.questions[row])
         self.questions.pop(row)
         return True
 
     def insertRow(self, row: int,
-                  parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = ...) -> bool:
+                  parent: PySide6.QtCore.QModelIndex | PySide6.QtCore.QPersistentModelIndex = ...) -> bool:
         new_question = Question()
         new_question.question_group = self.question_group
         new_question.question_id = db.get_new_question_id(self.question_group)
@@ -197,8 +199,8 @@ class QuestionGroupDataModel(QAbstractTableModel):
             db.abort()
         return False
 
-    def flags(self, index: Union[
-        PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) -> PySide6.QtCore.Qt.ItemFlags:
+    def flags(self, index: PySide6.QtCore.QModelIndex |
+                           PySide6.QtCore.QPersistentModelIndex) -> PySide6.QtCore.Qt.ItemFlags:
         return Qt.ItemIsDragEnabled | Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
     def supportedDragActions(self) -> PySide6.QtCore.Qt.DropActions:
@@ -207,7 +209,7 @@ class QuestionGroupDataModel(QAbstractTableModel):
 
 class RuleDelegate(QStyledItemDelegate):
     def createEditor(self, parent: PySide6.QtWidgets.QWidget, option: PySide6.QtWidgets.QStyleOptionViewItem,
-                     index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) \
+                     index: PySide6.QtCore.QModelIndex | PySide6.QtCore.QPersistentModelIndex) \
             -> PySide6.QtWidgets.QWidget:
         editor = QWidget(parent)
         question = index.model().data(index, role=Qt.UserRole)
@@ -323,8 +325,8 @@ class QuestionGroupTableView(QTableView):
 class RuleSortFilterProxyModel(QSortFilterProxyModel):
     filters = []  # List[Tuple[Tuple[dict_key, Callable], Tuple[str, FilterOption, Any]]]
 
-    def filterAcceptsRow(self, source_row: int, source_parent: Union[
-        PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]) -> bool:
+    def filterAcceptsRow(self, source_row: int, source_parent: PySide6.QtCore.QModelIndex |
+                                                               PySide6.QtCore.QPersistentModelIndex) -> bool:
         if not RuleSortFilterProxyModel.filters:
             return True
 

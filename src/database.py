@@ -1,13 +1,15 @@
+from __future__ import annotations
+
 import logging
 import os
 import sys
-from typing import List, Union, Tuple
+from typing import List, Tuple
 
 from alembic import command
 from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
 from sqlalchemy import create_engine, func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, Query
 
 from src.basic_config import database_name, Base, is_bundled, app_dirs
 from src.datatypes import QuestionGroup, Question, MultipleChoice
@@ -107,7 +109,7 @@ class DatabaseConnector:
         return question
 
     def get_questions_by_foreignkey(self, question_groups: List[QuestionGroup], mchoice=None, randomize: bool = False,
-                                    as_query: bool = False):
+                                    as_query: bool = False) -> Query | List[Question]:
         question_groups_ids = [question_group.id for question_group in question_groups]
         questions = self.session.query(Question)
         # noinspection PyNoneFunctionAssignment
@@ -129,7 +131,7 @@ class DatabaseConnector:
             MultipleChoice.question == question).all()
         return mchoice
 
-    def fill_database(self, dataset: List[Union[QuestionGroup, Question, MultipleChoice]]):
+    def fill_database(self, dataset: List[QuestionGroup | Question | MultipleChoice]):
         # insert processed values into db
         if not self.initialized:
             self._init_database()
@@ -137,7 +139,7 @@ class DatabaseConnector:
         self.session.add_all(dataset)
         self.session.commit()
 
-    def delete(self, item: Union[QuestionGroup, Question]):
+    def delete(self, item: QuestionGroup | Question):
         self.session.delete(item)
         self.session.commit()
 

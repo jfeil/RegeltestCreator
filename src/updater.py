@@ -3,6 +3,7 @@ import shutil
 import stat
 import subprocess
 import sys
+from typing import Optional
 
 import markdown2
 import requests
@@ -30,7 +31,7 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
         self.ui.text.setTextInteractionFlags(Qt.TextBrowserInteraction)
         self.ui.text.setOpenExternalLinks(True)
 
-        self.download_link = None  # type: Union[str, None]
+        self.download_link = None  # type: Optional[str]
         self.ui.install_update_button.clicked.connect(self.update)
         self.ui.install_update_button.setDisabled(True)
         self.ui.download_progress.setVisible(False)

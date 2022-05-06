@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import datetime
 from enum import Enum, auto
-from typing import TYPE_CHECKING
-from typing import Union, List, Tuple, Dict
+from typing import List, Tuple, Dict
+from typing import TYPE_CHECKING, Optional
 
 from PySide6.QtCore import Signal, QSortFilterProxyModel
 from PySide6.QtGui import QKeySequence, QShortcut, Qt
@@ -138,7 +138,7 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
         self.ui.tabWidget.addTab(tab, "")
         self._update_tabtitle(self.ui.tabWidget.indexOf(tab))
 
-    def _question_group_editor(self, question_group: Union[QuestionGroup, None],
+    def _question_group_editor(self, question_group: QuestionGroup | None,
                                editor: QuestionGroupEditor) -> EditorResult:
         if editor.exec() == QDialog.Accepted:
             if question_group and question_group.id == editor.id:
@@ -185,7 +185,7 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
         question_group, _, _ = self.question_group_tabs[index]
         self.ui.tabWidget.setTabText(index, f"{question_group.id:02d} {question_group.name}")
 
-    def add_filter(self, list_entry: Union[QListWidgetItem, bool] = False):
+    def add_filter(self, list_entry: QListWidgetItem | bool = False):
         if not list_entry or type(list_entry) == bool:
             # Add filter mode -> no list entry double_clicked
             current_configuration = None
@@ -273,9 +273,9 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
 
         self._next_questions = []  # type: List[Question]
         self._previous_questions = []  # type: List[Question]
-        self._current_question = None  # type: Union[Question, None]
+        self._current_question = None  # type: Optional[Question]
 
-        self.current_question = None  # type: Union[Question, None]
+        self.current_question = None  # type: Optional[Question]
         self.previous_questions = []
         self.next_questions = []
         self.dock_widget.changed.connect(self.selected_groups_changed)
