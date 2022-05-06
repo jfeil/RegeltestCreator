@@ -9,6 +9,7 @@ from PySide6.QtCore import Signal, QSortFilterProxyModel
 from PySide6.QtGui import QKeySequence, QShortcut, Qt
 from PySide6.QtWidgets import QWidget, QListView, QMessageBox, QDialog, QDialogButtonBox, QListWidgetItem, \
     QTreeWidgetItem
+from sqlalchemy import func, nullsfirst, or_
 
 from src import main_application
 from src.database import db
@@ -356,6 +357,15 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.current_question.statistics.correct_solved += 1
         self.current_question.statistics.continous_solved_count += 1
         self.current_question.statistics.last_tested = datetime.datetime.now()
+        if self.dock_widget.mode == SelfTestMode.random:
+            pass
+        elif self.dock_widget.mode == SelfTestMode.level:
+            # if level is 7 -> never re-asked!
+            self.current_question.statistics.level += 1
+        elif self.dock_widget.mode == SelfTestMode.prioritize_new:
+            pass
+        else:
+            raise ValueError("Not supported mode.")
         db.commit()
 
         # remove correct question from stack
@@ -370,6 +380,14 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.current_question.statistics.wrong_solved += 1
         self.current_question.statistics.continous_solved_count = 0
         self.current_question.statistics.last_tested = datetime.datetime.now()
+        if self.dock_widget.mode == SelfTestMode.random:
+            pass
+        elif self.dock_widget.mode == SelfTestMode.level:
+            self.current_question.statistics.level = max(self.current_question.statistics.level - 1, 0)
+        elif self.dock_widget.mode == SelfTestMode.prioritize_new:
+            pass
+        else:
+            raise ValueError("Not supported mode.")
         db.commit()
 
         # move wrong question to the end
@@ -379,7 +397,7 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.ui.stackedWidget.setCurrentIndex(0)
 
     def selected_groups_changed(self):
-        questions = db.get_questions_by_foreignkey(self.dock_widget.get_question_groups())
+        questions = db.get_questions_by_foreignkey(self.dock_widget.get_question_groups(), as_query=True)
 
         if self.dock_widget.mode == SelfTestMode.random:
             questions = self.prepare_random_mode(questions)
@@ -400,12 +418,26 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
 
     @staticmethod
     def prepare_random_mode(dataset) -> List[Question]:
-        return dataset
+        dataset = dataset.order_by(func.random())
+        return dataset.all()
 
     @staticmethod
     def prepare_level_mode(dataset) -> List[Question]:
-        return dataset
+        levels_to_days = [0, 1, 3, 9, 29, 90]
+        today = datetime.datetime.now()
+        # randomize and outerjoin with statistics (outerjoin -> nones and statistic objects available)
+        dataset = dataset.outerjoin(Question.statistics)
+        dataset = dataset.filter((Question.statistics == None) | or_(
+            ((Statistics.level == level) & (Statistics.last_tested < today - datetime.timedelta(days)))
+            for (level, days) in enumerate(levels_to_days)))
+        # order the last_tested_date ascending and put the nones before them (already randomized in step 1)
+        dataset = dataset.order_by(nullsfirst(Statistics.level.asc()))
+        return dataset.all()
 
     @staticmethod
     def prepare_prioritize_new(dataset) -> List[Question]:
-        return dataset
+        # randomize and outerjoin with statistics (outerjoin -> nones and statistic objects available)
+        dataset = dataset.outerjoin(Question.statistics)
+        # order the last_tested_date ascending and put the nones before them (already randomized in step 1)
+        dataset = dataset.order_by(Statistics.last_tested.asc().nulls_first())
+        return dataset.all()
