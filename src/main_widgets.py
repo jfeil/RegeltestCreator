@@ -287,6 +287,20 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.ui.correct_button.pressed.connect(self.correct_answered)
         self.ui.incorrect_button.pressed.connect(self.incorrect_answered)
 
+        self.update_progressbar(0, 0)
+
+    def create_statistics(self):
+        if not self._current_question.statistics:
+            statistics = "Keine Statistiken bisher verfügbar."
+        else:
+            statistics = f"Korrekt beantwortet {self._current_question.statistics.correct_solved}\n" \
+                         f"Inkorrekt beantwortet {self._current_question.statistics.wrong_solved}\n" \
+                         f"Konsekutiv korrekt beantwortet {self._current_question.statistics.continous_solved_count}\n" \
+                         f"Zuletzt beantwortet {self._current_question.statistics.last_tested.date()}"
+            if self.dock_widget.mode == SelfTestMode.level:
+                statistics = f"Level {self._current_question.statistics.level}\n" + statistics
+        return statistics
+
     @property
     def current_question(self):
         return self._current_question
@@ -300,6 +314,7 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
             self.ui.question_label_test.setText("Keine Frage verfügbar.")
         else:
             self.ui.question_label_test.setText(self._current_question.question)
+            self.ui.question_label_test.setToolTip(self.create_statistics())
 
     @property
     def previous_questions(self):
@@ -332,6 +347,9 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.current_question = self.next_questions[0]
         self.next_questions = self.next_questions[1:]
 
+        self.update_progressbar(len(self.previous_questions),
+                                len(self.previous_questions) + 1 + len(self.next_questions))
+
     def previous_question(self):
         if not self.previous_questions:
             if not self.next_questions:
@@ -344,7 +362,11 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.current_question = self.previous_questions[-1]
         self.previous_questions = self.previous_questions[:-1]
 
+        self.update_progressbar(len(self.previous_questions),
+                                len(self.previous_questions) + 1 + len(self.next_questions))
+
     def evaluate_question(self):
+        self.dock_widget.lock()
         self.ui.question_label_eval.setText(self.current_question.question)
         self.ui.correct_answer_eval.setText(self.current_question.answer_text)
         self.ui.user_answer_eval.setText(self.ui.user_answer_test.toPlainText())
@@ -368,6 +390,7 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
             raise ValueError("Not supported mode.")
         db.commit()
 
+        self.dock_widget.unlock()
         # remove correct question from stack
         self.current_question = None
         self.next_question()
@@ -390,6 +413,7 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
             raise ValueError("Not supported mode.")
         db.commit()
 
+        self.dock_widget.unlock()
         # move wrong question to the end
         self.next_questions += [self.current_question]
         self.current_question = None
@@ -408,6 +432,8 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         else:
             raise ValueError("Not supported mode.")
 
+        self.update_progressbar(0, len(questions))
+
         self.previous_questions = []
         if not questions:
             self.current_question = None
@@ -415,6 +441,16 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         else:
             self.current_question = questions[0]
             self.next_questions = questions[1:]
+
+    def update_progressbar(self, current_index: int, question_count: int):
+        if question_count <= 1:
+            self.ui.progressbar_bar.setMaximum(1)
+            self.ui.progressbar_bar.setValue(0)
+            self.ui.progressbar_label.setText(f"{question_count} / {question_count}")
+        else:
+            self.ui.progressbar_bar.setMaximum(question_count - 1)
+            self.ui.progressbar_bar.setValue(current_index)
+            self.ui.progressbar_label.setText(f"{current_index + 1} / {question_count}")
 
     @staticmethod
     def prepare_random_mode(dataset) -> List[Question]:

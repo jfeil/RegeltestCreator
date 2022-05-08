@@ -102,6 +102,14 @@ class SelfTestDockWidget(QWidget, Ui_self_test_dockwidget):
 
         self.ui.mode_comboBox.currentIndexChanged.connect(self._combobox_changed)
 
+    def lock(self):
+        self.ui.mode_comboBox.setDisabled(True)
+        self.ui.self_test_question_groups.setDisabled(True)
+
+    def unlock(self):
+        self.ui.mode_comboBox.setDisabled(False)
+        self.ui.self_test_question_groups.setDisabled(False)
+
     def get_question_groups(self):
         question_groups = []
         for i, group in enumerate(self._question_groups):
