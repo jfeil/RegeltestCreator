@@ -9,9 +9,12 @@
 ################################################################################
 
 from PySide6.QtCore import (QCoreApplication, QMetaObject, QSize, Qt)
-from PySide6.QtWidgets import (QGridLayout, QHBoxLayout, QLabel,
-                               QProgressBar, QPushButton, QSizePolicy, QStackedWidget,
-                               QTextEdit, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QFrame, QGridLayout, QHBoxLayout,
+                               QLabel, QProgressBar, QPushButton, QSizePolicy,
+                               QStackedWidget, QTextEdit, QToolButton, QVBoxLayout,
+                               QWidget)
+
+from src.custom_ui import CollapseButton
 
 
 class Ui_SelfTestWidget(object):
@@ -27,26 +30,6 @@ class Ui_SelfTestWidget(object):
         self.test_page.setObjectName(u"test_page")
         self.gridLayout = QGridLayout(self.test_page)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.next_button = QPushButton(self.test_page)
-        self.next_button.setObjectName(u"next_button")
-
-        self.gridLayout.addWidget(self.next_button, 4, 3, 1, 1)
-
-        self.switch_eval_button = QPushButton(self.test_page)
-        self.switch_eval_button.setObjectName(u"switch_eval_button")
-
-        self.gridLayout.addWidget(self.switch_eval_button, 4, 1, 1, 2)
-
-        self.user_answer_test = QTextEdit(self.test_page)
-        self.user_answer_test.setObjectName(u"user_answer_test")
-
-        self.gridLayout.addWidget(self.user_answer_test, 1, 0, 1, 4)
-
-        self.previous_button = QPushButton(self.test_page)
-        self.previous_button.setObjectName(u"previous_button")
-
-        self.gridLayout.addWidget(self.previous_button, 4, 0, 1, 1)
-
         self.progressbar_widget = QWidget(self.test_page)
         self.progressbar_widget.setObjectName(u"progressbar_widget")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
@@ -64,7 +47,7 @@ class Ui_SelfTestWidget(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.progressbar_bar.sizePolicy().hasHeightForWidth())
         self.progressbar_bar.setSizePolicy(sizePolicy1)
-        self.progressbar_bar.setMaximumSize(QSize(16777215, 2))
+        self.progressbar_bar.setMaximumSize(QSize(16777215, 1))
         self.progressbar_bar.setStyleSheet(u" QProgressBar::chunk {\n"
                                            "     background-color: #06b025;\n"
                                            "}\n"
@@ -91,7 +74,58 @@ class Ui_SelfTestWidget(object):
 
         self.horizontalLayout.addWidget(self.progressbar_label)
 
-        self.gridLayout.addWidget(self.progressbar_widget, 3, 0, 1, 4)
+        self.gridLayout.addWidget(self.progressbar_widget, 5, 0, 1, 4)
+
+        self.user_answer_test = QTextEdit(self.test_page)
+        self.user_answer_test.setObjectName(u"user_answer_test")
+
+        self.gridLayout.addWidget(self.user_answer_test, 3, 0, 1, 4)
+
+        self.next_button = QPushButton(self.test_page)
+        self.next_button.setObjectName(u"next_button")
+
+        self.gridLayout.addWidget(self.next_button, 6, 3, 1, 1)
+
+        self.statistics_button = CollapseButton(self.test_page)
+        self.statistics_button.setObjectName(u"statistics_button")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.statistics_button.sizePolicy().hasHeightForWidth())
+        self.statistics_button.setSizePolicy(sizePolicy3)
+        self.statistics_button.setStyleSheet(u"")
+        self.statistics_button.setIconSize(QSize(8, 8))
+        self.statistics_button.setCheckable(True)
+        self.statistics_button.setPopupMode(QToolButton.DelayedPopup)
+        self.statistics_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.statistics_button.setAutoRaise(True)
+        self.statistics_button.setArrowType(Qt.RightArrow)
+
+        self.gridLayout.addWidget(self.statistics_button, 1, 0, 1, 4)
+
+        self.statistics_frame = QFrame(self.test_page)
+        self.statistics_frame.setObjectName(u"statistics_frame")
+        self.statistics_frame.setFrameShape(QFrame.StyledPanel)
+        self.statistics_frame.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_3 = QVBoxLayout(self.statistics_frame)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.statistics_label = QLabel(self.statistics_frame)
+        self.statistics_label.setObjectName(u"statistics_label")
+
+        self.verticalLayout_3.addWidget(self.statistics_label)
+
+        self.gridLayout.addWidget(self.statistics_frame, 2, 0, 1, 4)
+
+        self.switch_eval_button = QPushButton(self.test_page)
+        self.switch_eval_button.setObjectName(u"switch_eval_button")
+
+        self.gridLayout.addWidget(self.switch_eval_button, 6, 1, 1, 2)
+
+        self.previous_button = QPushButton(self.test_page)
+        self.previous_button.setObjectName(u"previous_button")
+
+        self.gridLayout.addWidget(self.previous_button, 6, 0, 1, 1)
 
         self.question_label_test = QLabel(self.test_page)
         self.question_label_test.setObjectName(u"question_label_test")
@@ -145,6 +179,7 @@ class Ui_SelfTestWidget(object):
 
         self.verticalLayout.addWidget(self.stackedWidget)
 
+
         self.retranslateUi(SelfTestWidget)
 
         self.stackedWidget.setCurrentIndex(0)
@@ -154,8 +189,8 @@ class Ui_SelfTestWidget(object):
 
     def retranslateUi(self, SelfTestWidget):
         SelfTestWidget.setWindowTitle(QCoreApplication.translate("SelfTestWidget", u"Form", None))
-        self.next_button.setText(QCoreApplication.translate("SelfTestWidget", u"N\u00e4chste Frage", None))
-        self.switch_eval_button.setText(QCoreApplication.translate("SelfTestWidget", u"Evaluieren", None))
+        self.progressbar_bar.setFormat(QCoreApplication.translate("SelfTestWidget", u"%v/%m", None))
+        self.progressbar_label.setText(QCoreApplication.translate("SelfTestWidget", u"20 / 255", None))
         self.user_answer_test.setHtml(QCoreApplication.translate("SelfTestWidget",
                                                                  u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
                                                                  "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
@@ -164,9 +199,13 @@ class Ui_SelfTestWidget(object):
                                                                  "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">                                            </p>\n"
                                                                  "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Strafsto\u00df,                                            Linie geh\u00f6rt zum Strafraum                                         </p></body></html>",
                                                                  None))
+        self.next_button.setText(QCoreApplication.translate("SelfTestWidget", u"N\u00e4chste Frage", None))
+        self.statistics_button.setText(QCoreApplication.translate("SelfTestWidget", u"Statistiken", None))
+        self.statistics_label.setText(QCoreApplication.translate("SelfTestWidget", u"Das ist\n"
+                                                                                   "ein\n"
+                                                                                   "Test", None))
+        self.switch_eval_button.setText(QCoreApplication.translate("SelfTestWidget", u"Evaluieren", None))
         self.previous_button.setText(QCoreApplication.translate("SelfTestWidget", u"Vorherige Frage", None))
-        self.progressbar_bar.setFormat(QCoreApplication.translate("SelfTestWidget", u"%v/%m", None))
-        self.progressbar_label.setText(QCoreApplication.translate("SelfTestWidget", u"20 / 255", None))
         self.question_label_test.setText(QCoreApplication.translate("SelfTestWidget",
                                                                     u"Bei einem Angriff foult der Verteidiger den St\u00fcrmer direkt auf der\n"
                                                                     "                                            Strafraumlinie: Wie hat der Schiedsrichter zu entscheiden?\n"
