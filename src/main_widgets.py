@@ -291,8 +291,10 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.update_progressbar(0, 0)
 
     def create_statistics(self):
+        if not self.current_question:
+            return ""
         if not self._current_question.statistics:
-            statistics = "Keine Statistiken bisher verfügbar."
+            return "Keine Statistiken bisher verfügbar."
         else:
             statistics = f"Korrekt beantwortet {self._current_question.statistics.correct_solved}\n" \
                          f"Inkorrekt beantwortet {self._current_question.statistics.wrong_solved}\n" \
@@ -311,13 +313,19 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self._current_question = value
         self.ui.switch_eval_button.setDisabled(not value)
         self.ui.user_answer_test.setDisabled(not value)
+        self.ui.statistics_button.setDisabled(not value)
+        if not value:
+            self.ui.statistics_button.setChecked(False)
+
         if not value:
             self.ui.question_label_test.setText("Keine Frage verfügbar.")
+            self.ui.user_answer_test.setText("")
+
         else:
             self.ui.question_label_test.setText(self._current_question.question)
-            self.ui.question_label_test.setToolTip(self.create_statistics())
-            self.ui.statistics_label.setText(self.create_statistics())
-            self.ui.statistics_button.update_animation()
+        self.ui.question_label_test.setToolTip(self.create_statistics())
+        self.ui.statistics_label.setText(self.create_statistics())
+        self.ui.statistics_button.update_animation()
 
     @property
     def previous_questions(self):
@@ -446,11 +454,6 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
             self.next_questions = questions[1:]
 
     def update_progressbar(self, current_index: int, question_count: int):
-        if question_count == 0:
-            self.ui.statistics_button.setDisabled(True)
-            self.ui.statistics_button.setChecked(False)
-        else:
-            self.ui.statistics_button.setDisabled(False)
         if question_count <= 1:
             self.ui.progressbar_bar.setMaximum(1)
             self.ui.progressbar_bar.setValue(0)

@@ -31,7 +31,12 @@ class CollapseButton(QToolButton):
             content.setMaximumHeight(0)
 
     def update_animation(self):
-        new_end_value = self.content.sizeHint().height()
+        if not self.animation:
+            return
+        if self.content:
+            new_end_value = self.content.sizeHint().height()
+        else:
+            new_end_value = 0
         self.animation.setEndValue(new_end_value)
         if self.isChecked():
             self.content.setMaximumHeight(new_end_value)
