@@ -47,6 +47,7 @@ class Ui_self_test_dockwidget(object):
 
         self.gridLayout_4.addWidget(self.mode_comboBox, 0, 1, 1, 1)
 
+
         self.gridLayout.addWidget(self.groupBox_2, 0, 0, 1, 2)
 
         self.groupBox = QGroupBox(self.widget)
@@ -55,6 +56,7 @@ class Ui_self_test_dockwidget(object):
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.question_visibility_spinbox = QSpinBox(self.groupBox)
         self.question_visibility_spinbox.setObjectName(u"question_visibility_spinbox")
+        self.question_visibility_spinbox.setMaximum(120)
 
         self.gridLayout_2.addWidget(self.question_visibility_spinbox, 0, 1, 1, 1)
 
@@ -70,6 +72,7 @@ class Ui_self_test_dockwidget(object):
 
         self.auto_evaluate_spinbox = QSpinBox(self.groupBox)
         self.auto_evaluate_spinbox.setObjectName(u"auto_evaluate_spinbox")
+        self.auto_evaluate_spinbox.setMaximum(120)
 
         self.gridLayout_2.addWidget(self.auto_evaluate_spinbox, 1, 1, 1, 1)
 

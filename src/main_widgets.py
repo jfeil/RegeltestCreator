@@ -584,7 +584,8 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         if timer_type == self.timer_question:
             self.time_question -= self.timer_question.interval() / 1000
             if not self.time_question:
-                self.ui.question_label_test.setText("")
+                if self.time_question != 0:
+                    self.ui.question_label_test.setText("")
                 self.timer_question.stop()
                 if self.time_answer != 0:
                     self.timer_answer.start()
