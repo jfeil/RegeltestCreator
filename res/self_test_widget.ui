@@ -21,7 +21,78 @@
                     </property>
                     <widget class="QWidget" name="test_page">
                         <layout class="QGridLayout" name="gridLayout">
-                            <item row="5" column="0" colspan="4">
+                            <item row="7" column="3">
+                                <widget class="QPushButton" name="next_button">
+                                    <property name="text">
+                                        <string>Nächste Frage</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="7" column="1" colspan="2">
+                                <widget class="QPushButton" name="switch_eval_button">
+                                    <property name="text">
+                                        <string>Evaluieren</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="4" column="0" colspan="4">
+                                <widget class="QTextEdit" name="user_answer_test">
+                                    <property name="html">
+                                        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+                                            &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot;
+                                            /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+                                            p, li { white-space: pre-wrap; }
+                                            &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Segoe UI';
+                                            font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+                                            &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px;
+                                            margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+                                            &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px;
+                                            margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+                                            &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px;
+                                            margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Strafstoß,
+                                            Linie gehört zum Strafraum &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                                        </string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="2" column="0" colspan="4">
+                                <widget class="CollapseButton" name="statistics_button">
+                                    <property name="sizePolicy">
+                                        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                                            <horstretch>0</horstretch>
+                                            <verstretch>0</verstretch>
+                                        </sizepolicy>
+                                    </property>
+                                    <property name="styleSheet">
+                                        <string notr="true"/>
+                                    </property>
+                                    <property name="text">
+                                        <string>Statistiken</string>
+                                    </property>
+                                    <property name="iconSize">
+                                        <size>
+                                            <width>8</width>
+                                            <height>8</height>
+                                        </size>
+                                    </property>
+                                    <property name="checkable">
+                                        <bool>true</bool>
+                                    </property>
+                                    <property name="popupMode">
+                                        <enum>QToolButton::DelayedPopup</enum>
+                                    </property>
+                                    <property name="toolButtonStyle">
+                                        <enum>Qt::ToolButtonTextBesideIcon</enum>
+                                    </property>
+                                    <property name="autoRaise">
+                                        <bool>true</bool>
+                                    </property>
+                                    <property name="arrowType">
+                                        <enum>Qt::RightArrow</enum>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="6" column="0" colspan="4">
                                 <widget class="QWidget" name="progressbar_widget" native="true">
                                     <property name="sizePolicy">
                                         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -29,7 +100,7 @@
                                             <verstretch>0</verstretch>
                                         </sizepolicy>
                                     </property>
-                                    <layout class="QHBoxLayout" name="horizontalLayout">
+                                    <layout class="QGridLayout" name="gridLayout_3">
                                         <property name="leftMargin">
                                             <number>0</number>
                                         </property>
@@ -42,7 +113,7 @@
                                         <property name="bottomMargin">
                                             <number>0</number>
                                         </property>
-                                        <item>
+                                        <item row="0" column="0">
                                             <widget class="QProgressBar" name="progressbar_bar">
                                                 <property name="sizePolicy">
                                                     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -87,7 +158,7 @@
                                                 </property>
                                             </widget>
                                         </item>
-                                        <item>
+                                        <item row="0" column="1">
                                             <widget class="QLabel" name="progressbar_label">
                                                 <property name="sizePolicy">
                                                     <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
@@ -103,69 +174,14 @@
                                     </layout>
                                 </widget>
                             </item>
+                            <item row="7" column="0">
+                                <widget class="QPushButton" name="previous_button">
+                                    <property name="text">
+                                        <string>Vorherige Frage</string>
+                                    </property>
+                                </widget>
+                            </item>
                             <item row="3" column="0" colspan="4">
-                                <widget class="QTextEdit" name="user_answer_test">
-                                    <property name="html">
-                                        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-                                            &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot;
-                                            /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-                                            p, li { white-space: pre-wrap; }
-                                            &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Segoe UI';
-                                            font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-                                            &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px;
-                                            margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
-                                            &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px;
-                                            margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Strafstoß,
-                                            Linie gehört zum Strafraum &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
-                                        </string>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item row="6" column="3">
-                                <widget class="QPushButton" name="next_button">
-                                    <property name="text">
-                                        <string>Nächste Frage</string>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item row="1" column="0" colspan="4">
-                                <widget class="CollapseButton" name="statistics_button">
-                                    <property name="sizePolicy">
-                                        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="styleSheet">
-                                        <string notr="true"/>
-                                    </property>
-                                    <property name="text">
-                                        <string>Statistiken</string>
-                                    </property>
-                                    <property name="iconSize">
-                                        <size>
-                                            <width>8</width>
-                                            <height>8</height>
-                                        </size>
-                                    </property>
-                                    <property name="checkable">
-                                        <bool>true</bool>
-                                    </property>
-                                    <property name="popupMode">
-                                        <enum>QToolButton::DelayedPopup</enum>
-                                    </property>
-                                    <property name="toolButtonStyle">
-                                        <enum>Qt::ToolButtonTextBesideIcon</enum>
-                                    </property>
-                                    <property name="autoRaise">
-                                        <bool>true</bool>
-                                    </property>
-                                    <property name="arrowType">
-                                        <enum>Qt::RightArrow</enum>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item row="2" column="0" colspan="4">
                                 <widget class="QFrame" name="statistics_frame">
                                     <property name="frameShape">
                                         <enum>QFrame::StyledPanel</enum>
@@ -199,33 +215,158 @@
                                     </layout>
                                 </widget>
                             </item>
-                            <item row="6" column="1" colspan="2">
-                                <widget class="QPushButton" name="switch_eval_button">
-                                    <property name="text">
-                                        <string>Evaluieren</string>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item row="6" column="0">
-                                <widget class="QPushButton" name="previous_button">
-                                    <property name="text">
-                                        <string>Vorherige Frage</string>
-                                    </property>
-                                </widget>
-                            </item>
                             <item row="0" column="0" colspan="4">
-                                <widget class="QLabel" name="question_label_test">
-                                    <property name="text">
-                                        <string>Bei einem Angriff foult der Verteidiger den Stürmer direkt auf der
-                                            Strafraumlinie: Wie hat der Schiedsrichter zu entscheiden?
-                                        </string>
-                                    </property>
-                                    <property name="wordWrap">
-                                        <bool>true</bool>
-                                    </property>
-                                    <property name="margin">
-                                        <number>20</number>
-                                    </property>
+                                <widget class="QWidget" name="widget" native="true">
+                                    <layout class="QGridLayout" name="gridLayout_4">
+                                        <property name="leftMargin">
+                                            <number>0</number>
+                                        </property>
+                                        <property name="topMargin">
+                                            <number>0</number>
+                                        </property>
+                                        <property name="rightMargin">
+                                            <number>0</number>
+                                        </property>
+                                        <property name="bottomMargin">
+                                            <number>0</number>
+                                        </property>
+                                        <item row="0" column="1" rowspan="2">
+                                            <widget class="QWidget" name="widget_2" native="true">
+                                                <property name="sizePolicy">
+                                                    <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                                                        <horstretch>0</horstretch>
+                                                        <verstretch>0</verstretch>
+                                                    </sizepolicy>
+                                                </property>
+                                                <layout class="QVBoxLayout" name="verticalLayout_4">
+                                                    <property name="leftMargin">
+                                                        <number>0</number>
+                                                    </property>
+                                                    <property name="topMargin">
+                                                        <number>0</number>
+                                                    </property>
+                                                    <property name="rightMargin">
+                                                        <number>0</number>
+                                                    </property>
+                                                    <property name="bottomMargin">
+                                                        <number>0</number>
+                                                    </property>
+                                                    <item alignment="Qt::AlignHCenter">
+                                                        <widget class="QProgressBar" name="time_progressbar">
+                                                            <property name="styleSheet">
+                                                                <string notr="true">QProgressBar::chunk {
+                                                                    background-color: #06b025;
+                                                                    }
+
+                                                                    QProgressBar {
+                                                                    max-width: 10px;
+                                                                    }
+                                                                </string>
+                                                            </property>
+                                                            <property name="value">
+                                                                <number>24</number>
+                                                            </property>
+                                                            <property name="alignment">
+                                                                <set>Qt::AlignCenter</set>
+                                                            </property>
+                                                            <property name="textVisible">
+                                                                <bool>false</bool>
+                                                            </property>
+                                                            <property name="orientation">
+                                                                <enum>Qt::Vertical</enum>
+                                                            </property>
+                                                            <property name="invertedAppearance">
+                                                                <bool>false</bool>
+                                                            </property>
+                                                        </widget>
+                                                    </item>
+                                                    <item alignment="Qt::AlignHCenter">
+                                                        <widget class="QLabel" name="time_label">
+                                                            <property name="text">
+                                                                <string>300s</string>
+                                                            </property>
+                                                            <property name="alignment">
+                                                                <set>Qt::AlignCenter</set>
+                                                            </property>
+                                                        </widget>
+                                                    </item>
+                                                </layout>
+                                            </widget>
+                                        </item>
+                                        <item row="0" column="0">
+                                            <widget class="QScrollArea" name="scrollArea">
+                                                <property name="widgetResizable">
+                                                    <bool>true</bool>
+                                                </property>
+                                                <widget class="QWidget" name="scrollAreaWidgetContents">
+                                                    <property name="geometry">
+                                                        <rect>
+                                                            <x>0</x>
+                                                            <y>0</y>
+                                                            <width>636</width>
+                                                            <height>274</height>
+                                                        </rect>
+                                                    </property>
+                                                    <layout class="QVBoxLayout" name="verticalLayout_5">
+                                                        <item>
+                                                            <widget class="QLabel" name="question_label_test">
+                                                                <property name="text">
+                                                                    <string>Lorem ipsum dolor sit amet, consectetur
+                                                                        adipiscing elit. Phasellus rhoncus massa quis
+                                                                        turpis congue interdum. Suspendisse interdum
+                                                                        ipsum sit amet enim cursus vehicula. Praesent
+                                                                        non mauris augue. Cras est nisl, sagittis in
+                                                                        tempor ac, laoreet ac ex. Etiam dolor sapien,
+                                                                        ullamcorper a pellentesque vitae, ultrices nec
+                                                                        felis. Maecenas a justo a neque vehicula posuere
+                                                                        a vitae urna. Aliquam maximus lectus ut sapien
+                                                                        suscipit sagittis. Cras mauris lectus, molestie
+                                                                        ac auctor quis, hendrerit quis nisi.
+                                                                        Pellentesque porta justo nisi. Cras elementum
+                                                                        turpis et convallis ultrices. Proin ut tristique
+                                                                        tellus, ut faucibus est. Etiam convallis in
+                                                                        ipsum ac efficitur. Curabitur ultricies metus at
+                                                                        lorem pretium, at lobortis velit aliquet. Duis
+                                                                        pretium nec est sed luctus. Maecenas viverra
+                                                                        felis eu ex vestibulum gravida.
+
+                                                                        Morbi id dui dui. Pellentesque sit amet ante ut
+                                                                        ligula euismod sollicitudin. Mauris lobortis
+                                                                        consequat accumsan. Praesent rutrum consectetur
+                                                                        diam, non viverra urna volutpat sit amet. Etiam
+                                                                        sit amet elit odio. Aliquam erat volutpat.
+                                                                        Integer semper justo nec arcu consequat commodo.
+                                                                        In egestas egestas orci at gravida. Integer
+                                                                        iaculis malesuada posuere. Aliquam turpis nunc,
+                                                                        eleifend sit amet sodales ac, luctus nec metus.
+
+                                                                        Phasellus ultricies congue rutrum. In egestas
+                                                                        odio velit. Integer eget mi a dui egestas tempus
+                                                                        vitae eget mauris. Etiam lacinia, tellus nec
+                                                                        eleifend feugiat, nisl orci facilisis urna, at
+                                                                        vehicula felis sapien sit amet turpis.
+                                                                        Vestibulum dapibus, augue facilisis pharetra
+                                                                        gravida, ante metus consequat tortor,
+                                                                        sollicitudin ultrices ipsum.
+                                                                    </string>
+                                                                </property>
+                                                                <property name="alignment">
+                                                                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop
+                                                                    </set>
+                                                                </property>
+                                                                <property name="wordWrap">
+                                                                    <bool>true</bool>
+                                                                </property>
+                                                                <property name="margin">
+                                                                    <number>0</number>
+                                                                </property>
+                                                            </widget>
+                                                        </item>
+                                                    </layout>
+                                                </widget>
+                                            </widget>
+                                        </item>
+                                    </layout>
                                 </widget>
                             </item>
                         </layout>
@@ -264,6 +405,8 @@
                                             &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px;
                                             margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
                                             &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px;
+                                            margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
+                                            &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px;
                                             margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;In dieser
                                             Situation ist es erforderlich auf Strafstoß zu entschieden. Die jeweiligen
                                             Begrenzungslinien gehören zum Raum, den sie umschließen (Der Strafraum wird
@@ -284,6 +427,8 @@
                                             p, li { white-space: pre-wrap; }
                                             &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Segoe UI';
                                             font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+                                            &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px;
+                                            margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
                                             &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px;
                                             margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; &lt;/p&gt;
                                             &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px;

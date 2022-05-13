@@ -9,9 +9,8 @@
 ################################################################################
 
 from PySide6.QtCore import (QCoreApplication, QMetaObject, Qt)
-from PySide6.QtWidgets import (QComboBox, QGridLayout, QLabel,
-                               QListWidget, QListWidgetItem, QVBoxLayout,
-                               QWidget)
+from PySide6.QtWidgets import (QComboBox, QGridLayout, QGroupBox,
+                               QLabel, QListWidget, QListWidgetItem, QSpinBox, QVBoxLayout, QWidget)
 
 class Ui_self_test_dockwidget(object):
     def setupUi(self, self_test_dockwidget):
@@ -34,15 +33,47 @@ class Ui_self_test_dockwidget(object):
         self.widget.setObjectName(u"widget")
         self.gridLayout = QGridLayout(self.widget)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.label = QLabel(self.widget)
+        self.groupBox_2 = QGroupBox(self.widget)
+        self.groupBox_2.setObjectName(u"groupBox_2")
+        self.gridLayout_4 = QGridLayout(self.groupBox_2)
+        self.gridLayout_4.setObjectName(u"gridLayout_4")
+        self.label = QLabel(self.groupBox_2)
         self.label.setObjectName(u"label")
 
-        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+        self.gridLayout_4.addWidget(self.label, 0, 0, 1, 1)
 
-        self.mode_comboBox = QComboBox(self.widget)
+        self.mode_comboBox = QComboBox(self.groupBox_2)
         self.mode_comboBox.setObjectName(u"mode_comboBox")
 
-        self.gridLayout.addWidget(self.mode_comboBox, 0, 1, 1, 1)
+        self.gridLayout_4.addWidget(self.mode_comboBox, 0, 1, 1, 1)
+
+        self.gridLayout.addWidget(self.groupBox_2, 0, 0, 1, 2)
+
+        self.groupBox = QGroupBox(self.widget)
+        self.groupBox.setObjectName(u"groupBox")
+        self.gridLayout_2 = QGridLayout(self.groupBox)
+        self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.question_visibility_spinbox = QSpinBox(self.groupBox)
+        self.question_visibility_spinbox.setObjectName(u"question_visibility_spinbox")
+
+        self.gridLayout_2.addWidget(self.question_visibility_spinbox, 0, 1, 1, 1)
+
+        self.question_visibility_label = QLabel(self.groupBox)
+        self.question_visibility_label.setObjectName(u"question_visibility_label")
+
+        self.gridLayout_2.addWidget(self.question_visibility_label, 0, 0, 1, 1)
+
+        self.auto_evaluate_label = QLabel(self.groupBox)
+        self.auto_evaluate_label.setObjectName(u"auto_evaluate_label")
+
+        self.gridLayout_2.addWidget(self.auto_evaluate_label, 1, 0, 1, 1)
+
+        self.auto_evaluate_spinbox = QSpinBox(self.groupBox)
+        self.auto_evaluate_spinbox.setObjectName(u"auto_evaluate_spinbox")
+
+        self.gridLayout_2.addWidget(self.auto_evaluate_spinbox, 1, 1, 1, 1)
+
+        self.gridLayout.addWidget(self.groupBox, 1, 0, 1, 2)
 
         self.verticalLayout.addWidget(self.widget)
 
@@ -63,6 +94,17 @@ class Ui_self_test_dockwidget(object):
             QCoreApplication.translate("self_test_dockwidget", u"2: M\u00f6gliche Antwort", None));
         self.self_test_question_groups.setSortingEnabled(__sortingEnabled)
 
+        self.groupBox_2.setTitle(QCoreApplication.translate("self_test_dockwidget", u"Fragenauswahl", None))
         self.label.setText(QCoreApplication.translate("self_test_dockwidget", u"Modus", None))
+        self.groupBox.setTitle(QCoreApplication.translate("self_test_dockwidget", u"Stressmodus", None))
+        self.question_visibility_spinbox.setSuffix(
+            QCoreApplication.translate("self_test_dockwidget", u" Sekunden", None))
+        self.question_visibility_spinbox.setPrefix("")
+        self.question_visibility_label.setText(
+            QCoreApplication.translate("self_test_dockwidget", u"Frage ist sichtbar f\u00fcr", None))
+        self.auto_evaluate_label.setText(
+            QCoreApplication.translate("self_test_dockwidget", u"Automatische Evaluierung nach", None))
+        self.auto_evaluate_spinbox.setSuffix(QCoreApplication.translate("self_test_dockwidget", u" Sekunden", None))
+        self.auto_evaluate_spinbox.setPrefix("")
     # retranslateUi
 

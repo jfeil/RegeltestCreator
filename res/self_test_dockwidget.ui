@@ -40,15 +40,67 @@
    <item>
     <widget class="QWidget" name="widget" native="true">
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Modus</string>
+      <item row="0" column="0" colspan="2">
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="title">
+         <string>Fragenauswahl</string>
         </property>
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Modus</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="mode_comboBox"/>
+         </item>
+        </layout>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="mode_comboBox"/>
+      <item row="1" column="0" colspan="2">
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string>Stressmodus</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="1">
+          <widget class="QSpinBox" name="question_visibility_spinbox">
+           <property name="suffix">
+            <string>Sekunden</string>
+           </property>
+           <property name="prefix">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="question_visibility_label">
+           <property name="text">
+            <string>Frage ist sichtbar für</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="auto_evaluate_label">
+           <property name="text">
+            <string>Automatische Evaluierung nach</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QSpinBox" name="auto_evaluate_spinbox">
+           <property name="suffix">
+            <string>Sekunden</string>
+           </property>
+           <property name="prefix">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </widget>

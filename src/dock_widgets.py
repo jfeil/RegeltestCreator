@@ -80,6 +80,8 @@ class RegeltestCreatorDockwidget(QWidget, Ui_regeltest_creator_dockwidget):
 class SelfTestDockWidget(QWidget, Ui_self_test_dockwidget):
     changed = Signal()
     mode = SelfTestMode(0)  # type: SelfTestMode
+    timer_question = Signal(int)
+    timer_answer = Signal(int)
 
     def __init__(self, main_window: MainWindow):
         super(SelfTestDockWidget, self).__init__(main_window)
@@ -88,6 +90,9 @@ class SelfTestDockWidget(QWidget, Ui_self_test_dockwidget):
 
         self.ui.self_test_question_groups.clear()
         self.ui.self_test_question_groups.setSelectionMode(QListWidget.ExtendedSelection)
+
+        self.ui.question_visibility_spinbox.valueChanged.connect(self.timer_question)
+        self.ui.auto_evaluate_spinbox.valueChanged.connect(self.timer_answer)
 
         self._question_groups = db.get_all_question_groups()
         for question in self._question_groups:

@@ -5,7 +5,7 @@ from enum import Enum, auto
 from typing import List, Tuple, Dict
 from typing import TYPE_CHECKING, Optional
 
-from PySide6.QtCore import Signal, QSortFilterProxyModel
+from PySide6.QtCore import Signal, QSortFilterProxyModel, QTimer
 from PySide6.QtGui import QKeySequence, QShortcut, Qt
 from PySide6.QtWidgets import QWidget, QListView, QMessageBox, QDialog, QDialogButtonBox, QListWidgetItem, \
     QTreeWidgetItem
@@ -262,11 +262,43 @@ class FirstSetupWidget(QWidget, Ui_FirstSetupWidget):
         self.action_done.emit()
 
 
+class Timer:
+    def __init__(self, value: int):
+        self.init_value = value
+        self.current_value = value
+
+    def __sub__(self, other):
+        self.current_value = max(0, self.current_value - other)
+        return self
+
+    def __add__(self, other):
+        self.init_value = other
+        self.current_value = other
+        return self
+
+    def __int__(self):
+        return int(self.current_value)
+
+    def __bool__(self):
+        return self.current_value > 0
+
+    def __eq__(self, other):
+        return self.init_value == other
+
+    def __ne__(self, other):
+        return self.init_value != other
+
+    def reset(self):
+        self.current_value = self.init_value
+
+
 class SelfTestWidget(QWidget, Ui_SelfTestWidget):
     def __init__(self, main_window: MainWindow, dock_widget: SelfTestDockWidget):
         super(SelfTestWidget, self).__init__(main_window)
         self.ui = Ui_SelfTestWidget()
         self.ui.setupUi(self)
+
+        self.ui.time_label.setMinimumSize(self.ui.time_label.sizeHint())
 
         self.main_window = main_window
         self.dock_widget = dock_widget
@@ -276,10 +308,23 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self._previous_questions = []  # type: List[Question]
         self._current_question = None  # type: Optional[Question]
 
+        self.timer_question = QTimer(self)
+        self.timer_question.setInterval(1000)
+        self.timer_question.timeout.connect(lambda: self.update_timer(self.timer_question))
+        self.timer_answer = QTimer(self)
+        self.timer_answer.setInterval(1000)
+        self.timer_answer.timeout.connect(lambda: self.update_timer(self.timer_answer))
+
+        self.time_question = Timer(0)  # type: Timer
+        self.time_answer = Timer(0)  # type: Timer
+
         self.current_question = None  # type: Optional[Question]
         self.previous_questions = []
         self.next_questions = []
+
         self.dock_widget.changed.connect(self.selected_groups_changed)
+        self.dock_widget.timer_question.connect(self.update_timer_question)
+        self.dock_widget.timer_answer.connect(self.update_timer_answer)
 
         self.ui.next_button.pressed.connect(self.next_question)
         self.ui.previous_button.pressed.connect(self.previous_question)
@@ -289,6 +334,7 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
 
         self.ui.statistics_button.set_content(self.ui.statistics_frame)
         self.update_progressbar(0, 0)
+        self.init_timer_display()
 
     def create_statistics(self):
         if not self.current_question:
@@ -315,14 +361,17 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.ui.user_answer_test.setDisabled(not value)
         self.ui.statistics_button.setDisabled(not value)
         if not value:
+            self.stop_timer()
             self.ui.user_answer_test.setText("")
             self.ui.question_label_test.setText("Keine Frage verfügbar.")
             self.ui.statistics_button.setChecked(False)
         else:
+            self.start_timer()
             self.ui.question_label_test.setText(self._current_question.question)
             self.ui.question_label_test.setToolTip(self.create_statistics())
             self.ui.statistics_label.setText(self.create_statistics())
         self.ui.statistics_button.update_animation()
+        self.update_timer_display()
 
     @property
     def previous_questions(self):
@@ -460,6 +509,40 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
             self.ui.progressbar_bar.setValue(current_index)
             self.ui.progressbar_label.setText(f"{current_index + 1} / {question_count}")
 
+    def init_timer_display(self):
+        time = self.time_question.init_value + self.time_answer.init_value
+        if time == 0:
+            time = 1
+            self.ui.time_progressbar.setValue(0)
+        else:
+            self.ui.time_progressbar.setValue(time)
+        self.ui.time_progressbar.setMaximum(time)
+        self.update_timer_display()
+
+    def update_timer_display(self):
+        time = int(self.time_question) + int(self.time_answer)
+        self.ui.time_label.setText(f"{time}s")
+        self.ui.time_progressbar.setValue(time)
+
+    def update_timer_question(self, value: int):
+        if value == 0:
+            self.timer_question.stop()
+        else:
+            if self.timer_answer.isActive():
+                self.timer_answer.stop()
+                self.time_answer.reset()
+            self.timer_question.start()
+        self.time_question += value
+        self.init_timer_display()
+
+    def update_timer_answer(self, value: int):
+        if value == 0:
+            self.timer_answer.stop()
+        elif self.time_question == 0:
+            self.timer_answer.start()
+        self.time_answer += value
+        self.init_timer_display()
+
     @staticmethod
     def prepare_random_mode(dataset) -> List[Question]:
         dataset = dataset.order_by(func.random())
@@ -485,3 +568,38 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         # order the last_tested_date ascending and put the nones before them (already randomized in step 1)
         dataset = dataset.order_by(Statistics.last_tested.asc().nulls_first())
         return dataset.all()
+
+    def start_timer(self):
+        self.timer_question.stop()
+        self.timer_answer.stop()
+        self.time_question.reset()
+        self.time_answer.reset()
+        self.update_timer_display()
+        if self.time_question and self.time_question != 0:
+            self.timer_question.start()
+        elif self.time_answer and self.time_answer != 0:
+            self.timer_answer.start()
+
+    def update_timer(self, timer_type: QTimer):
+        if timer_type == self.timer_question:
+            self.time_question -= self.timer_question.interval() / 1000
+            if not self.time_question:
+                self.ui.question_label_test.setText("")
+                self.timer_question.stop()
+                if self.time_answer != 0:
+                    self.timer_answer.start()
+        elif timer_type == self.timer_answer:
+            self.time_answer -= self.timer_answer.interval() / 1000
+            if not self.time_answer:
+                self.evaluate_question()
+                self.timer_answer.stop()
+        else:
+            raise ValueError("Wrong timer")
+        self.update_timer_display()
+
+    def stop_timer(self):
+        self.timer_question.stop()
+        self.time_question.reset()
+        self.timer_answer.stop()
+        self.time_answer.reset()
+        self.ui.time_progressbar.setDisabled(True)
