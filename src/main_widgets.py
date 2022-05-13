@@ -528,18 +528,15 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         if value == 0:
             self.timer_question.stop()
         else:
-            if self.timer_answer.isActive():
-                self.timer_answer.stop()
-                self.time_answer.reset()
-            self.timer_question.start()
+            self.start_timer()
         self.time_question += value
         self.init_timer_display()
 
     def update_timer_answer(self, value: int):
         if value == 0:
             self.timer_answer.stop()
-        elif self.time_question == 0:
-            self.timer_answer.start()
+        else:
+            self.start_timer()
         self.time_answer += value
         self.init_timer_display()
 
@@ -575,6 +572,8 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.time_question.reset()
         self.time_answer.reset()
         self.update_timer_display()
+        if self.current_question is None:
+            return
         if self.time_question and self.time_question != 0:
             self.timer_question.start()
         elif self.time_answer and self.time_answer != 0:
