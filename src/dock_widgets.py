@@ -136,3 +136,13 @@ class SelfTestDockWidget(QWidget, Ui_self_test_dockwidget):
     def _combobox_changed(self, value: int):
         self.mode = SelfTestMode(value)
         self.changed.emit()
+
+    def reset(self):
+        signal_state = self.ui.self_test_question_groups.blockSignals(True)
+        for index in range(self.ui.self_test_question_groups.count()):
+            self.ui.self_test_question_groups.item(index).setCheckState(Qt.Unchecked)
+        self.changed.emit()
+        self.ui.self_test_question_groups.blockSignals(signal_state)
+        self.ui.auto_evaluate_spinbox.setValue(0)
+        self.ui.question_visibility_spinbox.setValue(0)
+        self.ui.mode_comboBox.setCurrentIndex(0)

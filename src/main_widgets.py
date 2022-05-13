@@ -527,17 +527,18 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
     def update_timer_question(self, value: int):
         if value == 0:
             self.timer_question.stop()
-        else:
-            self.start_timer()
+        self.current_question = self.current_question
         self.time_question += value
+        if value != 0:
+            self.start_timer()
         self.init_timer_display()
 
     def update_timer_answer(self, value: int):
         if value == 0:
             self.timer_answer.stop()
-        else:
-            self.start_timer()
         self.time_answer += value
+        if value != 0:
+            self.start_timer()
         self.init_timer_display()
 
     @staticmethod
@@ -602,3 +603,8 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.timer_answer.stop()
         self.time_answer.reset()
         self.ui.time_progressbar.setDisabled(True)
+
+    def reset(self):
+        self.dock_widget.reset()
+        self.dock_widget.unlock()
+        self.ui.stackedWidget.setCurrentIndex(0)

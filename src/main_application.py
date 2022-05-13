@@ -183,6 +183,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ui.main_window_dockwidget.show()
 
         if mode == ApplicationMode.self_test:
+            self.self_test.reset()
             self.ui.actionSelftest.setVisible(True)
             self.ui.actionSelftest.setText("Fragenverwaltung")
             self.ui.actionSelftest.triggered.disconnect()
