@@ -8,7 +8,7 @@ from typing import Optional
 import markdown2
 import requests
 from PySide6.QtCore import Signal, QThread, Qt
-from PySide6.QtWidgets import QDialog
+from PySide6.QtWidgets import QDialog, QMessageBox
 
 from src.basic_config import app_dirs, current_platform, base_path, is_bundled
 from src.ui_update_checker import Ui_UpdateChecker
@@ -39,7 +39,6 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
             self.ui.install_update_button.setText("Auto-Update ist nur mit der kompilierten Version möglich!")
         if current_platform == 'Darwin':
             self.ui.install_update_button.setVisible(False)
-
         self.display()
 
     def display(self):
@@ -66,11 +65,7 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
                              f'{release_notes}{download_link}')
 
     def update(self) -> None:
-        def progressbar_tracking(value):
-            self.ui.download_progress.setValue(value)
-            if value != 100:
-                return
-
+        def install_update():
             updater_script_unix = "updater.sh"
             os.rename(os.path.join(base_path, updater_script_unix),
                       os.path.join(app_dirs.user_cache_dir, updater_script_unix))
@@ -90,6 +85,19 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
                 subprocess.Popen(" ".join([os.path.join(app_dirs.user_cache_dir, updater_script_unix),
                                            sys.executable, str(os.getpid()), download_path]), shell=True)
             sys.exit(0)
+
+        def progressbar_tracking(value):
+            self.ui.download_progress.setValue(value)
+            if value != 100:
+                return
+
+            info_box = QMessageBox(self)
+            info_box.setWindowTitle("Update erfolgreich heruntergeladen!")
+            info_box.setText("Die Installation dauert ca. 15 Sekunden.")
+            info_box.setInformativeText("Dabei wird die Applikation beendet und nach "
+                                        "erfolgreichem Update erneut gestartet.")
+            info_box.exec()
+            install_update()
 
         if not self.download_link:
             return
@@ -111,10 +119,6 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
         downloadThread = DownloadThread(request, filesize, file_handle, buffer=10240)
         downloadThread.download_progress.connect(progressbar_tracking)
         downloadThread.run()
-
-        # r = requests.get(self.download_link)
-        # with open(download_path, 'wb+') as file:
-        #     file.write(r.content)
 
 
 class DownloadThread(QThread):
