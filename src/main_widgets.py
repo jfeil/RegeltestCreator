@@ -293,7 +293,7 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
     def create_statistics(self):
         if not self.current_question:
             return ""
-        if not self._current_question.statistics:
+        if not self.current_question.statistics:
             return "Keine Statistiken bisher verfügbar."
         else:
             statistics = f"Korrekt beantwortet {self._current_question.statistics.correct_solved}\n" \
@@ -315,16 +315,13 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.ui.user_answer_test.setDisabled(not value)
         self.ui.statistics_button.setDisabled(not value)
         if not value:
-            self.ui.statistics_button.setChecked(False)
-
-        if not value:
-            self.ui.question_label_test.setText("Keine Frage verfügbar.")
             self.ui.user_answer_test.setText("")
-
+            self.ui.question_label_test.setText("Keine Frage verfügbar.")
+            self.ui.statistics_button.setChecked(False)
         else:
             self.ui.question_label_test.setText(self._current_question.question)
-        self.ui.question_label_test.setToolTip(self.create_statistics())
-        self.ui.statistics_label.setText(self.create_statistics())
+            self.ui.question_label_test.setToolTip(self.create_statistics())
+            self.ui.statistics_label.setText(self.create_statistics())
         self.ui.statistics_button.update_animation()
 
     @property

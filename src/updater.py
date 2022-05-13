@@ -71,10 +71,6 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
             if value != 100:
                 return
 
-            updater_script_win = "updater.ps1"
-            os.rename(os.path.join(base_path, updater_script_win),
-                      os.path.join(app_dirs.user_cache_dir, updater_script_win))
-
             updater_script_unix = "updater.sh"
             os.rename(os.path.join(base_path, updater_script_unix),
                       os.path.join(app_dirs.user_cache_dir, updater_script_unix))
@@ -85,9 +81,11 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
                          stat.S_IXUSR | stat.S_IRUSR)
 
             if current_platform == 'Windows':
-                subprocess.Popen(["powershell.exe", os.path.join(app_dirs.user_cache_dir, updater_script_win),
-                                  sys.executable, str(os.getpid()), download_path],
-                                 creationflags=subprocess.CREATE_NEW_CONSOLE)
+                command = f'timeout 10 & ' \
+                          f'copy "{download_path}" "{sys.executable}" & ' \
+                          f'del "{download_path}" & ' \
+                          f'"{sys.executable}"'
+                subprocess.Popen(command, shell=True)
             elif current_platform == 'Darwin' or current_platform == 'Linux':
                 subprocess.Popen(" ".join([os.path.join(app_dirs.user_cache_dir, updater_script_unix),
                                            sys.executable, str(os.getpid()), download_path]), shell=True)
