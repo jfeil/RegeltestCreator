@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/OmicronEditor.iml" filepath="$PROJECT_DIR$/.idea/OmicronEditor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/RegeltestCreator.iml" filepath="$PROJECT_DIR$/.idea/RegeltestCreator.iml" />
     </modules>
   </component>
 </project>
