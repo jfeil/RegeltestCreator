@@ -92,25 +92,32 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-             <widget class="QSpinBox" name="auto_evaluate_spinbox">
-                 <property name="suffix">
-                     <string>Sekunden</string>
-                 </property>
-                 <property name="prefix">
-                     <string/>
-                 </property>
-                 <property name="maximum">
-                     <number>120</number>
-                 </property>
-             </widget>
-         </item>
+            <item row="1" column="1">
+                <widget class="QSpinBox" name="auto_evaluate_spinbox">
+                    <property name="suffix">
+                        <string>Sekunden</string>
+                    </property>
+                    <property name="prefix">
+                        <string/>
+                    </property>
+                    <property name="maximum">
+                        <number>120</number>
+                    </property>
+                </widget>
+            </item>
         </layout>
        </widget>
       </item>
      </layout>
     </widget>
    </item>
+      <item>
+          <widget class="QPushButton" name="question_overview_button">
+              <property name="text">
+                  <string>Übersicht der ausgewählten Fragen</string>
+              </property>
+          </widget>
+      </item>
   </layout>
  </widget>
  <resources/>

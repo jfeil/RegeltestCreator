@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Optional
 from PySide6.QtCore import Signal, QSortFilterProxyModel, QTimer
 from PySide6.QtGui import QKeySequence, QShortcut, Qt
 from PySide6.QtWidgets import QWidget, QListView, QMessageBox, QDialog, QDialogButtonBox, QListWidgetItem, \
-    QTreeWidgetItem
+    QTreeWidgetItem, QTableWidget, QGridLayout, QTableWidgetItem, QStyle
 from sqlalchemy import func, nullsfirst, or_
 
 from src import main_application
@@ -325,6 +325,7 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.dock_widget.changed.connect(self.selected_groups_changed)
         self.dock_widget.timer_question.connect(self.update_timer_question)
         self.dock_widget.timer_answer.connect(self.update_timer_answer)
+        self.dock_widget.ui.question_overview_button.clicked.connect(self.display_overview)
 
         self.ui.next_button.pressed.connect(self.next_question)
         self.ui.previous_button.pressed.connect(self.previous_question)
@@ -445,6 +446,10 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
             pass
         else:
             raise ValueError("Not supported mode.")
+
+        if self.current_question.statistics.level == 0:
+            self.current_question.statistics.level = 1
+
         db.commit()
 
         self.dock_widget.unlock()
@@ -492,6 +497,7 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.update_progressbar(0, len(questions))
 
         self.previous_questions = []
+        self.dock_widget.ui.question_overview_button.setDisabled(not questions)
         if not questions:
             self.current_question = None
             self.next_questions = []
@@ -609,3 +615,56 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.dock_widget.reset()
         self.dock_widget.unlock()
         self.ui.stackedWidget.setCurrentIndex(0)
+
+    def display_overview(self):
+        questions = self.previous_questions + [self.current_question] + self.next_questions
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Übersicht der Fragen")
+        layout = QGridLayout(dialog)
+        layout.setSizeConstraint(QGridLayout.SetFixedSize)
+        table = QTableWidget(len(questions), 4, dialog)
+        layout.addWidget(table)
+
+        table.setHorizontalHeaderLabels(["Regelgruppe", "Frage", "Level", "Zuletzt getestet"])
+
+        for index, question in enumerate(questions):
+            question_text = question.question
+            if question.statistics:
+                level = question.statistics.level
+                last_tested = question.statistics.last_tested.date()
+            else:
+                level = 0
+                last_tested = "Niemals"
+
+            rulegroup_item = QTableWidgetItem(str(question.question_group.name))
+            rulegroup_item.setToolTip(str(question.question_group.name))
+            table.setItem(index, 0, rulegroup_item)
+
+            question_item = QTableWidgetItem(question_text)
+            question_item.setToolTip(question_text)
+            table.setItem(index, 1, question_item)
+
+            level_item = QTableWidgetItem(str(level))
+            table.setItem(index, 2, level_item)
+
+            last_tested_item = QTableWidgetItem(str(last_tested))
+            table.setItem(index, 3, last_tested_item)
+
+        width = table.verticalHeader().width()
+        width += table.horizontalHeader().length()
+        width += table.frameWidth() * 2
+
+        height = table.verticalHeader().length()
+        height += table.horizontalHeader().height()
+        height += table.frameWidth() * 2
+
+        if height > self.height():
+            # scrolling required
+            width += table.style().pixelMetric(QStyle.PM_ScrollBarExtent)
+            height = self.height()
+
+        table.setFixedHeight(height)
+        table.setFixedWidth(width)
+
+        dialog.exec()

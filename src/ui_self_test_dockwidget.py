@@ -3,14 +3,15 @@
 ################################################################################
 ## Form generated from reading UI file 'self_test_dockwidget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.4
+## Created by: Qt User Interface Compiler version 6.3.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
 from PySide6.QtCore import (QCoreApplication, QMetaObject, Qt)
 from PySide6.QtWidgets import (QComboBox, QGridLayout, QGroupBox,
-                               QLabel, QListWidget, QListWidgetItem, QSpinBox, QVBoxLayout, QWidget)
+                               QLabel, QListWidget, QListWidgetItem, QPushButton,
+                               QSpinBox, QVBoxLayout, QWidget)
 
 class Ui_self_test_dockwidget(object):
     def setupUi(self, self_test_dockwidget):
@@ -80,6 +81,11 @@ class Ui_self_test_dockwidget(object):
 
         self.verticalLayout.addWidget(self.widget)
 
+        self.question_overview_button = QPushButton(self_test_dockwidget)
+        self.question_overview_button.setObjectName(u"question_overview_button")
+
+        self.verticalLayout.addWidget(self.question_overview_button)
+
         self.retranslateUi(self_test_dockwidget)
 
         QMetaObject.connectSlotsByName(self_test_dockwidget)
@@ -109,5 +115,7 @@ class Ui_self_test_dockwidget(object):
             QCoreApplication.translate("self_test_dockwidget", u"Automatische Evaluierung nach", None))
         self.auto_evaluate_spinbox.setSuffix(QCoreApplication.translate("self_test_dockwidget", u" Sekunden", None))
         self.auto_evaluate_spinbox.setPrefix("")
+        self.question_overview_button.setText(
+            QCoreApplication.translate("self_test_dockwidget", u"\u00dcbersicht der ausgew\u00e4hlten Fragen", None))
     # retranslateUi
 
