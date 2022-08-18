@@ -5,6 +5,7 @@ import os
 import sys
 from typing import List, Tuple
 
+import sqlalchemy
 from alembic import command
 from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
@@ -14,12 +15,13 @@ from sqlalchemy.orm import Session, Query
 from src.basic_config import database_name, Base, is_bundled, app_dirs
 from src.datatypes import QuestionGroup, Question, MultipleChoice
 
+database_path = os.path.join(app_dirs.user_data_dir, database_name)
+
 
 class DatabaseConnector:
     engine = None
 
-    def __init__(self):
-        database_path = os.path.join(app_dirs.user_data_dir, database_name)
+    def __init__(self, database_path):
         logging.debug(app_dirs.user_data_dir)
         self.initialized = True
         if not os.path.isdir(app_dirs.user_data_dir):
@@ -42,7 +44,12 @@ class DatabaseConnector:
             self._init_database()
 
         self.session = Session(self.engine)
-        self._upgrade_database()
+        try:
+            self._upgrade_database()
+        except sqlalchemy.exc.OperationalError as err:
+            self.session.close()
+            self.engine.dispose()
+            raise err
 
     def _init_database(self):
         # Create database based on basis and stamp with alembic for future migrations
@@ -165,4 +172,9 @@ class DatabaseConnector:
                 question_groups]
 
 
-db = DatabaseConnector()
+try:
+    db = DatabaseConnector(database_path)
+except sqlalchemy.exc.OperationalError as err:
+    logging.error(f"{err}\n\nDatabase is corrupt. Deleting the data and recreate it.")
+    os.remove(database_path)
+    db = DatabaseConnector(database_path)
