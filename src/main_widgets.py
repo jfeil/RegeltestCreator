@@ -361,11 +361,13 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.ui.switch_eval_button.setDisabled(not value)
         self.ui.user_answer_test.setDisabled(not value)
         self.ui.statistics_button.setDisabled(not value)
+        self.dock_widget.ui.question_overview_button.setDisabled(not value)
         if not value:
             self.stop_timer()
             self.ui.user_answer_test.setText("")
             self.ui.question_label_test.setText("Keine Frage verfügbar.")
             self.ui.statistics_button.setChecked(False)
+            self.update_progressbar(0, 0)
         else:
             self.start_timer()
             self.ui.question_label_test.setText(self._current_question.question)
@@ -497,7 +499,6 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.update_progressbar(0, len(questions))
 
         self.previous_questions = []
-        self.dock_widget.ui.question_overview_button.setDisabled(not questions)
         if not questions:
             self.current_question = None
             self.next_questions = []
@@ -617,6 +618,8 @@ class SelfTestWidget(QWidget, Ui_SelfTestWidget):
         self.ui.stackedWidget.setCurrentIndex(0)
 
     def display_overview(self):
+        if not self.current_question:
+            return
         questions = self.previous_questions + [self.current_question] + self.next_questions
 
         dialog = QDialog(self)
