@@ -89,6 +89,7 @@ class DatabaseConnector:
         self.session.close()
 
     def clear_database(self):
+        self.session.close()
         Base.metadata.drop_all(self.engine)
         self.initialized = False
 

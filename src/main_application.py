@@ -1,3 +1,5 @@
+import datetime
+import json
 from enum import Enum, auto, IntEnum
 
 from PySide6.QtCore import QCoreApplication, Qt
@@ -6,7 +8,7 @@ from bs4 import BeautifulSoup
 
 from src.basic_config import app_version, check_for_update, display_name, is_bundled
 from src.database import db
-from src.datatypes import create_question_groups, create_questions_and_mchoice
+from src.datatypes import create_question_groups, create_questions_and_mchoice, QuestionGroup, Question, MultipleChoice
 from src.dock_widgets import RegeltestCreatorDockwidget, SelfTestDockWidget
 from src.main_widgets import FirstSetupWidget, QuestionOverviewWidget, SelfTestWidget
 from src.ui_mainwindow import Ui_MainWindow
@@ -26,18 +28,54 @@ class ApplicationMode(IntEnum):
 
 
 def load_dataset(parent: QWidget, reset_cursor=True) -> bool:
-    def read_in(file_path: str):
+    def read_in_origformat(file_path: str):
         with open(file_path, 'rb') as file:
             soup = BeautifulSoup(file, "lxml-xml")
         question_groups = create_question_groups(soup.find("GRUPPEN"))
         questions, mchoice = create_questions_and_mchoice(soup("REGELSATZ"))
         return question_groups, questions, mchoice
 
-    file_name = QFileDialog.getOpenFileName(parent, caption="Fragendatei öffnen", filter="DFB Regeldaten (*.xml)")
+    def read_in_sr_regeltest_de(file_path: str):
+        question_groups = []
+        questions = []
+        with open(file_path, 'r', encoding='utf-8') as file:
+            dictionary = json.load(file)
+            for question_group in dictionary["question_groups"]:
+                question_groups += [QuestionGroup(
+                    id=question_group["id"],
+                    name=question_group["name"]
+                )]
+            for question in dictionary["questions"]:
+                multiple_choice = []
+                answer_text = question["answer_text"]
+                answer_index = question["answer_index"]
+                if question["multiple_choice"]:
+                    for i, answer_option in enumerate(question["multiple_choice"]):
+                        multiple_choice += [MultipleChoice(index=i, text=answer_option)]
+                    answer_text = multiple_choice[answer_index].text
+                questions += [Question(
+                    group_id=question["group_id"],
+                    question_id=question["question_id"],
+                    question=question["question"],
+                    answer_index=answer_index,
+                    answer_text=answer_text,
+                    created=datetime.datetime.strptime(question["created"], '%Y-%m-%d').date(),
+                    last_edited=datetime.datetime.strptime(question["last_edited"], '%Y-%m-%d').date(),
+                    multiple_choice=multiple_choice
+                )]
+        return question_groups, questions
+
+    filter_sr_regeltest_de = "sr-regeltest.de Export (*.json)"
+    filter_orig = "DFB Regeldaten (*.xml)"
+    file_name = QFileDialog.getOpenFileName(parent, caption="Fragendatei öffnen",
+                                            filter=f"{filter_sr_regeltest_de};;{filter_orig}")
     if len(file_name) == 0 or file_name[0] == "":
         return False
     QApplication.setOverrideCursor(Qt.WaitCursor)
-    datasets = read_in(file_name[0])
+    if file_name[1] == filter_orig:
+        datasets = read_in_origformat(file_name[0])
+    elif file_name[1] == filter_sr_regeltest_de:
+        datasets = read_in_sr_regeltest_de(file_name[0])
     db.clear_database()
     for dataset in datasets:
         db.fill_database(dataset)
