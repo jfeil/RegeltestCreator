@@ -231,9 +231,10 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
         self.refresh_column_filter()
 
     def refresh_column_filter(self):
-        for (_, filter_model, _) in self.question_group_tabs:
+        for index, (_, filter_model, _) in enumerate(self.question_group_tabs):
             filter_model = filter_model  # type: RuleSortFilterProxyModel
             filter_model.invalidateFilter()
+            self.ui.tabWidget.setTabVisible(index, filter_model.rowCount() != 0)
 
     def create_ruletabs(self, question_groups: List[QuestionGroup]):
         self.ui.tabWidget.setTabsClosable(True)
