@@ -15,6 +15,11 @@ from src.datatypes import Question, MultipleChoice
 PAGE_HEIGHT = defaultPageSize[1]
 PAGE_WIDTH = defaultPageSize[0]
 linespacing = 14
+margin = 4
+
+margin_to_points = 30
+width_points_factor = linespacing / 1.5
+
 min_lines = 3
 space_between = 0.2 * linespacing
 space_bottom = 0.4 * linespacing
@@ -29,7 +34,8 @@ class QuestionFlowable(Flowable):
     canv: Canvas
 
     def __init__(self, question_index: int, question: Question, mchoice: List[MultipleChoice], fontName='Helvetica',
-                 fontSize=9, solution: bool = False, shuffle_mchoice=True, display_points=True, x=0, y=0,
+                 fontSize=9, solution: bool = False, shuffle_mchoice: bool = True, max_points: int = 2,
+                 display_points: bool = True, x=0, y=0,
                  width=4 / 5 * PAGE_WIDTH):
         super().__init__()
 
@@ -63,6 +69,7 @@ class QuestionFlowable(Flowable):
 
         self.paragraph_style = ParagraphStyle('DefaultStyle', fontName=fontName, fontSize=fontSize)
 
+        self.max_points = max_points
         self.x = x
         self.y = y
         self.width = width
@@ -91,8 +98,11 @@ class QuestionFlowable(Flowable):
 
     def draw(self):
         question = Paragraph(self.question_text, self.paragraph_style)
-        question.wrapOn(self.canv, self.width - 10, self.height)
+        question.wrapOn(self.canv, ratio_answer * self.width, self.height)
         question.drawOn(self.canv, self.x, space_between + sum(self.height_answer) + space_bottom)
+
+        len_max_points = len(str(self.max_points))
+        width_points = width_points_factor * len_max_points
 
         if self.solution:
             solution = Paragraph(self.answer_text, self.paragraph_style)
@@ -104,7 +114,7 @@ class QuestionFlowable(Flowable):
                 def create_radio(index, text, x, y, height):
                     radio_group = f"Question_{self.question_index}"
                     self.canv.acroForm.radio(f"radio{index}", relative=True, size=radio_size, name=radio_group, x=x,
-                                             y=y - 0.75 * radio_size + 0.5 * height)
+                                             y=y - 0.75 * radio_size + 0.5 * height, annotationFlags=0)
                     solution = Paragraph(text, self.paragraph_style)
                     solution.wrapOn(self.canv, ratio_answer * self.width, self.height)
                     solution.drawOn(self.canv, x + 1.25 * radio_size, y)
@@ -122,11 +132,16 @@ class QuestionFlowable(Flowable):
                                                      width=ratio_answer * self.width, height=sum(self.height_answer),
                                                      fontName=self.paragraph_style.fontName,
                                                      fontSize=self.paragraph_style.fontSize, maxlen=None,
-                                                     fieldFlags=(1 << 1) + (1 << 12))
-            self.canv.acroForm.textfieldRelative(x=self.width, y=self.height - points_height, height=points_height,
-                                                 width=points_height, value="/2",
+                                                     fieldFlags=(1 << 1) + (1 << 12),
+                                                     annotationFlags=0)
+            self.canv.acroForm.textfieldRelative(x=self.width - width_points - margin, y=self.height - linespacing,
+                                                 height=linespacing,
+                                                 width=width_points, value="",
                                                  fontName=self.paragraph_style.fontName,
-                                                 fontSize=self.paragraph_style.fontSize, maxlen=3)
+                                                 fontSize=self.paragraph_style.fontSize, maxlen=1, annotationFlags=0)
+            max_points = Paragraph(f"/{self.max_points}", self.paragraph_style)
+            max_points.wrapOn(self.canv, 2 * linespacing, points_height)
+            max_points.drawOn(self.canv, self.width, self.height - linespacing)
 
 
 class TitleFlowable(Flowable):
@@ -161,25 +176,33 @@ class TitleFlowable(Flowable):
 
         question = Paragraph("Name:", self.paragraph_style)
         question.wrapOn(self.canv, 2 / 10 * self.width, self.height)
-        question.drawOn(self.canv, 6 / 10 * self.width - 10, 20)
+        question.drawOn(self.canv, 4 / 10 * self.width - 10, 20)
 
-        x_username = 6 / 10 * self.width + 30
-        y_username = 20
-        height_username = linespacing
-        width_username = 2 / 10 * self.width
+        x_username = 4 / 10 * self.width + 30
+        y_name_row = 20
+        width_username = 5 / 10 * self.width
+        len_max_points = len(str(self.max_points))
+        width_points = width_points_factor * len_max_points
+
         if self.username != "":
             question = Paragraph(self.username, self.paragraph_style)
-            question.wrapOn(self.canv, width_username, height_username)
-            question.drawOn(self.canv, x_username, y_username)
+            question.wrapOn(self.canv, width_username, linespacing)
+            question.drawOn(self.canv, x_username, y_name_row)
         else:
-            self.canv.acroForm.textfieldRelative(x=x_username, y=y_username, height=height_username,
-                                                 width=width_username, value=self.username,
+            self.canv.acroForm.textfieldRelative(x=x_username, y=y_name_row, height=linespacing,
+                                                 width=width_username - width_points - margin, value=self.username,
                                                  fontName=self.paragraph_style.fontName,
-                                                 fontSize=self.paragraph_style.fontSize)
-        self.canv.acroForm.textfieldRelative(x=6 / 10 * self.width + 40 + 2 / 10 * self.width, y=20, height=linespacing,
-                                             width=1 / 15 * self.width, value=f"/{self.max_points}",
+                                                 fontSize=self.paragraph_style.fontSize, annotationFlags=0,
+                                                 fieldFlags=(1 << 1))
+            self.canv.line(x1=x_username + 1, x2=x_username + width_username - width_points - margin - 1,
+                           y1=y_name_row + 1, y2=y_name_row + 1)
+        self.canv.acroForm.textfieldRelative(x=self.width - width_points - margin, y=y_name_row, height=linespacing,
+                                             width=width_points, value=f"", maxlen=len_max_points,
                                              fontName=self.paragraph_style.fontName,
-                                             fontSize=self.paragraph_style.fontSize)
+                                             fontSize=self.paragraph_style.fontSize, annotationFlags=0)
+        max_points = Paragraph(f"/{self.max_points}", self.paragraph_style)
+        max_points.wrapOn(self.canv, 2 * linespacing, linespacing)
+        max_points.drawOn(self.canv, self.width, y=y_name_row)
 
 
 def create_document(questions: List[Question], filename, title, icon: Image = None,
@@ -214,3 +237,12 @@ def create_document(questions: List[Question], filename, title, icon: Image = No
 
     doc_question.build(story_question, onFirstPage=page_setup, onLaterPages=page_setup)
     doc_solution.build(story_solution, onFirstPage=page_setup, onLaterPages=page_setup)
+
+
+if __name__ == '__main__':
+    with open('C:\\Users\\jan_f\\PycharmProjects\\OmicronEditor\\document_example.pickle', 'rb') as file:
+        import pickle
+
+        input_ = pickle.load(file)
+        input_.pop(1)
+        create_document(*input_)
