@@ -4,11 +4,12 @@ from typing import List, Tuple
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QShortcut, QKeySequence
 from PySide6.QtWidgets import QListWidget, QVBoxLayout, QDialog, QFileDialog, QWidget, \
-    QSpacerItem, QSizePolicy
+    QSpacerItem, QSizePolicy, QLabel, QRadioButton
 from PySide6.QtWidgets import QListWidgetItem
 
 from src.database import db
-from src.datatypes import Question, QuestionGroup
+from src.datatypes import Question, QuestionGroup, RegeltestQuestion
+from src.ui_regeltest_creator_questionwidget import Ui_RegeltestCreatorQuestionWidget
 from src.ui_regeltest_save import Ui_RegeltestSave
 from src.ui_regeltest_setup import Ui_RegeltestSetup
 from src.ui_regeltest_setup_widget import Ui_RegeltestSetup_QuestionGroup
@@ -53,13 +54,75 @@ class RegeltestCreator(QListWidget):
                 self.add_question(db.get_question(signature))
 
 
+class QuestionEditWidget(QWidget, Ui_RegeltestCreatorQuestionWidget):
+    def __init__(self, question: Question, parent):
+        super().__init__(parent)
+        self.ui = Ui_RegeltestCreatorQuestionWidget()
+        self.ui.setupUi(self)
+
+        self.question = question
+
+        self.layout_textanswer = QVBoxLayout()
+        self.label_textanswer = QLabel(self)
+        self.ui.textanswer.setLayout(self.layout_textanswer)
+        self.layout_textanswer.addWidget(self.label_textanswer)
+        self.layout_multiple_choice = QVBoxLayout()
+        self.ui.multiple_choice.setLayout(self.layout_multiple_choice)
+
+        self.ui.label_question.setText(question.question)
+        self.label_textanswer.setText(question.answer_text)
+        self.label_textanswer.setWordWrap(True)
+
+        self.ui.checkBox_multiplechoice.stateChanged.connect(self._checkbox_changed)
+
+        self.multiple_choice = []
+        for i, multiplechoice in enumerate(question.multiple_choice):
+            button = QRadioButton(self)
+            button.setText(multiplechoice.text)
+            button.setChecked(Qt.CheckState.Checked if question.answer_index == i else Qt.CheckState.Unchecked)
+            button.setDisabled(True)
+            self.multiple_choice.append(button)
+            self.layout_multiple_choice.addWidget(button)
+
+        if len(self.question.multiple_choice) <= 1:
+            self.ui.checkBox_multiplechoice.setDisabled(True)
+            self.ui.checkBox_multiplechoice.setCheckState(Qt.CheckState.Unchecked)
+            self.ui.stackedWidget.setCurrentIndex(0)
+        else:
+            self.ui.checkBox_multiplechoice.setDisabled(False)
+            self.ui.checkBox_multiplechoice.setCheckState(Qt.CheckState.Checked)
+            self.ui.stackedWidget.setCurrentIndex(1)
+
+    def _checkbox_changed(self, new_state: Qt.CheckState):
+        if new_state == Qt.CheckState.Unchecked:
+            self.ui.stackedWidget.setCurrentIndex(0)
+        else:
+            self.ui.stackedWidget.setCurrentIndex(1)
+
+    def get_question(self) -> RegeltestQuestion:
+        return RegeltestQuestion(
+            available_points=self.ui.spinBox_points.value(),
+            question=self.question,
+            is_multiple_choice=(self.ui.checkBox_multiplechoice.checkState() == Qt.CheckState.Checked)
+        )
+
+
 class RegeltestSaveDialog(QDialog, Ui_RegeltestSave):
-    def __init__(self, parent):
+    def __init__(self, questions: List[Question], parent):
         super().__init__(parent)
         self.ui = Ui_RegeltestSave()
         self.ui.setupUi(self)
         self.ui.icon_edit_button.clicked.connect(self.open_icon)
         self.ui.output_edit_button.clicked.connect(self.create_save)
+        self.questions = questions
+        self.question_widgets: List[QuestionEditWidget] = []
+
+        self.ui.question_scrollable.setLayout(QVBoxLayout())
+
+        for question in self.questions:
+            widget = QuestionEditWidget(question, self)
+            self.ui.question_scrollable.layout().addWidget(widget)
+            self.question_widgets += [widget]
 
     def open_icon(self):
         file_name = QFileDialog.getOpenFileName(self, caption="Icon auswählen", filter="Icon file (*.jpg;*.png)")
@@ -72,6 +135,9 @@ class RegeltestSaveDialog(QDialog, Ui_RegeltestSave):
         if len(file_name) == 0 or file_name[0] == "":
             return
         self.ui.output_edit.setText(file_name[0])
+
+    def get_questions(self) -> List[RegeltestQuestion]:
+        return [widget.get_question() for widget in self.question_widgets]
 
 
 class RegeltestSetupQuestionGroup(QWidget, Ui_RegeltestSetup_QuestionGroup):

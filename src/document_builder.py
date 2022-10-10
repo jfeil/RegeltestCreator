@@ -10,7 +10,7 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import Flowable, SimpleDocTemplate, Spacer, Paragraph
 from reportlab.rl_config import defaultPageSize
 
-from src.datatypes import Question, MultipleChoice
+from src.datatypes import Question, MultipleChoice, RegeltestQuestion
 
 PAGE_HEIGHT = defaultPageSize[1]
 PAGE_WIDTH = defaultPageSize[0]
@@ -33,7 +33,7 @@ points_height = 3 * linespacing
 class QuestionFlowable(Flowable):
     canv: Canvas
 
-    def __init__(self, question_index: int, question: Question, mchoice: List[MultipleChoice], fontName='Helvetica',
+    def __init__(self, question_index: int, question: Question, is_multiplechoice: bool, fontName='Helvetica',
                  fontSize=9, solution: bool = False, shuffle_mchoice: bool = True, max_points: int = 2,
                  display_points: bool = True, x=0, y=0,
                  width=4 / 5 * PAGE_WIDTH):
@@ -59,12 +59,13 @@ class QuestionFlowable(Flowable):
 
         self.question_index = question_index
         self.question = question
-        self.answer_index = self.question.answer_index
+        self.is_multiplechoice = is_multiplechoice
+        self.new_mchoice = self.question.multiple_choice
+        self.new_answer_index = self.question.answer_index
+        if shuffle_mchoice and self.new_answer_index != -1:
+            self.new_mchoice, self.new_answer_index = shuffle_mchoice_fun(self.new_mchoice, self.new_answer_index)
 
-        if shuffle_mchoice and self.answer_index != -1:
-            mchoice, self.answer_index = shuffle_mchoice_fun(mchoice, self.answer_index)
-
-        self.mchoice = [f"{answer_letter(m.index)}) {m.text}" for m in mchoice]
+        self.new_mchoice = [f"{answer_letter(m.index)}) {m.text}" for m in self.new_mchoice]
         self.solution = solution
 
         self.paragraph_style = ParagraphStyle('DefaultStyle', fontName=fontName, fontSize=fontSize)
@@ -76,22 +77,21 @@ class QuestionFlowable(Flowable):
 
         self.question_text = f"{self.question_index}. {self.question.question}"
 
-        if self.answer_index == -1:
+        if not self.is_multiplechoice:
             self.answer_text = self.question.answer_text
         else:
-            answer_letter = answer_letter(self.answer_index)
-            self.answer_text = f"{answer_letter}) {self.question.answer_text}"
+            self.answer_text = f"{answer_letter(self.new_answer_index)}) {self.question.answer_text}"
 
         lines_question = len(simpleSplit(self.question_text, fontName, fontSize, self.width))
         self.lines_answer = len(simpleSplit(self.answer_text, fontName, fontSize, ratio_answer * self.width))
 
-        if self.answer_index == -1:
+        if not self.is_multiplechoice:
             self.height_answer = [max(self.lines_answer, min_lines) * linespacing]
         else:
             # noinspection PyTypeChecker
             self.height_answer = [
                 max(len(simpleSplit(a, fontName, fontSize, ratio_answer * self.width)) * linespacing, 1.1 * radio_size)
-                for a in self.mchoice]
+                for a in self.new_mchoice]
 
         self.height_question = lines_question * linespacing
         self.height = sum(self.height_answer) + space_between + self.height_question + space_bottom
@@ -110,7 +110,7 @@ class QuestionFlowable(Flowable):
             solution.drawOn(self.canv, self.x + 4 * mm,
                             self.y + space_bottom + max(min_lines - self.lines_answer, 0) * linespacing)
         elif not self.solution:
-            if self.answer_index != -1:
+            if self.is_multiplechoice:
                 def create_radio(index, text, x, y, height):
                     radio_group = f"Question_{self.question_index}"
                     self.canv.acroForm.radio(f"radio{index}", relative=True, size=radio_size, name=radio_group, x=x,
@@ -120,7 +120,7 @@ class QuestionFlowable(Flowable):
                     solution.drawOn(self.canv, x + 1.25 * radio_size, y)
 
                 height_sum = sum(self.height_answer) + space_bottom
-                for index, (height, choice) in enumerate(zip(self.height_answer, self.mchoice)):
+                for index, (height, choice) in enumerate(zip(self.height_answer, self.new_mchoice)):
                     height_sum -= height
                     create_radio(index, choice, self.x, height_sum, height)
 
@@ -205,7 +205,7 @@ class TitleFlowable(Flowable):
         max_points.drawOn(self.canv, self.width, y=y_name_row)
 
 
-def create_document(questions: List[Question], filename, title, icon: Image = None,
+def create_document(questions: List[RegeltestQuestion], filename, title, icon: Image = None,
                     solution_suffix='_LOESUNG', shuffle_mchoice=True, font_name='Helvetica', font_size=9):
     def page_setup(canvas, doc):
         canvas.saveState()
@@ -222,15 +222,17 @@ def create_document(questions: List[Question], filename, title, icon: Image = No
     story_solution = [TitleFlowable(title, icon, username="Muster Lösung", max_points=len(questions) * 2)]
     story_question = [TitleFlowable(title, icon, max_points=len(questions) * 2)]
 
-    for i, question in enumerate(questions):
+    for i, regeltest_question in enumerate(questions):
         random_state = random.getstate()
-        question_flow = QuestionFlowable(i + 1, question, question.multiple_choice, font_name, font_size,
+        question_flow = QuestionFlowable(i + 1, regeltest_question.question, regeltest_question.is_multiple_choice,
+                                         font_name, font_size,
                                          solution=False,
                                          shuffle_mchoice=shuffle_mchoice, width=doc_question.width)
         story_question.append(question_flow)
         story_question.append(Spacer(1, 0.1 * inch))
         random.setstate(random_state)
-        question_flow = QuestionFlowable(i + 1, question, question.multiple_choice, font_name, font_size, solution=True,
+        question_flow = QuestionFlowable(i + 1, regeltest_question.question, regeltest_question.is_multiple_choice,
+                                         font_name, font_size, solution=True,
                                          shuffle_mchoice=shuffle_mchoice, width=doc_solution.width)
         story_solution.append(question_flow)
         story_solution.append(Spacer(1, 0.1 * inch))

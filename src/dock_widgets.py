@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QWidget, QDialog, QApplication, QListWidgetItem, Q
 
 from src import document_builder
 from src.database import db
-from src.datatypes import Regeltest, RegeltestIcon, RegeltestQuestion, SelfTestMode
+from src.datatypes import Regeltest, RegeltestIcon, SelfTestMode
 from src.regeltestcreator import RegeltestSetup, RegeltestSaveDialog
 from src.ui_regeltest_creator_dockwidget import Ui_regeltest_creator_dockwidget
 from src.ui_self_test_dockwidget import Ui_self_test_dockwidget
@@ -52,11 +52,12 @@ class RegeltestCreatorDockwidget(QWidget, Ui_regeltest_creator_dockwidget):
         questions = []
         for signature in self.ui.regeltest_list.questions:
             questions += [db.get_question(signature)]
-        settings = RegeltestSaveDialog(self)
+        settings = RegeltestSaveDialog(questions, self)
         settings.ui.title_edit.setFocus()
         result = settings.exec()
         output_path = settings.ui.output_edit.text()
         if result == QDialog.Accepted:
+            selected_questions = settings.get_questions()
             QApplication.setOverrideCursor(Qt.WaitCursor)
             if settings.ui.icon_path_edit.text():
                 icon = Image.open(settings.ui.icon_path_edit.text())
@@ -64,14 +65,10 @@ class RegeltestCreatorDockwidget(QWidget, Ui_regeltest_creator_dockwidget):
             else:
                 icon = None
                 icon_db = None
-            regeltest_questions = [RegeltestQuestion(available_points=2,
-                                                     question=question,
-                                                     is_multiple_choice=(question.answer_index != -1))
-                                   for question in questions]
             regeltest = Regeltest(title=settings.ui.title_edit.text(), icon=icon_db,
-                                  selected_questions=regeltest_questions)
+                                  selected_questions=selected_questions)
             db.add_object(regeltest)
-            document_builder.create_document(questions, output_path, settings.ui.title_edit.text(),
+            document_builder.create_document(selected_questions, output_path, settings.ui.title_edit.text(),
                                              icon=icon)
             QApplication.restoreOverrideCursor()
             webbrowser.open_new(output_path)
