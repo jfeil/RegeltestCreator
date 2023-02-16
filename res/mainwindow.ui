@@ -37,11 +37,18 @@
     </rect>
    </property>
    <widget class="QMenu" name="menuDatei">
-    <property name="title">
-     <string>Datei</string>
-    </property>
-    <addaction name="actionRegeldatensatz_einladen"/>
-    <addaction name="actionRegeldatensatz_exportieren"/>
+       <property name="title">
+           <string>Datei</string>
+       </property>
+       <widget class="QMenu" name="menuRegeldatensatz_importieren">
+           <property name="title">
+               <string>Regeldatensatz importieren</string>
+           </property>
+           <addaction name="actionAus_einer_Datei"/>
+           <addaction name="actionAus_dem_Internet"/>
+       </widget>
+       <addaction name="menuRegeldatensatz_importieren"/>
+       <addaction name="actionRegeldatensatz_exportieren"/>
    </widget>
    <widget class="QMenu" name="menuAnsicht">
     <property name="title">
@@ -106,41 +113,46 @@
     <string>Ansicht zurücksetzen</string>
    </property>
   </action>
-  <action name="actionRegeltest_l_schen">
-   <property name="text">
-    <string>Regeltest löschen</string>
-   </property>
-  </action>
-  <action name="actionRegeldatensatz_einladen">
-   <property name="text">
-    <string>Regeldatensatz einladen</string>
-   </property>
-  </action>
-  <action name="actionRegeldatensatz_exportieren">
-   <property name="text">
-    <string>Regeldatensatz exportieren</string>
-   </property>
-  </action>
-  <action name="actionRegeltest_einrichten">
-   <property name="text">
-    <string>Regeltest einrichten</string>
-   </property>
-  </action>
-  <action name="actionAuf_Updates_pr_fen">
-   <property name="text">
-    <string>Auf Updates prüfen</string>
-   </property>
-  </action>
-  <action name="action_ber">
-   <property name="text">
-    <string>Über</string>
-   </property>
-  </action>
-  <action name="actionSelftest">
-   <property name="text">
-    <string>Selbsttest</string>
-   </property>
-  </action>
+     <action name="actionRegeltest_l_schen">
+         <property name="text">
+             <string>Regeltest löschen</string>
+         </property>
+     </action>
+     <action name="actionRegeldatensatz_exportieren">
+         <property name="text">
+             <string>Regeldatensatz exportieren</string>
+         </property>
+     </action>
+     <action name="actionRegeltest_einrichten">
+         <property name="text">
+             <string>Regeltest einrichten</string>
+         </property>
+     </action>
+     <action name="actionAuf_Updates_pr_fen">
+         <property name="text">
+             <string>Auf Updates prüfen</string>
+         </property>
+     </action>
+     <action name="action_ber">
+         <property name="text">
+             <string>Über</string>
+         </property>
+     </action>
+     <action name="actionSelftest">
+         <property name="text">
+             <string>Selbsttest</string>
+         </property>
+     </action>
+     <action name="actionAus_einer_Datei">
+         <property name="text">
+             <string>Aus einer Datei</string>
+         </property>
+     </action>
+     <action name="actionAus_dem_Internet">
+         <property name="text">
+             <string>Aus dem Internet</string>
+         </property>
+     </action>
  </widget>
  <resources/>
  <connections/>

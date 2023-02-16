@@ -1,13 +1,15 @@
 import datetime
 import json
 from enum import Enum, auto, IntEnum
+from typing import Dict, Any
 
 from PySide6.QtCore import QCoreApplication, Qt
-from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QApplication, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QWidget, QFileDialog, QApplication, QMessageBox, QDialog
 from bs4 import BeautifulSoup
 
 from src.basic_config import app_version, check_for_update, display_name, is_bundled
 from src.database import db
+from src.dataset_downloader import DatasetDownloadDialog
 from src.datatypes import create_question_groups, create_questions_and_mchoice, QuestionGroup, Question, MultipleChoice
 from src.dock_widgets import RegeltestCreatorDockwidget, SelfTestDockWidget
 from src.main_widgets import FirstSetupWidget, QuestionOverviewWidget, SelfTestWidget
@@ -27,44 +29,43 @@ class ApplicationMode(IntEnum):
     regeltest_setup = 3
 
 
-def load_dataset(parent: QWidget, reset_cursor=True) -> bool:
-    def read_in_origformat(file_path: str):
-        with open(file_path, 'rb') as file:
-            soup = BeautifulSoup(file, "lxml-xml")
-        question_groups = create_question_groups(soup.find("GRUPPEN"))
-        questions, mchoice = create_questions_and_mchoice(soup("REGELSATZ"))
-        return question_groups, questions, mchoice
+def read_in_sr_regeltest_de(json_content: Dict[str, Any]):
+    question_groups = []
+    questions = []
+    for question_group in json_content["question_groups"]:
+        question_groups += [QuestionGroup(
+            id=question_group["id"],
+            name=question_group["name"]
+        )]
+    for question in json_content["questions"]:
+        multiple_choice = []
+        answer_text = question["answer_text"]
+        answer_index = question["answer_index"]
+        if question["multiple_choice"]:
+            for i, answer_option in enumerate(question["multiple_choice"]):
+                multiple_choice += [MultipleChoice(index=i, text=answer_option)]
+            answer_text = multiple_choice[answer_index].text
+        questions += [Question(
+            group_id=question["group_id"],
+            question_id=question["question_id"],
+            question=question["question"],
+            answer_index=answer_index,
+            answer_text=answer_text,
+            created=datetime.datetime.strptime(question["created"], '%Y-%m-%d').date(),
+            last_edited=datetime.datetime.strptime(question["last_edited"], '%Y-%m-%d').date(),
+            multiple_choice=multiple_choice
+        )]
+    return question_groups, questions
 
-    def read_in_sr_regeltest_de(file_path: str):
-        question_groups = []
-        questions = []
-        with open(file_path, 'r', encoding='utf-8') as file:
-            dictionary = json.load(file)
-            for question_group in dictionary["question_groups"]:
-                question_groups += [QuestionGroup(
-                    id=question_group["id"],
-                    name=question_group["name"]
-                )]
-            for question in dictionary["questions"]:
-                multiple_choice = []
-                answer_text = question["answer_text"]
-                answer_index = question["answer_index"]
-                if question["multiple_choice"]:
-                    for i, answer_option in enumerate(question["multiple_choice"]):
-                        multiple_choice += [MultipleChoice(index=i, text=answer_option)]
-                    answer_text = multiple_choice[answer_index].text
-                questions += [Question(
-                    group_id=question["group_id"],
-                    question_id=question["question_id"],
-                    question=question["question"],
-                    answer_index=answer_index,
-                    answer_text=answer_text,
-                    created=datetime.datetime.strptime(question["created"], '%Y-%m-%d').date(),
-                    last_edited=datetime.datetime.strptime(question["last_edited"], '%Y-%m-%d').date(),
-                    multiple_choice=multiple_choice
-                )]
-        return question_groups, questions
 
+def read_in_origformat(soup_content: BeautifulSoup):
+    question_groups = create_question_groups(soup_content.find("GRUPPEN"))
+    questions, mchoice = create_questions_and_mchoice(soup_content("REGELSATZ"))
+    return question_groups, questions, mchoice
+
+
+def load_file_dataset(parent: QWidget, reset_cursor=True) -> bool:
+    datasets = []
     filter_sr_regeltest_de = "sr-regeltest.de Export (*.json)"
     filter_orig = "DFB Regeldaten (*.xml)"
     file_name = QFileDialog.getOpenFileName(parent, caption="Fragendatei öffnen",
@@ -73,15 +74,33 @@ def load_dataset(parent: QWidget, reset_cursor=True) -> bool:
         return False
     QApplication.setOverrideCursor(Qt.WaitCursor)
     if file_name[1] == filter_orig:
-        datasets = read_in_origformat(file_name[0])
+        with open(file_name[0], 'rb') as file:
+            soup_content = BeautifulSoup(file, "lxml-xml")
+        datasets = read_in_origformat(soup_content)
     elif file_name[1] == filter_sr_regeltest_de:
-        datasets = read_in_sr_regeltest_de(file_name[0])
+        with open(file_name[0], 'r', encoding='utf-8') as file:
+            json_content = json.load(file)
+        datasets = read_in_sr_regeltest_de(json_content)
     db.clear_database()
     for dataset in datasets:
         db.fill_database(dataset)
     if reset_cursor:
         QApplication.restoreOverrideCursor()
     return True
+
+
+def load_online_dataset(parent: QWidget, reset_cursor=True) -> bool:
+    dataset_downloader = DatasetDownloadDialog(parent)
+    if dataset_downloader.exec() == QDialog.Accepted:
+        datasets = read_in_sr_regeltest_de(dataset_downloader.data)
+        db.clear_database()
+        for dataset in datasets:
+            db.fill_database(dataset)
+        if reset_cursor:
+            QApplication.restoreOverrideCursor()
+        return True
+    else:
+        return False
 
 
 def save_dataset(parent: QWidget):
@@ -153,7 +172,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # noinspection PyTypeChecker
         self.setWindowTitle(QCoreApplication.translate("MainWindow", f"{display_name} - {app_version}", None))
-        self.ui.actionRegeldatensatz_einladen.triggered.connect(self.load_dataset)
+        self.ui.actionAus_einer_Datei.triggered.connect(lambda: self.load_dataset(from_file=True))
+        self.ui.actionAus_dem_Internet.triggered.connect(lambda: self.load_dataset(from_file=False))
         self.ui.actionAuf_Updates_pr_fen.triggered.connect(lambda: display_update_dialog(self, check_for_update()))
         self.ui.action_ber.triggered.connect(about_dialog)
 
@@ -186,8 +206,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.set_mode(ApplicationMode.initial_setup, reset=True)
 
-    def load_dataset(self):
-        load_dataset(self, reset_cursor=False)
+    def load_dataset(self, from_file):
+        if from_file:
+            load_file_dataset(self, reset_cursor=False)
+        else:
+            load_online_dataset(self, reset_cursor=False)
         self.question_overview.reset()
         QApplication.restoreOverrideCursor()
 

@@ -256,10 +256,14 @@ class FirstSetupWidget(QWidget, Ui_FirstSetupWidget):
         self.ui.setupUi(self)
 
         self.ui.create_button.clicked.connect(main_window.add_question_group)
-        self.ui.import_button.clicked.connect(self.load_dataset)
+        self.ui.import_local_button.clicked.connect(lambda: self.load_dataset(from_file=True))
+        self.ui.import_internet_button.clicked.connect(lambda: self.load_dataset(from_file=False))
 
-    def load_dataset(self):
-        main_application.load_dataset(self.parent())
+    def load_dataset(self, from_file):
+        if from_file:
+            main_application.load_file_dataset(self.parent())
+        else:
+            main_application.load_online_dataset(self.parent())
         self.action_done.emit()
 
 
