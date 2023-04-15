@@ -4,7 +4,7 @@ import uuid
 from collections import namedtuple
 from datetime import datetime, date
 from enum import Enum, auto, IntEnum
-from typing import List, Tuple, Dict
+from typing import List, Dict
 
 import bs4
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, BLOB, DateTime, Boolean
@@ -116,7 +116,10 @@ class QuestionGroup(Base):
     children = relationship("Question", back_populates="question_group", cascade="all, delete-orphan")
 
     def export(self):
-        return f"<GRUPPENNR>\n{self.id:02d}\n</GRUPPENNR>\n<GRUPPENTEXT>\n{self.name}\n</GRUPPENTEXT>\n"
+        return {
+            "id": self.id,
+            "name": self.name
+        }
 
     def __repr__(self):
         return f"QuestionGroup(id={self.id!r}, name={self.name!r})"
@@ -132,7 +135,7 @@ class MultipleChoice(Base):
     question = relationship("Question", back_populates="multiple_choice")
 
     def export(self):
-        return f"{'abc'[self.index]} ( ) {self.text}\n"
+        return self.text
 
     def __repr__(self):
         return f"MultipleChoice(question_signature={self.question_signature!r}, index={self.index!r}, text={self.text!r})"
@@ -280,17 +283,22 @@ class Question(Base):
         elif key == 'streak':
             return self.statistics.continous_solved_count
 
-    def export(self) -> Tuple[str, str]:
-        if self.answer_index != -1:
-            answer_text = f"({'abc'[self.answer_index]})  {self.answer_text}"
+    def export(self):
+        if self.multiple_choice:
+            multiple_choice = [x.export() for x in self.multiple_choice]
         else:
-            answer_text = self.answer_text
-        return (f"<REGELSATZ>\n<LNR>\n{self.group_id:02d}{self.question_id:03d}\n</LNR>\n<FRAGE>\n{self.question}\n"
-                f"</FRAGE>\n<MCHOICE>\n",
-                f"</MCHOICE>\n<ANTWORT>\n{answer_text}\n</ANTWORT>\n<ERST>\n{self.created.strftime('%d.%m.%Y')}\n"
-                f"</ERST>\n<AEND>\n "
-                f"{self.last_edited.strftime('%d.%m.%Y')}\n</AEND>\n<SIGNATUR>\n{self.signature}\n</SIGNATUR>\n"
-                f"</REGELSATZ>\n")
+            multiple_choice = []
+
+        return {
+            "group_id": self.group_id,
+            "question_id": self.question_id,
+            "question": self.question,
+            "answer_index": self.answer_index,
+            "answer_text": self.answer_text,
+            "created": self.created.strftime('%Y-%m-%d'),
+            "last_edited": self.last_edited.strftime('%Y-%m-%d'),
+            "multiple_choice": multiple_choice
+        }
 
     def __repr__(self):
         return f"Question(text={self.question!r}, answer={self.answer_index!r}:{self.answer_text!r}" \

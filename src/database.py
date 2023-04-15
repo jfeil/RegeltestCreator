@@ -101,6 +101,10 @@ class DatabaseConnector:
         question_groups = self.session.query(QuestionGroup).all()
         return question_groups
 
+    def get_all_questions(self) -> List[QuestionGroup]:
+        questions = self.session.query(Question).all()
+        return questions
+
     def get_question_group(self, question_group_index: int):
         question_group = self.session.query(QuestionGroup).where(QuestionGroup.id == question_group_index).first()
         return question_group
@@ -143,7 +147,6 @@ class DatabaseConnector:
         # insert processed values into db
         if not self.initialized:
             self._init_database()
-
         self.session.add_all(dataset)
         self.session.commit()
 

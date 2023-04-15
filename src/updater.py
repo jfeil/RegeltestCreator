@@ -118,7 +118,7 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
         file_handle = open(download_path, 'wb+')
         downloadThread = DownloadThread(request, filesize, file_handle, buffer=10240)
         downloadThread.download_progress.connect(progressbar_tracking)
-        downloadThread.run()
+        downloadThread.start()
 
 
 class DownloadThread(QThread):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'downloader.ui'
+## Form generated from reading UI file 'download_progress.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.3.1
 ##
@@ -17,7 +17,7 @@ class Ui_DownloadProgress(object):
     def setupUi(self, DownloadProgress):
         if not DownloadProgress.objectName():
             DownloadProgress.setObjectName(u"DownloadProgress")
-        DownloadProgress.resize(400, 170)
+        DownloadProgress.resize(400, 64)
         self.gridLayout = QGridLayout(DownloadProgress)
         self.gridLayout.setObjectName(u"gridLayout")
         self.progressBar = QProgressBar(DownloadProgress)
@@ -40,7 +40,6 @@ class Ui_DownloadProgress(object):
         self.cancel_button.clicked.connect(DownloadProgress.reject)
 
         QMetaObject.connectSlotsByName(DownloadProgress)
-
     # setupUi
 
     def retranslateUi(self, DownloadProgress):
@@ -48,3 +47,4 @@ class Ui_DownloadProgress(object):
         self.progress_label.setText(QCoreApplication.translate("DownloadProgress", u"TextLabel", None))
         self.cancel_button.setText(QCoreApplication.translate("DownloadProgress", u"Cancel", None))
     # retranslateUi
+

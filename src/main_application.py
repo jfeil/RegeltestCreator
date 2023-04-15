@@ -104,25 +104,21 @@ def load_online_dataset(parent: QWidget, reset_cursor=True) -> bool:
 
 
 def save_dataset(parent: QWidget):
-    file_name = QFileDialog.getSaveFileName(parent, caption="Fragendatei speichern", filter="DFB Regeldaten (*.xml)")
+    file_name = QFileDialog.getSaveFileName(parent, caption="Fragendatei speichern", filter="DFB Regeldaten (*.json)")
     if len(file_name) == 0 or file_name[0] == "":
         return
     QApplication.setOverrideCursor(Qt.WaitCursor)
-    dataset = "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?>\n\
-<REGELTEST>\n<GRUPPEN>\n"
+    question_groups = []
+    questions = []
     for question_group in db.get_all_question_groups():
-        dataset += question_group.export()
-    dataset += "</GRUPPEN>\n"
-    for question in db.get_question_multiplechoice():
-        question_set = question[0].export()
-        dataset += question_set[0]
-        if question[1]:
-            for mchoice in question[1]:
-                dataset += mchoice.export()
-        dataset += question_set[1]
-    dataset += "</REGELTEST>"
-    with open(file_name[0], "w+", encoding='iso-8859-1') as file:
-        file.writelines(dataset)
+        question_groups += [question_group.export()]
+    for question in db.get_all_questions():
+        questions += [question.export()]
+    with open(file_name[0], "w+") as file:
+        json.dump({
+            "question_groups": question_groups,
+            "questions": questions
+        }, file)
     QApplication.restoreOverrideCursor()
 
 
