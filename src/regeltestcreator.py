@@ -30,6 +30,7 @@ class RegeltestCreator(QListWidget):
         item = QListWidgetItem(self)
         item.setData(Qt.UserRole, question.signature)
         item.setText(question.question)
+        item.setToolTip(question.question)
         self.questions.append(question.signature)
 
     def delete_selected_items(self):
@@ -117,12 +118,21 @@ class RegeltestSaveDialog(QDialog, Ui_RegeltestSave):
         self.questions = questions
         self.question_widgets: List[QuestionEditWidget] = []
 
+        self.ui.activate_mc_button.clicked.connect(lambda: self.change_all_mchoice(True))
+        self.ui.deactivate_mc_button.clicked.connect(lambda: self.change_all_mchoice(False))
+
         self.ui.question_scrollable.setLayout(QVBoxLayout())
 
         for question in self.questions:
             widget = QuestionEditWidget(question, self)
             self.ui.question_scrollable.layout().addWidget(widget)
             self.question_widgets += [widget]
+
+    def change_all_mchoice(self, value: bool):
+        for question in self.question_widgets:
+            if not question.ui.checkBox_multiplechoice.isEnabled():
+                continue
+            question.ui.checkBox_multiplechoice.setCheckState(Qt.Checked if value else Qt.Unchecked)
 
     def open_icon(self):
         file_name = QFileDialog.getOpenFileName(self, caption="Icon auswählen", filter="Icon file (*.jpg;*.png)")

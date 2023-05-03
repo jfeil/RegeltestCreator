@@ -69,7 +69,7 @@ class RegeltestCreatorDockwidget(QWidget, Ui_regeltest_creator_dockwidget):
                                   selected_questions=selected_questions)
             db.add_object(regeltest)
             document_builder.create_document(selected_questions, output_path, settings.ui.title_edit.text(),
-                                             icon=icon)
+                                             icon=icon, font_size=settings.ui.fontsize_spinBox.value())
             QApplication.restoreOverrideCursor()
             webbrowser.open_new(output_path)
 
