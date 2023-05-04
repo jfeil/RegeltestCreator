@@ -13,7 +13,7 @@ from sqlalchemy import create_engine, func
 from sqlalchemy.orm import Session, Query
 
 from src.basic_config import database_name, Base, is_bundled, app_dirs
-from src.datatypes import QuestionGroup, Question, MultipleChoice
+from src.datatypes import QuestionGroup, Question, MultipleChoice, Regeltest
 
 database_path = os.path.join(app_dirs.user_data_dir, database_name)
 
@@ -174,6 +174,9 @@ class DatabaseConnector:
                  len(self.get_questions_by_foreignkey(question_groups=[question_group], mchoice=True))) for
                 question_group in
                 question_groups]
+
+    def get_regeltests(self) -> List[Regeltest]:
+        return self.session.query(Regeltest).all()
 
 
 try:

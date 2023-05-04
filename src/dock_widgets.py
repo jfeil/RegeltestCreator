@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import webbrowser
 from typing import TYPE_CHECKING
 
@@ -55,7 +56,9 @@ class RegeltestCreatorDockwidget(QWidget, Ui_regeltest_creator_dockwidget):
         settings = RegeltestSaveDialog(questions, self)
         settings.ui.title_edit.setFocus()
         result = settings.exec()
-        output_path = settings.ui.output_edit.text()
+        pdf_path = settings.ui.pdf_edit.text()
+        csv_path = settings.ui.csv_edit.text()
+        archive_regeltest = settings.ui.regeltest_archive_checkBox.isChecked()
         if result == QDialog.Accepted:
             selected_questions = settings.get_questions()
             QApplication.setOverrideCursor(Qt.WaitCursor)
@@ -65,13 +68,25 @@ class RegeltestCreatorDockwidget(QWidget, Ui_regeltest_creator_dockwidget):
             else:
                 icon = None
                 icon_db = None
-            regeltest = Regeltest(title=settings.ui.title_edit.text(), icon=icon_db,
-                                  selected_questions=selected_questions)
-            db.add_object(regeltest)
-            document_builder.create_document(selected_questions, output_path, settings.ui.title_edit.text(),
-                                             icon=icon, font_size=settings.ui.fontsize_spinBox.value())
+            if (pdf_path or csv_path) and archive_regeltest:
+                regeltest = Regeltest(title=settings.ui.title_edit.text(), icon=icon_db,
+                                      selected_questions=selected_questions)
+                db.add_object(regeltest)
+            if pdf_path:
+                document_builder.create_document(selected_questions, pdf_path, settings.ui.title_edit.text(),
+                                                 icon=icon, font_size=settings.ui.fontsize_spinBox.value())
+                webbrowser.open_new(pdf_path)
+
+            if csv_path:
+                with open(csv_path, 'w+', newline='', encoding='utf-8') as file:
+                    # create the csv writer
+                    writer = csv.writer(file)
+
+                    for question in selected_questions:
+                        # write a row to the csv file
+                        writer.writerow([question.question.question.replace("\n", "\\n"),
+                                         question.question.answer_text.replace("\n", "\\n")])
             QApplication.restoreOverrideCursor()
-            webbrowser.open_new(output_path)
 
 
 class SelfTestDockWidget(QWidget, Ui_self_test_dockwidget):

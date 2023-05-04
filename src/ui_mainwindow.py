@@ -41,6 +41,11 @@ class Ui_MainWindow(object):
         self.actionAus_einer_Datei.setObjectName(u"actionAus_einer_Datei")
         self.actionAus_dem_Internet = QAction(MainWindow)
         self.actionAus_dem_Internet.setObjectName(u"actionAus_dem_Internet")
+        self.actionBisherige_Regeltests = QAction(MainWindow)
+        self.actionBisherige_Regeltests.setObjectName(u"actionBisherige_Regeltests")
+        self.actionDesign_erstellen = QAction(MainWindow)
+        self.actionDesign_erstellen.setObjectName(u"actionDesign_erstellen")
+        self.actionDesign_erstellen.setEnabled(False)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setEnabled(True)
@@ -65,6 +70,8 @@ class Ui_MainWindow(object):
         self.menuBearbeiten.setObjectName(u"menuBearbeiten")
         self.menu_ber = QMenu(self.menubar)
         self.menu_ber.setObjectName(u"menu_ber")
+        self.menuRegeltest = QMenu(self.menubar)
+        self.menuRegeltest.setObjectName(u"menuRegeltest")
         MainWindow.setMenuBar(self.menubar)
         self.main_window_dockwidget = QDockWidget(MainWindow)
         self.main_window_dockwidget.setObjectName(u"main_window_dockwidget")
@@ -85,6 +92,7 @@ class Ui_MainWindow(object):
 
         self.menubar.addAction(self.menuDatei.menuAction())
         self.menubar.addAction(self.menuBearbeiten.menuAction())
+        self.menubar.addAction(self.menuRegeltest.menuAction())
         self.menubar.addAction(self.menuAnsicht.menuAction())
         self.menubar.addAction(self.menu_ber.menuAction())
         self.menuDatei.addAction(self.menuRegeldatensatz_importieren.menuAction())
@@ -97,12 +105,13 @@ class Ui_MainWindow(object):
         self.menuBearbeiten.addAction(self.actionRegeltest_l_schen)
         self.menu_ber.addAction(self.actionAuf_Updates_pr_fen)
         self.menu_ber.addAction(self.action_ber)
+        self.menuRegeltest.addAction(self.actionBisherige_Regeltests)
+        self.menuRegeltest.addAction(self.actionDesign_erstellen)
         self.toolBar.addAction(self.actionSelftest)
 
         self.retranslateUi(MainWindow)
 
         self.stackedWidget.setCurrentIndex(-1)
-
 
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
@@ -123,12 +132,15 @@ class Ui_MainWindow(object):
         self.actionSelftest.setText(QCoreApplication.translate("MainWindow", u"Selbsttest", None))
         self.actionAus_einer_Datei.setText(QCoreApplication.translate("MainWindow", u"Aus einer Datei", None))
         self.actionAus_dem_Internet.setText(QCoreApplication.translate("MainWindow", u"Aus dem Internet", None))
+        self.actionBisherige_Regeltests.setText(QCoreApplication.translate("MainWindow", u"Regeltest-Archiv", None))
+        self.actionDesign_erstellen.setText(QCoreApplication.translate("MainWindow", u"Designs verwalten", None))
         self.menuDatei.setTitle(QCoreApplication.translate("MainWindow", u"Datei", None))
         self.menuRegeldatensatz_importieren.setTitle(
             QCoreApplication.translate("MainWindow", u"Regeldatensatz importieren", None))
         self.menuAnsicht.setTitle(QCoreApplication.translate("MainWindow", u"Ansicht", None))
         self.menuBearbeiten.setTitle(QCoreApplication.translate("MainWindow", u"Bearbeiten", None))
         self.menu_ber.setTitle(QCoreApplication.translate("MainWindow", u"Hilfe", None))
+        self.menuRegeltest.setTitle(QCoreApplication.translate("MainWindow", u"Regeltest", None))
         self.main_window_dockwidget.setWindowTitle("")
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
     # retranslateUi

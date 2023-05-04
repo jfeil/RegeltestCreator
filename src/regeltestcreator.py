@@ -114,7 +114,8 @@ class RegeltestSaveDialog(QDialog, Ui_RegeltestSave):
         self.ui = Ui_RegeltestSave()
         self.ui.setupUi(self)
         self.ui.icon_edit_button.clicked.connect(self.open_icon)
-        self.ui.output_edit_button.clicked.connect(self.create_save)
+        self.ui.pdf_edit_button.clicked.connect(self.create_pdf_save)
+        self.ui.csv_edit_button.clicked.connect(self.create_csv_save)
         self.questions = questions
         self.question_widgets: List[QuestionEditWidget] = []
 
@@ -140,11 +141,18 @@ class RegeltestSaveDialog(QDialog, Ui_RegeltestSave):
             return
         self.ui.icon_path_edit.setText(file_name[0])
 
-    def create_save(self):
+    def create_pdf_save(self):
         file_name = QFileDialog.getSaveFileName(self, caption="Regeltest speichern", filter="Regeltest (*.pdf)")
         if len(file_name) == 0 or file_name[0] == "":
             return
-        self.ui.output_edit.setText(file_name[0])
+        self.ui.pdf_edit.setText(file_name[0])
+
+    def create_csv_save(self):
+        file_name = QFileDialog.getSaveFileName(self, caption="Powerpoint-Regeltest-Vorlage speichern",
+                                                filter="Regeltest-Vorlage (*.csv)")
+        if len(file_name) == 0 or file_name[0] == "":
+            return
+        self.ui.csv_edit.setText(file_name[0])
 
     def get_questions(self) -> List[RegeltestQuestion]:
         return [widget.get_question() for widget in self.question_widgets]

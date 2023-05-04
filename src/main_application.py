@@ -13,6 +13,7 @@ from src.dataset_downloader import DatasetDownloadDialog
 from src.datatypes import create_question_groups, create_questions_and_mchoice, QuestionGroup, Question, MultipleChoice
 from src.dock_widgets import RegeltestCreatorDockwidget, SelfTestDockWidget
 from src.main_widgets import FirstSetupWidget, QuestionOverviewWidget, SelfTestWidget
+from src.regeltest_management import PreviousRegeltests
 from src.ui_mainwindow import Ui_MainWindow
 from src.updater import UpdateChecker
 
@@ -182,6 +183,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui.actionRegeldatensatz_exportieren.triggered.connect(lambda: save_dataset(self))
         self.ui.actionNeue_Kategorie_erstellen.triggered.connect(self.add_question_group)
 
+        self.ui.actionBisherige_Regeltests.triggered.connect(self.previous_regeltests)
+
     def show(self) -> None:
         super(MainWindow, self).show()
         if not is_bundled:
@@ -247,3 +250,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ui.actionSelftest.triggered.connect(lambda: self.set_mode(ApplicationMode.question_overview))
             self.ui.main_window_dockwidget.setWindowTitle("Selbsttest-Einstellungen")
             self.ui.main_window_dockwidget.show()
+
+    def previous_regeltests(self):
+        dialog = PreviousRegeltests(self)
+        result = dialog.exec()
+        if result == QDialog.Accepted:
+            for question in dialog.get_selected_questions():
+                self.question_overview_dock.ui.regeltest_list.add_question(question)

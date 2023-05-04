@@ -54,27 +54,35 @@
     <property name="title">
      <string>Ansicht</string>
     </property>
-    <addaction name="actionAnsicht_zur_cksetzen"/>
+       <addaction name="actionAnsicht_zur_cksetzen"/>
    </widget>
-   <widget class="QMenu" name="menuBearbeiten">
-    <property name="title">
-     <string>Bearbeiten</string>
-    </property>
-    <addaction name="actionNeue_Kategorie_erstellen"/>
-    <addaction name="actionRegeltest_einrichten"/>
-    <addaction name="actionRegeltest_l_schen"/>
-   </widget>
-   <widget class="QMenu" name="menu_ber">
-    <property name="title">
-     <string>Hilfe</string>
-    </property>
-    <addaction name="actionAuf_Updates_pr_fen"/>
-    <addaction name="action_ber"/>
-   </widget>
-   <addaction name="menuDatei"/>
-   <addaction name="menuBearbeiten"/>
-   <addaction name="menuAnsicht"/>
-   <addaction name="menu_ber"/>
+      <widget class="QMenu" name="menuBearbeiten">
+          <property name="title">
+              <string>Bearbeiten</string>
+          </property>
+          <addaction name="actionNeue_Kategorie_erstellen"/>
+          <addaction name="actionRegeltest_einrichten"/>
+          <addaction name="actionRegeltest_l_schen"/>
+      </widget>
+      <widget class="QMenu" name="menu_ber">
+          <property name="title">
+              <string>Hilfe</string>
+          </property>
+          <addaction name="actionAuf_Updates_pr_fen"/>
+          <addaction name="action_ber"/>
+      </widget>
+      <widget class="QMenu" name="menuRegeltest">
+          <property name="title">
+              <string>Regeltest</string>
+          </property>
+          <addaction name="actionBisherige_Regeltests"/>
+          <addaction name="actionDesign_erstellen"/>
+      </widget>
+      <addaction name="menuDatei"/>
+      <addaction name="menuBearbeiten"/>
+      <addaction name="menuRegeltest"/>
+      <addaction name="menuAnsicht"/>
+      <addaction name="menu_ber"/>
   </widget>
   <widget class="QDockWidget" name="main_window_dockwidget">
    <property name="windowTitle">
@@ -93,26 +101,26 @@
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
-    <string>toolBar</string>
+       <string>toolBar</string>
    </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-   <addaction name="actionSelftest"/>
+      <attribute name="toolBarArea">
+          <enum>TopToolBarArea</enum>
+      </attribute>
+      <attribute name="toolBarBreak">
+          <bool>false</bool>
+      </attribute>
+      <addaction name="actionSelftest"/>
   </widget>
-  <action name="actionNeue_Kategorie_erstellen">
-   <property name="text">
-    <string>Neue Kategorie erstellen</string>
-   </property>
-  </action>
-  <action name="actionAnsicht_zur_cksetzen">
-   <property name="text">
-    <string>Ansicht zurücksetzen</string>
-   </property>
-  </action>
+     <action name="actionNeue_Kategorie_erstellen">
+         <property name="text">
+             <string>Neue Kategorie erstellen</string>
+         </property>
+     </action>
+     <action name="actionAnsicht_zur_cksetzen">
+         <property name="text">
+             <string>Ansicht zurücksetzen</string>
+         </property>
+     </action>
      <action name="actionRegeltest_l_schen">
          <property name="text">
              <string>Regeltest löschen</string>
@@ -151,6 +159,19 @@
      <action name="actionAus_dem_Internet">
          <property name="text">
              <string>Aus dem Internet</string>
+         </property>
+     </action>
+     <action name="actionBisherige_Regeltests">
+         <property name="text">
+             <string>Regeltest-Archiv</string>
+         </property>
+     </action>
+     <action name="actionDesign_erstellen">
+         <property name="enabled">
+             <bool>false</bool>
+         </property>
+         <property name="text">
+             <string>Designs verwalten</string>
          </property>
      </action>
  </widget>
