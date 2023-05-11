@@ -1,6 +1,5 @@
 import os
 import shutil
-import stat
 import subprocess
 import sys
 from typing import Optional
@@ -10,7 +9,7 @@ import requests
 from PySide6.QtCore import Signal, QThread, Qt
 from PySide6.QtWidgets import QDialog, QMessageBox
 
-from src.basic_config import app_dirs, current_platform, base_path, is_bundled
+from src.basic_config import app_dirs, current_platform, is_bundled
 from src.ui_update_checker import Ui_UpdateChecker
 
 
@@ -65,27 +64,6 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
                              f'{release_notes}{download_link}')
 
     def update(self) -> None:
-        def install_update():
-            updater_script_unix = "updater.sh"
-            os.rename(os.path.join(base_path, updater_script_unix),
-                      os.path.join(app_dirs.user_cache_dir, updater_script_unix))
-            if current_platform == 'Darwin' or current_platform == 'Linux':
-                os.chmod(os.path.join(app_dirs.user_cache_dir, updater_script_unix),
-                         stat.S_IXUSR | stat.S_IRUSR)
-                os.chmod(os.path.join(app_dirs.user_cache_dir, executable_name),
-                         stat.S_IXUSR | stat.S_IRUSR)
-
-            if current_platform == 'Windows':
-                command = f'timeout 10 & ' \
-                          f'copy "{download_path}" "{sys.executable}" & ' \
-                          f'del "{download_path}" & ' \
-                          f'"{sys.executable}"'
-                subprocess.Popen(command, shell=True)
-            elif current_platform == 'Darwin' or current_platform == 'Linux':
-                subprocess.Popen(" ".join([os.path.join(app_dirs.user_cache_dir, updater_script_unix),
-                                           sys.executable, str(os.getpid()), download_path]), shell=True)
-            sys.exit(0)
-
         def progressbar_tracking(value):
             self.ui.download_progress.setValue(value)
             if value != 100:
@@ -97,7 +75,8 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
             info_box.setInformativeText("Dabei wird die Applikation beendet und nach "
                                         "erfolgreichem Update erneut gestartet.")
             info_box.exec()
-            install_update()
+            subprocess.Popen([download_path, sys.executable, str(os.getpid())])
+            sys.exit(0)
 
         if not self.download_link:
             return
@@ -109,12 +88,19 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
         if not os.path.isdir(app_dirs.user_cache_dir):
             os.makedirs(app_dirs.user_cache_dir)
 
-        path, executable_name = os.path.split(sys.executable)
+        executable_name = "RegeltestCreator"
+
+        if current_platform == 'Darwin':
+            executable_name += ".app.zip"
+        elif current_platform == 'Windows':
+            executable_name += ".exe"
 
         download_path = os.path.join(app_dirs.user_cache_dir, executable_name)
 
         request = requests.get(self.download_link, stream=True)
         filesize = request.headers['Content-Length']
+        if os.path.isfile(download_path):
+            os.remove(download_path)
         file_handle = open(download_path, 'wb+')
         downloadThread = DownloadThread(request, filesize, file_handle, buffer=10240)
         downloadThread.download_progress.connect(progressbar_tracking)
