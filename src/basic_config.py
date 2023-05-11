@@ -36,6 +36,8 @@ if not is_bundled and "dev" not in __version__:
 app_version = version.parse(app_version)
 
 api_url = "https://api.github.com/repos/jfeil/RegeltestCreator/releases"
+dev_release = "?per_page=1"
+stable_release = "/latest"
 
 database_name = "database.db"
 
@@ -63,16 +65,8 @@ def check_for_update() -> Tuple[VERSION_INFO, VERSION_INFO]:  # new_version, des
         download_url = download_urls[current_platform]
         return release_info['tag_name'], release_info['body'], release_info['html_url'], download_url
 
-    releases = json.loads(requests.get(api_url).text)
-    latest_dev_release = None
-    latest_release = None
-    for release in releases:
-        if not latest_dev_release and release['prerelease']:
-            latest_dev_release = release
-        elif not latest_release and not release['prerelease']:
-            latest_release = release
-        if latest_release and latest_dev_release:
-            break
+    latest_dev_release = json.loads(requests.get(api_url + dev_release).text)[0]
+    latest_release = json.loads(requests.get(api_url + stable_release).text)
     return check(app_version, latest_release), check(app_version, latest_dev_release)
 
 
