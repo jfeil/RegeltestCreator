@@ -73,7 +73,7 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
         self.ui.filter_list.clear()
         left_shortcut = QShortcut(QKeySequence(QKeySequence.MoveToPreviousChar), self, None, None,
                                   Qt.WidgetWithChildrenShortcut)
-        left_shortcut.activated.connect(self.last_question_group)
+        left_shortcut.activated.connect(self.previous_question_group)
 
         right_shortcut = QShortcut(QKeySequence(QKeySequence.MoveToNextChar), self, None, None,
                                    Qt.WidgetWithChildrenShortcut)
@@ -81,6 +81,7 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
 
         delete_shortcut = QShortcut(QKeySequence(Qt.Key_Delete), self.ui.filter_list, None, None, Qt.WidgetShortcut)
         delete_shortcut.activated.connect(self.delete_selected_filter)
+
         self.ui.filter_list.setSelectionMode(QListView.ExtendedSelection)
         self.ui.filter_list.itemDoubleClicked.connect(self.add_filter)
         self.ui.add_filter.clicked.connect(self.add_filter)
@@ -88,13 +89,30 @@ class QuestionOverviewWidget(QWidget, Ui_QuestionOverviewWidget):
         self.question_group_tabs = []  # type: List[Tuple[QuestionGroup, QSortFilterProxyModel, QuestionGroupDataModel]]
         self.questions = {}  # type: Dict[QTreeWidgetItem, str]
 
-    def next_question_group(self):
-        if self.ui.tabWidget.currentIndex() < self.ui.tabWidget.count() - 1:
-            self.ui.tabWidget.setCurrentIndex(self.ui.tabWidget.currentIndex() + 1)
+        self.old_index = self.ui.tabWidget.currentIndex()
+        self.ui.tabWidget.currentChanged.connect(self.handle_bad_scrolling)
 
-    def last_question_group(self):
-        if self.ui.tabWidget.currentIndex() > 0:
-            self.ui.tabWidget.setCurrentIndex(self.ui.tabWidget.currentIndex() - 1)
+    def handle_bad_scrolling(self, new_index: int):
+        if not self.ui.tabWidget.isTabVisible(new_index):
+            if new_index > self.old_index:
+                self.next_question_group()
+            else:
+                self.previous_question_group()
+        self.old_index = self.ui.tabWidget.currentIndex()
+
+    def next_question_group(self):
+        for i in range(self.ui.tabWidget.currentIndex() + 1, self.ui.tabWidget.count()):
+            if self.ui.tabWidget.isTabVisible(i):
+                self.ui.tabWidget.setCurrentIndex(i)
+                return
+        self.ui.tabWidget.setCurrentIndex(self.old_index)
+
+    def previous_question_group(self):
+        for i in range(self.ui.tabWidget.currentIndex() - 1, -1, -1):
+            if self.ui.tabWidget.isTabVisible(i):
+                self.ui.tabWidget.setCurrentIndex(i)
+                return
+        self.ui.tabWidget.setCurrentIndex(self.old_index)
 
     def delete_selected_filter(self):
         selection_model = self.ui.filter_list.selectionModel()
