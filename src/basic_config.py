@@ -65,8 +65,13 @@ def check_for_update() -> Tuple[VERSION_INFO, VERSION_INFO]:  # new_version, des
         download_url = download_urls[current_platform]
         return release_info['tag_name'], release_info['body'], release_info['html_url'], download_url
 
-    latest_dev_release = json.loads(requests.get(api_url + dev_release).text)[0]
-    latest_release = json.loads(requests.get(api_url + stable_release).text)
+    latest_dev_release = None
+    latest_release = None
+    try:
+        latest_dev_release = json.loads(requests.get(api_url + dev_release).text)[0]
+        latest_release = json.loads(requests.get(api_url + stable_release).text)
+    except:
+        pass
     return check(app_version, latest_release), check(app_version, latest_dev_release)
 
 
