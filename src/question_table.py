@@ -38,7 +38,7 @@ class QuestionGroupDataModel(QAbstractTableModel):
                ('multiple_choice', True),
                ('answer_text', True),
                ('last_edited', True),
-               ('regeltest_count', False),
+               ('regeltest_count', True),
                ('last_tested', False),
                ('positive_tests', False),
                ('negative_tests', False),
