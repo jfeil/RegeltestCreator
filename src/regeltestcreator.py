@@ -1,10 +1,10 @@
 import random
 from typing import List, Tuple
 
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QShortcut, QKeySequence
+from PySide6.QtCore import Qt, Signal, QPoint
+from PySide6.QtGui import QShortcut, QKeySequence, QAction
 from PySide6.QtWidgets import QListWidget, QVBoxLayout, QDialog, QFileDialog, QWidget, \
-    QSpacerItem, QSizePolicy, QLabel, QRadioButton
+    QSpacerItem, QSizePolicy, QLabel, QRadioButton, QMenu
 from PySide6.QtWidgets import QListWidgetItem
 
 from src.database import db
@@ -21,6 +21,8 @@ class RegeltestCreator(QListWidget):
         self.setAcceptDrops(True)
         self.setSelectionMode(QListWidget.ExtendedSelection)
         self.questions = []  # type: List[str]
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.prepare_menu)
         delete_shortcut = QShortcut(QKeySequence(Qt.Key_Delete), self, None, None, Qt.WidgetShortcut)
         delete_shortcut.activated.connect(self.delete_selected_items)
 
@@ -32,6 +34,27 @@ class RegeltestCreator(QListWidget):
         item.setText(question.question)
         item.setToolTip(question.question)
         self.questions.append(question.signature)
+
+    def shuffle(self):
+        items = []
+        new_questions = []
+        for index in reversed(range(len(self.questions))):
+            items.append(self.takeItem(index))
+        random.shuffle(items)
+
+        for i, item in enumerate(items):
+            new_questions.append(item.data(Qt.UserRole))
+            self.insertItem(i, item)
+        self.questions = new_questions
+
+    def prepare_menu(self, pos: QPoint):
+        shuffle_action = QAction(self)
+        shuffle_action.setText("Zufällig mischen")
+        shuffle_action.triggered.connect(self.shuffle)
+
+        menu = QMenu(self)
+        menu.addActions([shuffle_action])
+        menu.exec(self.mapToGlobal(pos))
 
     def delete_selected_items(self):
         selection_model = self.selectionModel()
