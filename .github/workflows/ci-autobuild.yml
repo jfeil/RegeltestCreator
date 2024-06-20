@@ -34,7 +34,7 @@ jobs:
         os: [ ubuntu-latest, macos-13, windows-latest ]
         python-version: ['3.9']
         include:
-          - os: macos-latest
+          - os: macos-13
             pyinstaller: --osx-bundle-identifier de.jfeil.RegeltestCreator --windowed
     steps:
       - uses: actions/checkout@v2
