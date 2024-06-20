@@ -28,15 +28,15 @@ jobs:
             Changelog is not yet available.
           draft: false
           prerelease: false
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         with:
           name: release-ubuntu
           path: ./
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         with:
           name: release-macos
           path: ./
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         with:
           name: release-windows
           path: ./

@@ -27,15 +27,15 @@ jobs:
             ${{ github.event.commits[0].message }}
           draft: false
           prerelease: true
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         with:
           name: release-ubuntu
           path: ./
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         with:
           name: release-macos
           path: ./
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         with:
           name: release-windows
           path: ./
