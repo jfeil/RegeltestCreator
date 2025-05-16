@@ -10,7 +10,7 @@ requests==2.32.2
 markdown2==2.4.10
 lxml==5.4.0
 Jinja2==3.1.6
-alembic==1.12.1
+alembic==1.15.2
 aiohttp~=3.11.18
 psutil~=5.9.5
 python-pptx==0.6.23
