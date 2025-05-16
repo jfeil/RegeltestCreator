@@ -9,7 +9,7 @@ traitlets==5.13.0
 requests==2.31.0
 markdown2==2.4.10
 lxml==4.9.3
-Jinja2==3.1.3
+Jinja2==3.1.6
 alembic==1.12.1
 aiohttp~=3.9.2
 psutil~=5.9.5
