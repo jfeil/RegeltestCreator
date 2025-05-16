@@ -247,7 +247,7 @@ class QuestionGroupTableView(QTableView):
 
         delete_shortcut = QShortcut(QKeySequence(Qt.Key_Delete), self, None, None, Qt.WidgetShortcut)
         delete_shortcut.activated.connect(self.delete_selected_items)
-        force_delete_shortcut = QShortcut(QKeySequence(Qt.SHIFT + Qt.Key_Delete), self, None, None, Qt.WidgetShortcut)
+        force_delete_shortcut = QShortcut(QKeySequence(Qt.SHIFT | Qt.Key_Delete), self, None, None, Qt.WidgetShortcut)
         force_delete_shortcut.activated.connect(lambda: self.delete_selected_items(False))
 
         vertical_layout = QVBoxLayout(parent)

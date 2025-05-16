@@ -1012,7 +1012,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pyinstaller", specifier = ">=6.13.0" }]
+dev = [{ name = "pyinstaller", specifier = ">=4.10" }]
 
 [[package]]
 name = "reportlab"

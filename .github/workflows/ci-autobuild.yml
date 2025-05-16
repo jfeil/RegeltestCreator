@@ -69,7 +69,7 @@ jobs:
         run: echo __version__=\"${{ steps.version.outputs.version }}\" > src/__version__.py
       - name: Install the project
         run: uv sync --locked --all-extras --dev
-      - run: uv run pyinstaller RegeltestCreator.spec -F
+      - run: uv run pyinstaller RegeltestCreator.spec
       - if: matrix.os == 'macos-13'
         run: |
           zip -r dist/RegeltestCreator.app.zip dist/RegeltestCreator.app
