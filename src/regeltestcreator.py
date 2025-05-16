@@ -99,13 +99,13 @@ class QuestionEditWidget(QWidget, Ui_RegeltestCreatorQuestionWidget):
         self.label_textanswer.setText(question.answer_text)
         self.label_textanswer.setWordWrap(True)
 
-        self.ui.checkBox_multiplechoice.stateChanged.connect(self._checkbox_changed)
+        self.ui.checkBox_multiplechoice.checkStateChanged.connect(self._checkbox_changed)
 
         self.multiple_choice = []
         for i, multiplechoice in enumerate(question.multiple_choice):
             button = QRadioButton(self)
             button.setText(multiplechoice.text)
-            button.setChecked(Qt.CheckState.Checked if question.answer_index == i else Qt.CheckState.Unchecked)
+            button.setChecked(question.answer_index == i)
             button.setDisabled(True)
             self.multiple_choice.append(button)
             self.layout_multiple_choice.addWidget(button)

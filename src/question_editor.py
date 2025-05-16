@@ -43,7 +43,7 @@ class QuestionEditor(QDialog, Ui_QuestionDialog):
                     self.ui.option_3_edit.setText(mchoice_option.text)
             index = question.answer_index + 1
         self.ui.checkBox.setCheckState(bool_2_checkstate(mchoice))
-        self.ui.checkBox.stateChanged.connect(self.mchoice_changed)
+        self.ui.checkBox.checkStateChanged.connect(self.mchoice_changed)
         self.activate_mchoice(checkstate_2_bool(self.ui.checkBox.checkState()))
         self.ui.mchoice_combo.setCurrentIndex(index)
 
