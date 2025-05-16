@@ -68,14 +68,16 @@ class RegeltestCreator(QListWidget):
             del item
 
     def dropEvent(self, event):
-        event.accept()
         if event.mimeData().hasFormat('application/questionitems'):
+            event.accept()
             data = event.mimeData().data('application/questionitems')
             signatures = data.data().decode()
             n = 32
             signatures = [signatures[i:i + n] for i in range(0, len(signatures), n)]
             for signature in signatures:
                 self.add_question(db.get_question(signature))
+        else:
+            event.ignore()
 
 
 class QuestionEditWidget(QWidget, Ui_RegeltestCreatorQuestionWidget):

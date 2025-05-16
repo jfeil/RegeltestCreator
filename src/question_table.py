@@ -300,8 +300,7 @@ class QuestionGroupTableView(QTableView):
         menu.addActions(actions)
         menu.exec(self.mapToGlobal(pos))
 
-    def startDrag(self, supportedActions: Qt.DropActions) -> None:
-        super(QuestionGroupTableView, self).startDrag(supportedActions)
+    def startDrag(self, supportedActions: Qt.DropAction) -> None:
         rows = self.selectionModel().selectedRows()
         if not rows:
             return
@@ -316,8 +315,7 @@ class QuestionGroupTableView(QTableView):
         mimeData.setData('application/questionitems', bytearray(signatures))
         drag = QDrag(self)
         drag.setMimeData(mimeData)
-
-        result = drag.exec_(supportedActions, Qt.CopyAction)
+        result = drag.exec(supportedActions, Qt.CopyAction)
         if result == Qt.CopyAction:
             self.clearSelection()
 
