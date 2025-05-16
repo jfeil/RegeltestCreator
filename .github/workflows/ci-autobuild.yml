@@ -32,7 +32,6 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-13, windows-latest ]
-        python-version: ['3.9']
         include:
           - os: macos-13
             pyinstaller: --osx-bundle-identifier de.jfeil.RegeltestCreator --windowed
@@ -40,6 +39,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          # Install a specific version of uv.
+          version: "0.7.4"
       - name: Version
         id: version
         uses: paulhatch/semantic-version@v4.0.2
@@ -55,17 +59,17 @@ jobs:
           format: ${{ inputs.version_string }}
           # If this is set to true, *every* commit will be treated as a new version.
           bump_each_commit: false
-      - uses: actions/setup-python@v5
+      - name: "Set up Python"
+        uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }} # Version range or exact version of a Python version to use, using SemVer's version range syntax
-          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified      - run: pip install -r requirements.txt
+          python-version-file: "pyproject.toml"
       - if: matrix.os == 'windows-latest'
         run: echo __version__=`"${{ steps.version.outputs.version }}`" > src/__version__.py
       - if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
         run: echo __version__=\"${{ steps.version.outputs.version }}\" > src/__version__.py
-      - run: pip install -r requirements.txt
-      - run: pip install pyinstaller==4.10
-      - run: pyinstaller RegeltestCreator.spec -F
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
+      - run: uv run pyinstaller RegeltestCreator.spec -F
       - if: matrix.os == 'macos-13'
         run: |
           zip -r dist/RegeltestCreator.app.zip dist/RegeltestCreator.app
