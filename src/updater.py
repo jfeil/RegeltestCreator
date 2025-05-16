@@ -76,7 +76,7 @@ class UpdateChecker(QDialog, Ui_UpdateChecker):
             info_box.setInformativeText("Dabei wird die Applikation beendet und nach "
                                         "erfolgreichem Update erneut gestartet.")
             info_box.exec()
-            if current_platform == 'Darwin':
+            if current_platform == 'Linux':
                 st = os.stat(download_path)
                 os.chmod(download_path, st.st_mode | stat.S_IEXEC)
             subprocess.Popen([download_path, sys.executable, str(os.getpid())])
